@@ -1,0 +1,10 @@
+
+<mat-card>
+  <div *ngIf="provider">
+    <mat-card-title>Muzikum</mat-card-title>
+    <mat-card-content>
+      <h2>{{provider.provider_name | uppercase}} Details</h2>
+      <div><span>ID: </span>{{provider.provider_id}}</div>
+    </mat-card-content>
+  </div>
+</mat-card>

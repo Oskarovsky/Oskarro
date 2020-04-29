@@ -1,0 +1,30 @@
+<div class="example-container">
+  <form name="form" #form="ngForm" (ngSubmit)="createVideo(videoName.value, videoCategory.value, videoUrl.value)">
+    <mat-form-field appearance="fill">
+      <mat-label>Nazwa</mat-label>
+      <input #videoName matInput [(ngModel)]="modelVideo.name" name="name" />
+    </mat-form-field>
+    <br>
+    <mat-form-field appearance="fill">
+      <mat-label>Kategoria</mat-label>
+      <mat-select #videoCategory [(ngModel)]="modelVideo.category">
+        <mat-option *ngFor="let category of categories" [value]="category">{{category}}</mat-option>
+      </mat-select>
+    </mat-form-field>
+    <br>
+    <mat-form-field appearance="fill">
+      <mat-label>URL</mat-label>
+      <input #videoUrl matInput [(ngModel)]="modelVideo.url" name="name" />
+    </mat-form-field>
+
+    <button mat-raised-button
+            type="button"
+            (click)="createVideo(videoName.value, videoCategory.value, videoUrl.value)"
+            color="primary"
+            routerLink="/video/category/{{videoCategory.value}}"
+            style="margin-left: 10px;">Dodaj video
+    </button>
+
+
+  </form>
+</div>

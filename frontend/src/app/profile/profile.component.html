@@ -1,0 +1,100 @@
+<div class="container" *ngIf="currentUser; else loggedOut">
+<!--
+    <strong>Token:</strong>
+    {{ currentUser.accessToken.substring(0, 20) }} ...
+    {{ currentUser.accessToken.substr(currentUser.accessToken.length - 20) }}
+-->
+
+  <div class="container">
+    <div class="row">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-body">
+            <div class="card-title mb-4">
+              <div class="d-flex justify-content-start">
+                <div class="image-container">
+                  <img [src]="imageToShow" width="150" height="150"
+                       alt="Place image title"
+                       *ngIf="imageToShow; else noImageFound">
+                  <ng-template #noImageFound>
+                    <img id="profile-imgs" width="100" height="100"
+                         src="//ssl.gstatic.com/accounts/ui/avatar_2x.png"
+                         class="profile-img-card"/>
+                  </ng-template>
+                  <div class="middle">
+                    <input type="button" class="btn btn-secondary" id="btnChangePicture" value="Change" />
+                    <input type="file" style="display: none;" id="profilePicture" name="file" />
+                  </div>
+                </div>
+                <div class="userData ml-3">
+                  <h2 class="d-block" style="font-size: 1.5rem; font-weight: bold"><a href="javascript:void(0);">{{currentUser.username}}</a></h2>
+                  <h6 class="d-block"><a href="javascript:void(0)">1,500</a> Playlist</h6>
+                  <h6 class="d-block"><a href="javascript:void(0)">300</a> Polubień</h6>
+                  <button mat-stroked-button color="primary" value="Zmień zdjęcie" onclick="showAvatarForm()">Zmień zdjęcie profilowe</button>
+                  <p id="avatarForm" style="display:none;" class="answer_list">
+                    <input type="file" class="mat-line" (change)="selectFile($event)" />
+                    <button class="btn btn-success" [disabled]="!selectedFile" (click)="upload()">
+                      Upload
+                    </button>
+                    <span class="alert alert-light" role="alert">{{ message }}</span>
+                  </p>
+                </div>
+                <div class="ml-auto">
+                  <input type="button" class="btn btn-primary d-none" id="btnDiscard" value="Discard Changes" />
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-12">
+                <ul class="nav nav-tabs mb-4" id="myTab" role="tablist">
+                  <li class="nav-item">
+                    <a class="nav-link active" id="basicInfo-tab" data-toggle="tab" href="#basicInfo" role="tab" aria-controls="basicInfo" aria-selected="true">Podstawowe informacje</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" id="connectedServices-tab" data-toggle="tab" href="#connectedServices" role="tab" aria-controls="connectedServices" aria-selected="false">Wyświetl szczegóły</a>
+                  </li>
+                </ul>
+                <div class="tab-content ml-1" id="myTabContent">
+                  <div class="tab-pane fade show active" id="basicInfo" role="tabpanel" aria-labelledby="basicInfo-tab">
+
+
+                    <div class="row">
+                      <div class="col-sm-3 col-md-2 col-5">
+                        <label style="font-weight:bold;">Nazwa użytkownika</label>
+                      </div>
+                      <div class="col-md-8 col-6">
+                        {{ currentUser.username }}
+                      </div>
+                    </div>
+                    <hr />
+
+                    <div class="row">
+                      <div class="col-sm-3 col-md-2 col-5">
+                        <label style="font-weight:bold;">Email</label>
+                      </div>
+                      <div class="col-md-8 col-6">
+                        {{ currentUser.email }}
+                      </div>
+                    </div>
+                    <hr />
+
+
+                  </div>
+                  <div class="tab-pane fade" id="connectedServices" role="tabpanel" aria-labelledby="ConnectedServices-tab">
+                    Facebook, Google, Twitter Account that are connected to this account
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<ng-template #loggedOut>
+  Please login.
+</ng-template>

@@ -1,0 +1,15 @@
+
+<div class="container">
+<mat-card>
+  <mat-card-title>Muzikum</mat-card-title>
+  <mat-card-content>
+    <mat-list>
+      <mat-list-item *ngFor="let track of tracks">
+        <h3 mat-line>{{track.title}}</h3>
+        <h2 mat-line>{{track.version}}</h2>
+        <h2 mat-line>{{track.artist}}</h2>
+      </mat-list-item>
+    </mat-list>
+  </mat-card-content>
+</mat-card>
+</div>

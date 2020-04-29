@@ -1,0 +1,13 @@
+<div class="container">
+  <header class="jumbotron">
+    <p *ngIf="isLoggedIn">Cześć {{ currentUser.username }} !</p>
+    <p *ngIf="!isLoggedIn">Jesteś nowy? <a routerLink="/register">Dołącz do naszej ekipy</a></p>
+    <div id="fb-root"></div>
+    <script async defer crossorigin="anonymous" src="https://connect.facebook.net/pl_PL/sdk.js#xfbml=1&version=v6.0&appId=3206283756069780&autoLogAppEvents=1"></script>
+  </header>
+
+  <div class="fb-login-button" data-size="large" data-button-type="continue_with"
+       data-layout="default" data-auto-logout-link="true" data-use-continue-as="true" data-width="">
+  </div>
+
+</div>

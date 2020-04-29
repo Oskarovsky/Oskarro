@@ -1,0 +1,87 @@
+<div class="card bg-light">
+  <article class="card-body mx-auto" style="max-width: 400px;">
+
+    <form *ngIf="!isSuccessful" name="form" (ngSubmit)="f.form.valid && onSubmit()" #f="ngForm" novalidate>
+
+      <h4 class="card-title mt-3 text-center">Dołącz do naszej ekipy!</h4>
+      <p class="text-center">Słuchaj najlepszej muzyki zupełnie za darmo.</p>
+      <p>
+        <a href="" class="btn btn-block btn-twitter"> <i class="fa fa-twitter"></i> Zaloguj się za pomocą YouTube</a>
+        <a href="" class="btn btn-block btn-facebook"> <i class="fa fa-facebook"></i> Zaloguj się za pomocą Facebook</a>
+      </p>
+      <p class="divider-text">
+        <span class="bg-light">LUB</span>
+      </p>
+
+      <div class="form-group input-group">
+        <div class="input-group-prepend">
+          <span class="input-group-text"> <i class="fa fa-user fa-2x"></i> </span>
+        </div>
+        <div class="alert-danger" style="position: relative; text-align: center; font-size: 15px;" *ngIf="f.submitted && username.invalid">
+          <div *ngIf="username.errors.required">Nazwa użytkownika jest wymagana</div>
+          <div *ngIf="username.errors.minlength">Nazwa użytkownika musi zawierać minimum 3 znaki</div>
+          <div *ngIf="username.errors.maxlength">Nazwa użytkownika nie może zawierać więcej niż 20 znaków</div>
+        </div>
+        <input type="text" class="form-control" name="username" [(ngModel)]="form.username"
+               required minlength="3" maxlength="20" #username="ngModel" placeholder="Nazwa użytkownika" />
+      </div> <!-- form-group// -->
+
+      <div class="form-group input-group">
+        <div class="input-group-prepend">
+          <span class="input-group-text"> <i class="fa fa-envelope fa-lg" style="margin-bottom: 2px; margin-top: 2px"></i> </span>
+        </div>
+        <div class="alert-danger" style="position: relative; text-align: center; font-size: 15px;" *ngIf="f.submitted && email.invalid">
+          <div *ngIf="email.errors.required">Wymagany adres email</div><div *ngIf="email.errors.email">Niepoprawny email</div>
+        </div>
+        <input type="email" class="form-control" name="email" [(ngModel)]="form.email"
+          required email #email="ngModel" placeholder="Email" />
+      </div> <!-- form-group end.// -->
+
+      <div class="form-group input-group">
+        <div class="input-group-prepend">
+          <span class="input-group-text"> <i class="fa fa-lock fa-2x"></i> </span>
+        </div>
+        <div class="alert-danger" style="position: relative; text-align: center; font-size: 15px;" *ngIf="f.submitted && password.invalid">
+          <div *ngIf="password.errors.required">Wymagane hasło</div>
+          <div *ngIf="password.errors.minlength">Hasło musi zawierać minimum 6 znaków</div>
+        </div>
+        <input type="password" class="form-control" name="password" [(ngModel)]="form.password"
+          required minlength="6" #password="ngModel" placeholder="Hasło" id="password" />
+      </div> <!-- form-group// -->
+
+      <div class="form-group input-group">
+        <div class="input-group-prepend">
+          <span class="input-group-text"> <i class="fa fa-lock fa-2x"></i> </span>
+        </div>
+        <div class="alert-danger" style="position: relative; text-align: center; font-size: 15px;">
+          <div id="message"></div>
+        </div>
+        <input class="form-control" placeholder="Powtórz hasło" type="password"
+               id="confirm_password" name="confirm_password" onkeyup='check();'> <br/>
+      </div> <!-- form-group// -->
+
+      <div class="form-group">
+        <div style="position: relative; text-align: center; font-size: 15px;">
+          <input type="checkbox" name="terms" id="terms"> Zgadzam się na warunki regulaminu
+        </div>
+      </div><!-- form-group// -->
+
+
+      <div class="form-group">
+        <button type="submit" class="btn btn-primary btn-block" id="submit_register" disabled>Dodaj konto</button>
+      </div> <!-- form-group// -->
+
+
+      <p class="text-center">Masz już konto? <a href="">Zaloguj się!</a> </p>
+      <div class="alert alert-warning" *ngIf="f.submitted && isSignUpFailed">
+        Wystąpił błąd podczas rejestracji!<br />{{ errorMessage }}
+      </div>
+    </form>
+    <div class="alert alert-success" *ngIf="isSuccessful">
+      Zarejestrowałeś się w portalu oskarro.com !
+    </div>
+  </article>
+</div> <!-- card.// -->
+
+
+

@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>server</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+
+    <parent>
+        <groupId>com.oskarro</groupId>
+        <artifactId>oskarito-app</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
+
+    <properties>
+        <java.version>11</java.version>
+    </properties>
+
+    <dependencies>
+
+        <!-- WEB region -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <scope>runtime</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <!-- endregion -->
+
+        <!-- ======================================================== -->
+
+        <!-- DATABASE region -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <!-- endregion -->
+
+        <!-- ======================================================== -->
+
+        <!-- SECURITY region -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt</artifactId>
+            <version>0.9.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20190722</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-oauth2-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+        <!-- endregion -->
+
+        <!-- ======================================================== -->
+
+        <!-- Lombok auto-generates things like getters and setters -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <!-- endregion -->
+
+        <!-- Libraries for crawling and scrapping web contents -->
+        <dependency>
+            <groupId>org.jsoup</groupId>
+            <artifactId>jsoup</artifactId>
+            <version>1.9.1</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.gebish/geb-core -->
+        <dependency>
+            <groupId>org.gebish</groupId>
+            <artifactId>geb-core</artifactId>
+            <version>3.3</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/net.sourceforge.htmlunit/htmlunit -->
+        <dependency>
+            <groupId>net.sourceforge.htmlunit</groupId>
+            <artifactId>htmlunit</artifactId>
+            <version>2.38.0</version>
+        </dependency>
+
+        <!-- endregion -->
+
+        <!-- Libraries for minimizing users avatar -->
+        <dependency>
+            <groupId>org.imgscalr</groupId>
+            <artifactId>imgscalr-lib</artifactId>
+            <version>4.2</version>
+        </dependency>
+        <dependency>
+            <groupId>net.coobird</groupId>
+            <artifactId>thumbnailator</artifactId>
+            <version>0.4.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.mortennobel</groupId>
+            <artifactId>java-image-scaling</artifactId>
+            <version>0.8.5</version>
+        </dependency>
+        <!-- endregion -->
+
+        <!-- ======================================================== -->
+
+        <!-- TEST region -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.junit.vintage</groupId>
+                    <artifactId>junit-vintage-engine</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- endregion -->
+
+        <!-- ======================================================== -->
+
+    </dependencies>
+
+    <!-- ############################################################### -->
+
+    <!-- BUILD region -->
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+    <!-- endregion -->
+</project>

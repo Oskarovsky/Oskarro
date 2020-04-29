@@ -1,0 +1,88 @@
+<div class="container">
+
+  <h3>Playlista: {{video.name}}</h3>
+
+  <div class="col-md-9">
+    <div class="row">
+      <div class="col-md-12">
+        <p *ngIf="this.tracks.length === 0">Nie ma żadnych utworów w tej składance</p>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Track list -->
+  <table class="table table-striped">
+    <thead>
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">Artist</th>
+      <th scope="col">Title</th>
+      <th scope="col">Version</th>
+      <th scope="col"></th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr *ngFor="let track of tracks; index as i">
+      <th scope="row">{{ i + 1 }}</th>
+      <td><input type="text"
+                 [(ngModel)]="track.artist"
+                 (change)="updateTrack(track)"
+                 class="input-label-lg"
+                 maxlength="18" style="width: 100%"
+                 value="{{track.artist}}"/></td>
+      <td><input type="text"
+                 [(ngModel)]="track.title"
+                 (change)="updateTrack(track)"
+                 class="input-label-lg"
+                 maxlength="18" style="width: 100%"
+                 value="{{track.title}}"/></td>
+      <td><input type="text"
+                 [(ngModel)]="track.version"
+                 (change)="updateTrack(track)"
+                 class="input-label-lg"
+                 maxlength="18" style="width: 100%"
+                 value="{{track.version}}"/></td>
+      <td>
+        <a (click)="deleteTrack(track.id)" class="pull-right text-danger">
+          <i class="material-icons" style="float:right;">delete</i>
+        </a>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+
+  <!-- ADDING TRACK TO PLAYLIST PANEL -->
+  <div>
+    <input #newArtist
+           type="text"
+           class="input-label-lg"
+           maxlength="18" style="width: 25%"
+           value=""/>
+    <input #newTitle
+           type="text"
+           class="input-label-lg"
+           maxlength="18" style="width: 25%"
+           value=""/>
+    <input #newVersion
+           type="text"
+           class="input-label-lg"
+           maxlength="18" style="width: 30%"
+           value=""/>
+    <button mat-raised-button
+            (click)="addTrackToVideo(newArtist.value, newTitle.value, newVersion.value)"
+            type="button"
+            color="primary"
+            style="margin-left: 10px;">Dodaj utwór
+    </button>
+  </div>
+
+
+  <button mat-raised-button
+          type="button"
+          class="btn btn-warning pull-right"
+          routerLink="../details"
+          style="margin-left: 10px;">Zapisz playlistę
+  </button>
+</div>
+
