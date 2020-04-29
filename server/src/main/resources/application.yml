@@ -1,7 +1,7 @@
 spring:
   jpa:
     hibernate:
-      ddl-auto: update  # creates the schema, destroying any previous data
+      ddl-auto: create-drop  # creates the schema, destroying any previous data
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     show-sql: true
     generate-ddl: true
