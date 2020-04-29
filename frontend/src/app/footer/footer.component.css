@@ -1,0 +1,54 @@
+.Site {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+}
+
+.Site-content {
+  flex: 1;
+}
+
+body{
+  font-family: 'Poppins', sans-serif;
+}
+
+.copyright{
+  background-color:#f0f0f0;
+}
+
+.copyright p{
+  margin:10px 0px;
+}
+
+footer{
+  background-color:#222222;
+  padding: 25px 0px;
+}
+
+footer .menu li a{
+  color:#b1aca1;
+  padding:10px;
+  text-decoration:none;
+}
+
+footer .menu li a:hover{
+  color:#7dabdb;
+}
+
+.fa.fa-facebook ,
+.fa.fa-github ,
+.fa.fa-linkedin ,
+.fa.fa-soundcloud ,
+.fa.fa-youtube {
+  color:#b1aca1;
+  font-size:20px;
+  padding:10px;
+}
+
+.fa.fa-facebook:hover,
+.fa.fa-github:hover,
+.fa.fa-linkedin:hover,
+.fa.fa-soundcloud:hover,
+.fa.fa-youtube:hover {
+  color:#6794c2;
+}

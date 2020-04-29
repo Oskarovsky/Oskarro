@@ -1,0 +1,27 @@
+<div class="container">
+
+  <!-- Playlist menu -->
+  <div class="row" style="margin-top: 12px;">
+    <input type="text"
+           [(ngModel)]="searchText"
+           class="mat-form-field"
+           style="width: 50%;"
+           placeholder="Wyszukaj playlistę..." />
+  </div>
+
+  <!-- Playlist content -->
+  <div class="row" style="margin-top: 28px;">
+    <div class="col-md-3">
+      <br>
+      <div class="list-group list-group-flush">
+        <div *ngFor="let playlist of playlists | playlistFilter:searchText">
+          <a class="list-group-item list-group-item-action">
+            {{ playlist.name }}
+            <i class="material-icons" style="float:right; margin-right: 2px;" routerLink="../../playlist/{{playlist.id}}/details">slideshow</i>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

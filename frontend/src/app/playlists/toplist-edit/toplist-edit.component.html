@@ -1,0 +1,30 @@
+<div class="example-container">
+  <form name="form" #form="ngForm" (ngSubmit)="addTrackToRanking()">
+    <mat-form-field appearance="fill">
+      <mat-label>Title</mat-label>
+      <input matInput [(ngModel)]="model.title" name="title">
+    </mat-form-field>
+    <br>
+    <mat-form-field appearance="fill">
+      <mat-label>Artist</mat-label>
+      <input matInput [(ngModel)]="model.artist" name="artist">
+    </mat-form-field>
+    <br>
+    <mat-form-field appearance="fill">
+      <mat-label>Version</mat-label>
+      <input matInput [(ngModel)]="model.version" name="version">
+    </mat-form-field>
+    <br>
+    <mat-form-field appearance="fill">
+      <mat-label>Url</mat-label>
+      <input matInput [(ngModel)]="model.url" name="url">
+    </mat-form-field>
+    <br>
+    <mat-form-field appearance="fill">
+      <mat-label>Points</mat-label>
+      <input matInput [(ngModel)]="model.points" name="points">
+    </mat-form-field>
+    <br>
+    <button mat-button >Dodaj utwór</button>
+  </form>
+</div>

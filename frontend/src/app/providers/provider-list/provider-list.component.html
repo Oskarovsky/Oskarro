@@ -1,0 +1,18 @@
+<h1>All music providers</h1>
+<mat-grid-list cols="4" rowHeight="400">
+  <mat-grid-tile *ngFor="let provider of providers" [routerLink]="['/provider/', provider.id]">
+    <mat-card class="example-card">
+      <mat-card-header>
+        <mat-card-title>{{provider.name}}</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <p>
+          {{provider.url}}
+        </p>
+        <p>
+          {{provider.description}}
+        </p>
+      </mat-card-content>
+    </mat-card>
+  </mat-grid-tile>
+</mat-grid-list>
