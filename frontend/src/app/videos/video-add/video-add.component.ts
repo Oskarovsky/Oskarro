@@ -7,7 +7,8 @@ import {Playlist} from '../../playlists/playlist/model/playlist';
 @Component({
   selector: 'app-video-add',
   templateUrl: './video-add.component.html',
-  styleUrls: ['./video-add.component.css']
+  styleUrls: ['./video-add.component.css'],
+  standalone: false
 })
 export class VideoAddComponent implements OnInit {
 

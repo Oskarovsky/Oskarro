@@ -5,7 +5,8 @@ import {PlaylistService} from '../../services/playlist/playlist.service';
 @Component({
   selector: 'app-playlist-all',
   templateUrl: './playlist-all.component.html',
-  styleUrls: ['./playlist-all.component.css']
+  styleUrls: ['./playlist-all.component.css'],
+  standalone: false
 })
 export class PlaylistAllComponent implements OnInit {
 

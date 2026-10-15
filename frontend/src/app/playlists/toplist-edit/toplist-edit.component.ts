@@ -8,7 +8,8 @@ import {TrackService} from "../../services/track/track.service";
 @Component({
   selector: 'app-toplist-edit',
   templateUrl: './toplist-edit.component.html',
-  styleUrls: ['./toplist-edit.component.css']
+  styleUrls: ['./toplist-edit.component.css'],
+  standalone: false
 })
 export class ToplistEditComponent implements OnInit {
 

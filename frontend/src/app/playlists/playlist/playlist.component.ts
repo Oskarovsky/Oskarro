@@ -8,7 +8,8 @@ import {TokenStorageService} from '../../services/auth/token-storage.service';
 @Component({
   selector: 'app-playlist',
   templateUrl: './playlist.component.html',
-  styleUrls: ['./playlist.component.css']
+  styleUrls: ['./playlist.component.css'],
+  standalone: false
 })
 export class PlaylistComponent implements OnInit {
 

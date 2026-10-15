@@ -9,7 +9,8 @@ import {TokenStorageService} from '../../services/auth/token-storage.service';
 @Component({
   selector: 'app-provider-details',
   templateUrl: './provider-details.component.html',
-  styleUrls: ['./provider-details.component.css']
+  styleUrls: ['./provider-details.component.css'],
+  standalone: false
 })
 export class ProviderDetailsComponent implements OnInit {
 

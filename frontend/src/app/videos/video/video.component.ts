@@ -10,7 +10,8 @@ import {NavigationComponent} from '../../navigation/navigation.component';
 @Component({
   selector: 'app-video',
   templateUrl: './video.component.html',
-  styleUrls: ['./video.component.css']
+  styleUrls: ['./video.component.css'],
+  standalone: false
 })
 export class VideoComponent implements OnInit {
 

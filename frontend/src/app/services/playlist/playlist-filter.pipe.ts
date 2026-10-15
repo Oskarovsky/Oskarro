@@ -2,7 +2,8 @@ import { Pipe, PipeTransform } from '@angular/core';
 import {Playlist} from '../../playlists/playlist/model/playlist';
 
 @Pipe({
-  name: 'playlistFilter'
+  name: 'playlistFilter',
+  standalone: false
 })
 export class PlaylistFilterPipe implements PipeTransform {
 
