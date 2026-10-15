@@ -1,4 +1,5 @@
 import {Component, OnInit} from '@angular/core';
+import {RefreshAfterHttpDirective} from '../../services/ui-refresh';
 import {ActivatedRoute, Router} from "@angular/router";
 import {ProviderService} from "../../services/provider/provider.service";
 import {TrackService} from "../../services/track/track.service";
@@ -10,7 +11,8 @@ import {TokenStorageService} from '../../services/auth/token-storage.service';
   selector: 'app-provider-details',
   templateUrl: './provider-details.component.html',
   styleUrls: ['./provider-details.component.css'],
-  standalone: false
+  standalone: false,
+  hostDirectives: [RefreshAfterHttpDirective]
 })
 export class ProviderDetailsComponent implements OnInit {
 

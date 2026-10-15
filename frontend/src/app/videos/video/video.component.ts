@@ -1,4 +1,5 @@
 import {Component, OnInit, ViewChild} from '@angular/core';
+import {RefreshAfterHttpDirective} from '../../services/ui-refresh';
 import {VideoService} from '../../services/video/video.service';
 import {Video} from './model/video';
 import {Track} from '../../tracks/track/model/track';
@@ -11,7 +12,8 @@ import {NavigationComponent} from '../../navigation/navigation.component';
   selector: 'app-video',
   templateUrl: './video.component.html',
   styleUrls: ['./video.component.css'],
-  standalone: false
+  standalone: false,
+  hostDirectives: [RefreshAfterHttpDirective]
 })
 export class VideoComponent implements OnInit {
 

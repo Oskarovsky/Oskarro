@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import {RefreshAfterHttpDirective} from '../../services/ui-refresh';
 import {ProviderService} from "../../services/provider/provider.service";
 import { Provider } from '../provider/model/provider';
 import {FormControl, FormGroup, Validators} from "@angular/forms";
@@ -7,7 +8,8 @@ import {FormControl, FormGroup, Validators} from "@angular/forms";
   selector: 'app-add-provider',
   templateUrl: './add-provider.component.html',
   styleUrls: ['./add-provider.component.css'],
-  standalone: false
+  standalone: false,
+  hostDirectives: [RefreshAfterHttpDirective]
 })
 export class AddProviderComponent implements OnInit {
 

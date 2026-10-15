@@ -1,6 +1,6 @@
 import { BrowserModule } from '@angular/platform-browser';
-import { NgModule } from '@angular/core';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { NgModule, provideZoneChangeDetection } from '@angular/core';
+import { provideHttpClient, withInterceptors, withInterceptorsFromDi } from '@angular/common/http';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -29,7 +29,7 @@ import { ToplistEditComponent } from './playlists/toplist-edit/toplist-edit.comp
 import { MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatSortModule } from '@angular/material/sort';
-import { authInterceptorProviders } from './services/auth/auth.interceptor';
+import { authInterceptorProviders, zoneHttpInterceptor } from './services/auth/auth.interceptor';
 import { PlaylistComponent } from './playlists/playlist/playlist.component';
 import { PlaylistAddComponent } from './playlists/playlist-add/playlist-add.component';
 import { PlaylistEditComponent } from './playlists/playlist-edit/playlist-edit.component';
@@ -104,8 +104,9 @@ import { FooterComponent } from './footer/footer.component';
     MatExpansionModule,
   ],
   providers: [
+    provideZoneChangeDetection(),
     provideAnimations(),
-    provideHttpClient(withInterceptorsFromDi()),
+    provideHttpClient(withInterceptors([zoneHttpInterceptor]), withInterceptorsFromDi()),
     ...authInterceptorProviders
   ],
   bootstrap: [AppComponent]
