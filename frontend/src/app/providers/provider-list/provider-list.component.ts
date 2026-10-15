@@ -4,7 +4,8 @@ import {ProviderService} from "../../services/provider/provider.service";
 @Component({
   selector: 'app-provider-list',
   templateUrl: './provider-list.component.html',
-  styleUrls: ['./provider-list.component.css']
+  styleUrls: ['./provider-list.component.css'],
+  standalone: false
 })
 export class ProviderListComponent implements OnInit {
 

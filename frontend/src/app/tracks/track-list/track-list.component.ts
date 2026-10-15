@@ -7,7 +7,8 @@ import {ActivatedRoute} from "@angular/router";
 @Component({
   selector: 'app-track-list',
   templateUrl: './track-list.component.html',
-  styleUrls: ['./track-list.component.css']
+  styleUrls: ['./track-list.component.css'],
+  standalone: false
 })
 export class TrackListComponent implements OnInit {
 

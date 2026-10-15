@@ -4,7 +4,8 @@ import {ActivatedRoute} from "@angular/router";
 @Component({
   selector: 'app-toplist',
   templateUrl: './toplist.component.html',
-  styleUrls: ['./toplist.component.css']
+  styleUrls: ['./toplist.component.css'],
+  standalone: false
 })
 export class ToplistComponent implements OnInit {
 

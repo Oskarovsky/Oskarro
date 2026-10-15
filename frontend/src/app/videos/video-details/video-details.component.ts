@@ -10,7 +10,8 @@ import {ActivatedRoute} from '@angular/router';
 @Component({
   selector: 'app-video-details',
   templateUrl: './video-details.component.html',
-  styleUrls: ['./video-details.component.css']
+  styleUrls: ['./video-details.component.css'],
+  standalone: false
 })
 export class VideoDetailsComponent implements OnInit {
 

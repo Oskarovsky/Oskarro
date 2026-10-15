@@ -10,7 +10,8 @@ import {Observable} from "rxjs";
 @Component({
   selector: 'app-provider',
   templateUrl: './provider.component.html',
-  styleUrls: ['./provider.component.css']
+  styleUrls: ['./provider.component.css'],
+  standalone: false
 })
 export class ProviderComponent implements OnInit {
 

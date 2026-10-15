@@ -9,7 +9,8 @@ import { User } from '../../services/user/user';
 @Component({
   selector: 'app-playlist-add',
   templateUrl: './playlist-add.component.html',
-  styleUrls: ['./playlist-add.component.css']
+  styleUrls: ['./playlist-add.component.css'],
+  standalone: false
 })
 export class PlaylistAddComponent implements OnInit {
 

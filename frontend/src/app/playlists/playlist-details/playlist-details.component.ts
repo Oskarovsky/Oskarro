@@ -9,7 +9,8 @@ import {Track} from "../../tracks/track/model/track";
 @Component({
   selector: 'app-playlist-details',
   templateUrl: './playlist-details.component.html',
-  styleUrls: ['./playlist-details.component.css']
+  styleUrls: ['./playlist-details.component.css'],
+  standalone: false
 })
 export class PlaylistDetailsComponent implements OnInit {
 

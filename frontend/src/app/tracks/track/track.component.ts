@@ -15,7 +15,8 @@ const PROVIDER_API = API + '/providers';
 @Component({
   selector: 'app-track',
   templateUrl: './track.component.html',
-  styleUrls: ['./track.component.css']
+  styleUrls: ['./track.component.css'],
+  standalone: false
 })
 export class TrackComponent implements OnInit {
 
