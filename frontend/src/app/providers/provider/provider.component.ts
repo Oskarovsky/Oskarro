@@ -1,4 +1,5 @@
 import {Component, Input, OnInit} from '@angular/core';
+import {RefreshAfterHttpDirective} from '../../services/ui-refresh';
 import {ActivatedRoute, Router} from "@angular/router";
 import {ProviderService} from "../../services/provider/provider.service";
 import {TrackService} from "../../services/track/track.service";
@@ -10,7 +11,9 @@ import {Observable} from "rxjs";
 @Component({
   selector: 'app-provider',
   templateUrl: './provider.component.html',
-  styleUrls: ['./provider.component.css']
+  styleUrls: ['./provider.component.css'],
+  standalone: false,
+  hostDirectives: [RefreshAfterHttpDirective]
 })
 export class ProviderComponent implements OnInit {
 

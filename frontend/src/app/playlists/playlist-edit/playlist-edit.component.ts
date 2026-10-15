@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import {RefreshAfterHttpDirective} from '../../services/ui-refresh';
 import {Playlist} from '../playlist/model/playlist';
 import {Track} from '../../tracks/track/model/track';
 import {PlaylistService} from '../../services/playlist/playlist.service';
@@ -9,7 +10,9 @@ import {ActivatedRoute, Route} from '@angular/router';
 @Component({
   selector: 'app-playlist-edit',
   templateUrl: './playlist-edit.component.html',
-  styleUrls: ['./playlist-edit.component.css']
+  styleUrls: ['./playlist-edit.component.css'],
+  standalone: false,
+  hostDirectives: [RefreshAfterHttpDirective]
 })
 export class PlaylistEditComponent implements OnInit {
 

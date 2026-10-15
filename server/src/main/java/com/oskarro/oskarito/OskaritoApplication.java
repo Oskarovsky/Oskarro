@@ -9,5 +9,4 @@ public class OskaritoApplication {
     public static void main(String[] args) {
         SpringApplication.run(OskaritoApplication.class, args);
     }
-
 }

@@ -2,7 +2,8 @@ import { Pipe, PipeTransform } from '@angular/core';
 import { Video } from '../../videos/video/model/video';
 
 @Pipe({
-  name: 'videoFilter'
+  name: 'videoFilter',
+  standalone: false
 })
 export class VideoFilterPipe implements PipeTransform {
 
