@@ -1,7 +1,6 @@
 package com.oskarro.oskarito.storage;
 
 import com.oskarro.oskarito.user.UserRepository;
-import javassist.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -13,8 +12,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
-import javax.servlet.ServletContext;
-import javax.transaction.Transactional;
+import jakarta.servlet.ServletContext;
+import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -73,9 +72,9 @@ public class FilesController {
     @GetMapping(value = "/{username}/avatar")
     @ResponseBody
     @Transactional
-    public ResponseEntity<Resource> getImage(@PathVariable String username) throws NotFoundException {
+    public ResponseEntity<Resource> getImage(@PathVariable String username) {
         Image image = imageRepository.findByUserUsername(username)
-                .orElseThrow(() -> new NotFoundException("Image not found for user: " + username));
+                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(HttpStatus.NOT_FOUND, "Image not found for user: " + username));
         Resource file = filesStorageService.load(image.getName(), username);
         return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(file);
     }

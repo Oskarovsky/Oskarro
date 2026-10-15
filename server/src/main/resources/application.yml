@@ -1,12 +1,10 @@
 spring:
   jpa:
     hibernate:
-      ddl-auto: create-drop  # creates the schema, destroying any previous data
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
-    show-sql: true
-    generate-ddl: true
+      ddl-auto: update
+    open-in-view: true
+    show-sql: false
   datasource:
-    url: "jdbc:postgresql://localhost:5433/muzikum_db"
+    url: jdbc:postgresql://127.0.0.1:5432/muzikum_db
     username: admin
     password: Osasuna1
-

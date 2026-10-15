@@ -1,11 +1,14 @@
 import { Component, OnInit } from '@angular/core';
+import {RefreshAfterHttpDirective} from '../../services/ui-refresh';
 import { AuthService } from '../../services/auth/auth.service';
 import { TokenStorageService } from '../../services/auth/token-storage.service';
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
-  styleUrls: ['./login.component.css']
+  styleUrls: ['./login.component.css'],
+  standalone: false,
+  hostDirectives: [RefreshAfterHttpDirective]
 })
 export class LoginComponent implements OnInit {
 

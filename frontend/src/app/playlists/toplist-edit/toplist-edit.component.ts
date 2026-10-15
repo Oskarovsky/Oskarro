@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import {RefreshAfterHttpDirective} from '../../services/ui-refresh';
 import {ActivatedRoute} from "@angular/router";
 import { Track } from "../../tracks/track/model/track";
 import { FormGroup, FormControl } from '@angular/forms';
@@ -8,7 +9,9 @@ import {TrackService} from "../../services/track/track.service";
 @Component({
   selector: 'app-toplist-edit',
   templateUrl: './toplist-edit.component.html',
-  styleUrls: ['./toplist-edit.component.css']
+  styleUrls: ['./toplist-edit.component.css'],
+  standalone: false,
+  hostDirectives: [RefreshAfterHttpDirective]
 })
 export class ToplistEditComponent implements OnInit {
 

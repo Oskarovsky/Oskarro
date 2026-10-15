@@ -1,10 +1,6 @@
 {
   "/api": {
-    "target": "http://91.205.75.145:8443",
-    "secure": false,
-    "logLevel": "debug",
-    "pathRewrite": {
-      "^/api": ""
-    }
+    "target": "http://localhost:8081",
+    "secure": false
   }
 }

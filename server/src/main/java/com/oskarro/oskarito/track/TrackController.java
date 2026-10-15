@@ -3,7 +3,8 @@ package com.oskarro.oskarito.track;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-import javax.xml.bind.ValidationException;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,9 +35,9 @@ public class TrackController {
 
     @PostMapping(value = "/add")
     @CrossOrigin(origins = "*", allowedHeaders = "*")
-    void addTrack(@RequestBody Track track, BindingResult bindingResult) throws ValidationException {
+    void addTrack(@RequestBody Track track, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            throw new ValidationException("There are a problem with binding");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "There are a problem with binding");
         }
         trackService.saveTrack(track);
     }
@@ -49,9 +50,9 @@ public class TrackController {
 
     @PostMapping(value = "/addToRanking")
     @CrossOrigin(origins = "*", allowedHeaders = "*")
-    void addTrackToRanking (@RequestBody Track track, BindingResult bindingResult) throws ValidationException {
+    void addTrackToRanking (@RequestBody Track track, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            throw new ValidationException("Track has errors - it cannot by send");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Track has errors - it cannot by send");
         }
         Track trackAdded = Track.builder()
                 .artist(track.getArtist())

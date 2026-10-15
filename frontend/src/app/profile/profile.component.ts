@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import {RefreshAfterHttpDirective} from '../services/ui-refresh';
 import { TokenStorageService } from '../services/auth/token-storage.service';
 import { Observable } from 'rxjs';
 import {UploadFileService} from '../services/storage/upload-file.service';
@@ -7,7 +8,9 @@ import { HttpEventType, HttpResponse, HttpClient } from '@angular/common/http';
 @Component({
   selector: 'app-profile',
   templateUrl: './profile.component.html',
-  styleUrls: ['./profile.component.css']
+  styleUrls: ['./profile.component.css'],
+  standalone: false,
+  hostDirectives: [RefreshAfterHttpDirective]
 })
 export class ProfileComponent implements OnInit {
 
