@@ -1,93 +1,58 @@
 package com.oskarro.oskarito.security.jwt;
 
 import com.oskarro.oskarito.user.UserPrincipal;
-import io.jsonwebtoken.*;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
 import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Component;
 
+import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
-import java.util.function.Function;
-
-/**
- * This class service is used for generating the token,
- * extract the user info from token and validating the token and expiration as well
- */
-
 
 @Slf4j
 @Component
 public class JwtTokenProvider {
 
     @Value("${oskarro.app.jwtSecret}")
-    private String JWT_SECRET;
+    private String jwtSecret;
 
     @Value("${oskarro.app.jwtExpiration}")
-    private int JWT_EXPIRATION;
+    private int jwtExpiration;
 
-    /* BUILDING JWT TOKEN */
     public String generateJwtToken(Authentication authentication) {
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+        Date now = new Date();
         return Jwts.builder()
-                .setSubject(userPrincipal.getUsername())
-                .setIssuedAt(new Date())
-                .setExpiration(new Date((new Date()).getTime() + JWT_EXPIRATION * 1000))
-                .signWith(SignatureAlgorithm.HS512, JWT_SECRET)
+                .subject(userPrincipal.getUsername())
+                .issuedAt(now)
+                .expiration(new Date(now.getTime() + jwtExpiration * 1000L))
+                .signWith(signingKey(), Jwts.SIG.HS512)
                 .compact();
     }
 
-    /* JWT TOKEN VALIDATION */
     public boolean validateJwtToken(String authToken) {
         try {
-            Jwts.parser().setSigningKey(JWT_SECRET).parseClaimsJws(authToken);
+            Jwts.parser().verifyWith(signingKey()).build().parseSignedClaims(authToken);
             return true;
-        } catch (MalformedJwtException e) {
-            log.error("Invalid JWT token -> Message: {}", e);
-        } catch (ExpiredJwtException e) {
-            log.error("Expired JWT token -> Message: {}", e);
-        } catch (UnsupportedJwtException e) {
-            log.error("Unsupported JWT token -> Message: {}", e);
-        } catch (IllegalArgumentException e) {
-            log.error("JWT claims string is empty -> Message: {}", e);
+        } catch (JwtException | IllegalArgumentException e) {
+            log.error("Invalid JWT token: {}", e.getMessage());
+            return false;
         }
-        return false;
     }
 
     public String getUsernameFromJwtToken(String token) {
         return Jwts.parser()
-                .setSigningKey(JWT_SECRET)
-                .parseClaimsJws(token)
-                .getBody()
+                .verifyWith(signingKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
                 .getSubject();
     }
 
-    // retrieve username from jwt token
-    public String getUsernameFromToken(String token) {
-        return getClaimFromToken(token, Claims::getSubject);
+    private SecretKey signingKey() {
+        return io.jsonwebtoken.security.Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
     }
-
-    //retrieve expiration date from jwt token
-    public Date getExpirationDateFromToken(String token) {
-        return getClaimFromToken(token, Claims::getExpiration);
-    }
-
-    public <T> T getClaimFromToken(String token, Function<Claims, T> claimsResolver) {
-        final Claims claims = getAllClaimsFromToken(token);
-        return claimsResolver.apply(claims);
-    }
-
-    //for retrieving any information from token we will need the secret key
-    private Claims getAllClaimsFromToken(String token) {
-        return Jwts.parser().setSigningKey(JWT_SECRET).parseClaimsJws(token).getBody();
-    }
-
-    //check if the token has expired
-    private Boolean isTokenExpired(String token) {
-        final Date expiration = getExpirationDateFromToken(token);
-        return expiration.before(new Date());
-    }
-
-
 }

@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import {RefreshAfterHttpDirective} from '../../services/ui-refresh';
 import { TrackService} from "../../services/track/track.service";
 import {Subscription} from "rxjs";
 import {ProviderService} from "../../services/provider/provider.service";
@@ -7,7 +8,9 @@ import {ActivatedRoute} from "@angular/router";
 @Component({
   selector: 'app-track-list',
   templateUrl: './track-list.component.html',
-  styleUrls: ['./track-list.component.css']
+  styleUrls: ['./track-list.component.css'],
+  standalone: false,
+  hostDirectives: [RefreshAfterHttpDirective]
 })
 export class TrackListComponent implements OnInit {
 

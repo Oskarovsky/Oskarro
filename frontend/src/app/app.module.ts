@@ -1,15 +1,20 @@
 import { BrowserModule } from '@angular/platform-browser';
-import { NgModule } from '@angular/core';
-import { HttpClientModule } from '@angular/common/http';
-import { BrowserAnimationsModule, NoopAnimationsModule } from '@angular/platform-browser/animations';
-import {MatButtonModule, MatCardModule, MatExpansionModule, MatInputModule, MatListModule, MatToolbarModule} from '@angular/material';
+import { NgModule, provideZoneChangeDetection } from '@angular/core';
+import { provideHttpClient, withInterceptors, withInterceptorsFromDi } from '@angular/common/http';
+import { provideAnimations } from '@angular/platform-browser/animations';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { MatInputModule } from '@angular/material/input';
+import { MatListModule } from '@angular/material/list';
+import { MatToolbarModule } from '@angular/material/toolbar';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { TrackComponent } from './tracks/track/track.component';
 import { TrackListComponent } from './tracks/track-list/track-list.component';
 import { ProviderComponent } from './providers/provider/provider.component';
-import { MatGridListModule} from '@angular/material/grid-list';
+import { MatGridListModule } from '@angular/material/grid-list';
 import { ProviderListComponent } from './providers/provider-list/provider-list.component';
 import { ProviderDetailsComponent } from './providers/provider-details/provider-details.component';
 import { AddProviderComponent } from './providers/provider-add/add-provider.component';
@@ -17,7 +22,6 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NavigationComponent } from './navigation/navigation.component';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatIconModule } from '@angular/material/icon';
-import { AngularFontAwesomeModule } from 'angular-font-awesome';
 import { NotFoundComponent } from './not-found/not-found.component';
 import { ToplistComponent } from './playlists/toplist/toplist.component';
 import { MatSelectModule } from '@angular/material/select';
@@ -25,6 +29,7 @@ import { ToplistEditComponent } from './playlists/toplist-edit/toplist-edit.comp
 import { MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatSortModule } from '@angular/material/sort';
+import { authInterceptorProviders, zoneHttpInterceptor } from './services/auth/auth.interceptor';
 import { PlaylistComponent } from './playlists/playlist/playlist.component';
 import { PlaylistAddComponent } from './playlists/playlist-add/playlist-add.component';
 import { PlaylistEditComponent } from './playlists/playlist-edit/playlist-edit.component';
@@ -80,12 +85,8 @@ import { FooterComponent } from './footer/footer.component';
     FooterComponent
   ],
   imports: [
-    AppRoutingModule,
-    NoopAnimationsModule,
     BrowserModule,
     AppRoutingModule,
-    BrowserAnimationsModule,
-    HttpClientModule,
     MatButtonModule,
     MatCardModule,
     MatInputModule,
@@ -95,7 +96,6 @@ import { FooterComponent } from './footer/footer.component';
     FormsModule,
     MatMenuModule,
     MatIconModule,
-    AngularFontAwesomeModule,
     MatSelectModule,
     ReactiveFormsModule,
     MatTableModule,
@@ -103,13 +103,12 @@ import { FooterComponent } from './footer/footer.component';
     MatSortModule,
     MatExpansionModule,
   ],
-  exports: [
-    TrackComponent,
-    TrackListComponent,
-    ProviderComponent,
-    ProviderListComponent
+  providers: [
+    provideZoneChangeDetection(),
+    provideAnimations(),
+    provideHttpClient(withInterceptors([zoneHttpInterceptor]), withInterceptorsFromDi()),
+    ...authInterceptorProviders
   ],
-  providers: [],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

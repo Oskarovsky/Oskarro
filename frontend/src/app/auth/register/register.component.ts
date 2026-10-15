@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import {RefreshAfterHttpDirective} from '../../services/ui-refresh';
 import { AuthService } from '../../services/auth/auth.service';
 import {FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {MustMatch} from './MustMatch';
@@ -6,7 +7,9 @@ import {MustMatch} from './MustMatch';
 @Component({
   selector: 'app-register',
   templateUrl: './register.component.html',
-  styleUrls: ['./register.component.css']
+  styleUrls: ['./register.component.css'],
+  standalone: false,
+  hostDirectives: [RefreshAfterHttpDirective]
 })
 export class RegisterComponent implements OnInit {
 

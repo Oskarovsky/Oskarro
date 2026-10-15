@@ -1,12 +1,13 @@
 package com.oskarro.oskarito.user;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import org.hibernate.annotations.NaturalId;
 
-import javax.persistence.*;
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -38,7 +39,14 @@ public class User {
 
     @NotNull
     @Size(min=6, max = 100)
+    @Getter(AccessLevel.NONE)
+    @JsonIgnore
     private String password;
+
+    @JsonIgnore
+    public String getPassword() {
+        return password;
+    }
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "user_roles",

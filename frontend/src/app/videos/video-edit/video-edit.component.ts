@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import {RefreshAfterHttpDirective} from '../../services/ui-refresh';
 import {Track} from '../../tracks/track/model/track';
 import {Subscription} from 'rxjs';
 import { Video } from '../video/model/video';
@@ -11,7 +12,9 @@ import {DomSanitizer} from '@angular/platform-browser';
 @Component({
   selector: 'app-video-edit',
   templateUrl: './video-edit.component.html',
-  styleUrls: ['./video-edit.component.css']
+  styleUrls: ['./video-edit.component.css'],
+  standalone: false,
+  hostDirectives: [RefreshAfterHttpDirective]
 })
 export class VideoEditComponent implements OnInit {
 
