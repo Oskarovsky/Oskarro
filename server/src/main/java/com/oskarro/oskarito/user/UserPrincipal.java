@@ -1,6 +1,7 @@
 package com.oskarro.oskarito.user;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -25,19 +26,21 @@ public class UserPrincipal implements UserDetails {
     final private String username;
     final private String email;
 
+    @Getter(AccessLevel.NONE)
     @JsonIgnore
     final private String password;
+
+    @JsonIgnore
+    @Override
+    public String getPassword() {
+        return password;
+    }
 
     final private Collection<? extends GrantedAuthority> authorities;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return authorities;
-    }
-
-    @Override
-    public String getPassword() {
-        return password;
     }
 
     @Override
