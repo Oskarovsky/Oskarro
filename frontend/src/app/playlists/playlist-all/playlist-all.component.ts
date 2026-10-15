@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import {RefreshAfterHttpDirective} from '../../services/ui-refresh';
 import {Playlist} from '../playlist/model/playlist';
 import {PlaylistService} from '../../services/playlist/playlist.service';
 
@@ -6,7 +7,8 @@ import {PlaylistService} from '../../services/playlist/playlist.service';
   selector: 'app-playlist-all',
   templateUrl: './playlist-all.component.html',
   styleUrls: ['./playlist-all.component.css'],
-  standalone: false
+  standalone: false,
+  hostDirectives: [RefreshAfterHttpDirective]
 })
 export class PlaylistAllComponent implements OnInit {
 

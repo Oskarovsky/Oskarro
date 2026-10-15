@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import {RefreshAfterHttpDirective} from '../../services/ui-refresh';
 import { UserService } from '../../services/user/user.service';
 
 
@@ -6,7 +7,8 @@ import { UserService } from '../../services/user/user.service';
   selector: 'app-board-user',
   templateUrl: './board-user.component.html',
   styleUrls: ['./board-user.component.css'],
-  standalone: false
+  standalone: false,
+  hostDirectives: [RefreshAfterHttpDirective]
 })
 export class BoardUserComponent implements OnInit {
 

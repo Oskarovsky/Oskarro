@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import {RefreshAfterHttpDirective} from '../../services/ui-refresh';
 import {PlaylistService} from '../../services/playlist/playlist.service';
 import {Playlist} from '../playlist/model/playlist';
 import {Track} from '../../tracks/track/model/track';
@@ -10,7 +11,8 @@ import { User } from '../../services/user/user';
   selector: 'app-playlist-add',
   templateUrl: './playlist-add.component.html',
   styleUrls: ['./playlist-add.component.css'],
-  standalone: false
+  standalone: false,
+  hostDirectives: [RefreshAfterHttpDirective]
 })
 export class PlaylistAddComponent implements OnInit {
 

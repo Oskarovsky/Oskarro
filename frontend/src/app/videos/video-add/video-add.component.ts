@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import {RefreshAfterHttpDirective} from '../../services/ui-refresh';
 import { Video } from '../video/model/video';
 import { Track } from '../../tracks/track/model/track';
 import {VideoService} from '../../services/video/video.service';
@@ -8,7 +9,8 @@ import {Playlist} from '../../playlists/playlist/model/playlist';
   selector: 'app-video-add',
   templateUrl: './video-add.component.html',
   styleUrls: ['./video-add.component.css'],
-  standalone: false
+  standalone: false,
+  hostDirectives: [RefreshAfterHttpDirective]
 })
 export class VideoAddComponent implements OnInit {
 

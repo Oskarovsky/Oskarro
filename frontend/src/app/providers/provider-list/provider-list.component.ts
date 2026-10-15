@@ -1,11 +1,13 @@
 import { Component, OnInit } from '@angular/core';
+import {RefreshAfterHttpDirective} from '../../services/ui-refresh';
 import {ProviderService} from "../../services/provider/provider.service";
 
 @Component({
   selector: 'app-provider-list',
   templateUrl: './provider-list.component.html',
   styleUrls: ['./provider-list.component.css'],
-  standalone: false
+  standalone: false,
+  hostDirectives: [RefreshAfterHttpDirective]
 })
 export class ProviderListComponent implements OnInit {
 
