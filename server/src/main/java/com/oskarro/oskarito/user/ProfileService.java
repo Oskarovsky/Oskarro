@@ -5,7 +5,9 @@ import com.oskarro.oskarito.track.Track;
 import com.oskarro.oskarito.track.TrackCommentRepository;
 import com.oskarro.oskarito.track.TrackLikeRepository;
 import com.oskarro.oskarito.track.TrackRepository;
+import com.oskarro.oskarito.track.TrackViewRepository;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -30,23 +32,42 @@ import java.util.regex.Pattern;
 public class ProfileService {
 
     private static final Pattern RANK_TITLE = Pattern.compile("^[\\p{L}0-9][\\p{L}0-9 '\\-]{1,31}$");
+    private static final String[] RANK_NAMES = {
+            "Słuchacz", "Bywalec", "Rezydent", "Selekcjoner", "Didżej", "Gwiazda", "Legenda"
+    };
+    private static final int[] RANK_SCORES = {0, 500, 1500, 3500, 7000, 12000, 20000};
+    private static final String[] RANK_HOW = {
+            "Start. Wystarczy konto.",
+            "500 punktów. Na przykład 100 dodanych utworów albo 250 komentarzy.",
+            "1500 punktów. Na przykład 300 utworów albo 200 utworów i 250 komentarzy.",
+            "3500 punktów. Na przykład 700 utworów, albo mniej, gdy dochodzą komentarze i polubienia.",
+            "7000 punktów. Na przykład 1000 utworów i długa seria komentarzy.",
+            "12000 punktów. Parkiet już Cię zna.",
+            "20000 punktów. Najwyższa ranga, zbierana utworami, komentarzami i polubieniami."
+    };
 
     private final UserRepository userRepository;
     private final TrackRepository trackRepository;
     private final TrackLikeRepository likeRepository;
     private final TrackCommentRepository commentRepository;
+    private final TrackViewRepository viewRepository;
     private final CoverStorage coverStorage;
+    private final PasswordEncoder passwordEncoder;
 
     public ProfileService(UserRepository userRepository,
                           TrackRepository trackRepository,
                           TrackLikeRepository likeRepository,
                           TrackCommentRepository commentRepository,
-                          CoverStorage coverStorage) {
+                          TrackViewRepository viewRepository,
+                          CoverStorage coverStorage,
+                          PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.trackRepository = trackRepository;
         this.likeRepository = likeRepository;
         this.commentRepository = commentRepository;
+        this.viewRepository = viewRepository;
         this.coverStorage = coverStorage;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Transactional(readOnly = true)
@@ -59,31 +80,22 @@ public class ProfileService {
         Map<Integer, Integer> tracks = counts(trackRepository.countGroupedByAuthor());
         Map<Integer, Integer> month = counts(trackRepository.countGroupedByAuthorSince(monthStart()));
         Map<Integer, Integer> commentsWritten = counts(commentRepository.countGroupedByAuthor());
-        Map<Integer, Integer> commentsOnTracks = counts(commentRepository.countGroupedByTrackAuthor());
         Map<Integer, Integer> likes = counts(likeRepository.likesGroupedByAuthor());
-        Map<Integer, Integer> dislikes = counts(likeRepository.dislikesGroupedByAuthor());
         List<Standing> standings = new ArrayList<>();
         for (User user : userRepository.findAll()) {
             int id = user.getId();
             int trackCount = tracks.getOrDefault(id, 0);
             int monthCount = month.getOrDefault(id, 0);
             int written = commentsWritten.getOrDefault(id, 0);
-            int onTracks = commentsOnTracks.getOrDefault(id, 0);
-            int score = score(trackCount, likes.getOrDefault(id, 0), dislikes.getOrDefault(id, 0), onTracks, written);
+            int score = score(trackCount, likes.getOrDefault(id, 0), written);
             if (trackCount == 0 && score == 0) {
                 continue;
             }
             standings.add(new Standing(user.getUsername(), activityRank(score), trackCount, monthCount, score));
         }
         return new RankingView(
-                "Utwór, który dodasz, daje 8 pkt. Komentarz, który napiszesz, daje 1 pkt. Komentarz pod Twoim utworem daje 2 pkt. Każda przewaga polubień nad minusami daje 3 pkt.",
-                List.of(
-                        new RankingView.RankStep("Słuchacz", 0, "Start. Wystarczy konto."),
-                        new RankingView.RankStep("Bywalec", 15, "15 punktów. Wystarczą 2 dodane utwory albo 15 komentarzy."),
-                        new RankingView.RankStep("Rezydent", 40, "40 punktów. Na przykład 5 utworów."),
-                        new RankingView.RankStep("Selekcjoner", 90, "90 punktów. Na przykład 12 utworów albo mniej, gdy zbierają głosy i komentarze."),
-                        new RankingView.RankStep("Gospodarz", 180, "180 punktów. Na przykład 23 utwory albo mieszanka utworów, głosów i komentarzy.")
-                ),
+                "Dodany utwór daje 5 pkt. Napisany komentarz daje 2 pkt. Polubienie zebrane przy Twoim utworze daje 1 pkt.",
+                rankSteps(),
                 board(standings, Comparator.comparingInt(Standing::tracks).reversed().thenComparing(Standing::score, Comparator.reverseOrder()).thenComparing(Standing::username), true, false),
                 board(standings, Comparator.comparingInt(Standing::score).reversed().thenComparing(Standing::tracks, Comparator.reverseOrder()).thenComparing(Standing::username), false, false),
                 board(standings, Comparator.comparingInt(Standing::monthTracks).reversed().thenComparing(Standing::score, Comparator.reverseOrder()).thenComparing(Standing::username), false, true),
@@ -99,15 +111,105 @@ public class ProfileService {
         return viewOf(user, self);
     }
 
-    public ProfileView updateBio(String bio) {
+    public ProfileView update(Map<String, Object> body) {
         User user = currentUser();
-        String text = bio == null ? "" : bio.trim();
-        if (text.length() > 280) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Opis może mieć najwyżej 280 znaków");
+        if (body.containsKey("bio")) {
+            Object raw = body.get("bio");
+            String text = raw == null ? "" : String.valueOf(raw).trim();
+            if (text.length() > 280) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Opis może mieć najwyżej 280 znaków");
+            }
+            user.setBio(text.isEmpty() ? null : text);
         }
-        user.setBio(text.isEmpty() ? null : text);
+        if (body.containsKey("autoplayNext")) {
+            user.setAutoplayNext(asBoolean(body.get("autoplayNext")));
+        }
+        if (body.containsKey("firstName")) {
+            user.setFirstName(limited(body.get("firstName"), 40));
+        }
+        if (body.containsKey("lastName")) {
+            user.setLastName(limited(body.get("lastName"), 40));
+        }
+        if (body.containsKey("website")) {
+            user.setWebsite(website(body.get("website")));
+        }
+        if (body.containsKey("favoriteGenres")) {
+            user.setFavoriteGenres(genres(body.get("favoriteGenres")));
+        }
         userRepository.save(user);
         return viewOf(user, true);
+    }
+
+    public void changePassword(String current, String next) {
+        User user = currentUser();
+        String now = current == null ? "" : current;
+        String fresh = next == null ? "" : next;
+        if (fresh.length() < 6 || fresh.length() > 40) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Hasło musi mieć od 6 do 40 znaków");
+        }
+        if (!passwordEncoder.matches(now, user.getPassword())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Obecne hasło się nie zgadza");
+        }
+        user.setPassword(passwordEncoder.encode(fresh));
+        userRepository.save(user);
+    }
+
+    private static String limited(Object raw, int max) {
+        String text = raw == null ? "" : String.valueOf(raw).trim();
+        if (text.length() > max) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Za długie pole");
+        }
+        return text.isEmpty() ? null : text;
+    }
+
+    private static String website(Object raw) {
+        String text = raw == null ? "" : String.valueOf(raw).trim();
+        if (text.isEmpty()) {
+            return null;
+        }
+        if (text.length() > 120 || !(text.startsWith("https://") || text.startsWith("http://"))) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Strona musi zaczynać się od https://");
+        }
+        return text;
+    }
+
+    private static final java.util.Set<String> PUBLIC_GENRES = java.util.Set.of(
+            "CLUB", "DANCE", "RETRO", "HOUSE", "VIXA", "BASS_HOUSE", "TECHNO", "BIG_ROOM", "TRANCE", "ELECTRO", "DISCO_POLO");
+
+    private static String genres(Object raw) {
+        String text = raw == null ? "" : String.valueOf(raw).trim();
+        if (text.isEmpty()) {
+            return null;
+        }
+        java.util.LinkedHashSet<String> picked = new java.util.LinkedHashSet<>();
+        for (String part : text.split(",")) {
+            String id = part.trim().toUpperCase(java.util.Locale.ROOT);
+            if (!id.isEmpty()) {
+                if (!PUBLIC_GENRES.contains(id)) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nieznany gatunek");
+                }
+                picked.add(id);
+            }
+        }
+        String joined = String.join(",", picked);
+        if (joined.length() > 160) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Za dużo gatunków");
+        }
+        return joined.isEmpty() ? null : joined;
+    }
+
+    private static boolean asBoolean(Object value) {
+        if (value instanceof Boolean flag) {
+            return flag;
+        }
+        if (value instanceof String text) {
+            String normalized = text.trim();
+            return "true".equalsIgnoreCase(normalized) || "1".equals(normalized);
+        }
+        if (value instanceof Number number) {
+            return number.intValue() != 0;
+        }
+        return false;
     }
 
     public ProfileView grantRank(String username, String title) {
@@ -149,15 +251,26 @@ public class ProfileService {
         int dislikes = (int) likeRepository.countDislikesReceived(user.getId());
         int commentsOnTracks = (int) commentRepository.countByTrack_Author_Id(user.getId());
         int commentsWritten = (int) commentRepository.countByAuthorId(user.getId());
-        int score = score(tracks, likes, dislikes, commentsOnTracks, commentsWritten);
+        int score = score(tracks, likes, commentsWritten);
         String activity = activityRank(score);
         String override = user.getRankOverride();
         boolean granted = override != null && !override.isBlank();
         int activityCount = commentsWritten + (int) likeRepository.countByUserId(user.getId());
         List<Track> owned = trackRepository.findByAuthor_IdOrderByIdDesc(user.getId());
-        Map<Integer, int[]> votes = voteTotals(owned.stream().map(Track::getId).toList());
-        List<ProfileTrack> shared = owned.stream()
-                .limit(30)
+        List<Track> shown = owned.stream().limit(30).toList();
+        List<Integer> shownIds = shown.stream().map(Track::getId).toList();
+        Map<Integer, int[]> votes = voteTotals(shownIds);
+        Map<Integer, Integer> views = new HashMap<>();
+        Map<Integer, Integer> comments = new HashMap<>();
+        if (!shownIds.isEmpty()) {
+            for (Object[] row : viewRepository.countsAll(shownIds)) {
+                views.put(((Number) row[0]).intValue(), ((Number) row[1]).intValue());
+            }
+            for (Object[] row : commentRepository.countsForTracks(shownIds)) {
+                comments.put(((Number) row[0]).intValue(), ((Number) row[1]).intValue());
+            }
+        }
+        List<ProfileTrack> shared = shown.stream()
                 .map(track -> {
                     int[] pair = votes.getOrDefault(track.getId(), new int[2]);
                     return new ProfileTrack(
@@ -167,13 +280,20 @@ public class ProfileService {
                             track.getVersion(),
                             track.getGenre(),
                             pair[0] - pair[1],
-                            coverStorage.exists(track.getId()));
+                            coverStorage.exists(track.getId()),
+                            views.getOrDefault(track.getId(), 0),
+                            comments.getOrDefault(track.getId(), 0),
+                            track.getCreatedAt() == null ? null : track.getCreatedAt().toString());
                 })
                 .toList();
         return new ProfileView(
                 user.getUsername(),
                 includeEmail ? user.getEmail() : null,
                 user.getBio(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getWebsite(),
+                user.getFavoriteGenres(),
                 granted ? override.trim() : activity,
                 activity,
                 granted,
@@ -186,6 +306,7 @@ public class ProfileService {
                 activityCount,
                 activityCount * 10,
                 isAdmin(),
+                !Boolean.FALSE.equals(user.getAutoplayNext()),
                 shared);
     }
 
@@ -210,15 +331,12 @@ public class ProfileService {
     private int scoreOf(Integer userId) {
         int tracks = (int) trackRepository.countByAuthor_Id(userId);
         int likes = (int) likeRepository.countLikesReceived(userId);
-        int dislikes = (int) likeRepository.countDislikesReceived(userId);
-        int commentsOnTracks = (int) commentRepository.countByTrack_Author_Id(userId);
         int commentsWritten = (int) commentRepository.countByAuthorId(userId);
-        return score(tracks, likes, dislikes, commentsOnTracks, commentsWritten);
+        return score(tracks, likes, commentsWritten);
     }
 
-    static int score(int tracks, int likes, int dislikes, int commentsOnTracks, int commentsWritten) {
-        int popularity = Math.max(0, likes - dislikes);
-        return tracks * 8 + popularity * 3 + commentsOnTracks * 2 + commentsWritten;
+    static int score(int tracks, int likes, int commentsWritten) {
+        return tracks * 5 + commentsWritten * 2 + Math.max(0, likes);
     }
 
     private static Map<Integer, Integer> counts(List<Object[]> rows) {
@@ -258,34 +376,34 @@ public class ProfileService {
         }
         String username = viewer.get().getUsername();
         Standing mine = standings.stream().filter(row -> row.username.equals(username)).findFirst()
-                .orElse(new Standing(username, "Słuchacz", 0, 0, 0));
-        int[] steps = {15, 40, 90, 180};
-        String[] names = {"Bywalec", "Rezydent", "Selekcjoner", "Gospodarz"};
-        for (int i = 0; i < steps.length; i++) {
-            if (mine.score < steps[i]) {
-                return new RankingView.Progress(username, mine.score, mine.rank, names[i], steps[i] - mine.score);
+                .orElse(new Standing(username, RANK_NAMES[0], 0, 0, 0));
+        for (int i = 1; i < RANK_SCORES.length; i++) {
+            if (mine.score < RANK_SCORES[i]) {
+                return new RankingView.Progress(username, mine.score, mine.rank, RANK_NAMES[i], RANK_SCORES[i] - mine.score);
             }
         }
         return new RankingView.Progress(username, mine.score, mine.rank, null, null);
+    }
+
+    private static List<RankingView.RankStep> rankSteps() {
+        List<RankingView.RankStep> steps = new ArrayList<>();
+        for (int i = 0; i < RANK_NAMES.length; i++) {
+            steps.add(new RankingView.RankStep(RANK_NAMES[i], RANK_SCORES[i], RANK_HOW[i]));
+        }
+        return steps;
     }
 
     private record Standing(String username, String rank, int tracks, int monthTracks, int score) {
     }
 
     static String activityRank(int score) {
-        if (score >= 180) {
-            return "Gospodarz";
+        String rank = RANK_NAMES[0];
+        for (int i = 0; i < RANK_NAMES.length; i++) {
+            if (score >= RANK_SCORES[i]) {
+                rank = RANK_NAMES[i];
+            }
         }
-        if (score >= 90) {
-            return "Selekcjoner";
-        }
-        if (score >= 40) {
-            return "Rezydent";
-        }
-        if (score >= 15) {
-            return "Bywalec";
-        }
-        return "Słuchacz";
+        return rank;
     }
 
     private User currentUser() {

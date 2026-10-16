@@ -43,6 +43,9 @@ public class User {
     @JsonIgnore
     private String password;
 
+    /** Null keeps accounts created before activation able to sign in. */
+    private Boolean activated;
+
     @JsonIgnore
     public String getPassword() {
         return password;
@@ -51,8 +54,22 @@ public class User {
     @Column(length = 280)
     private String bio;
 
+    @Column(length = 40)
+    private String firstName;
+
+    @Column(length = 40)
+    private String lastName;
+
+    @Column(length = 120)
+    private String website;
+
+    @Column(length = 160)
+    private String favoriteGenres;
+
     @Column(length = 32)
     private String rankOverride;
+
+    private Boolean autoplayNext;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "user_roles",

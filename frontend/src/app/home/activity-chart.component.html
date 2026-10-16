@@ -1,0 +1,25 @@
+<section class="pulse" *ngIf="days.length" [attr.aria-label]="'Utwory dodane przez społeczność' | t:'Tracks added by the community'">
+  <div class="head">
+    <div>
+      <p class="kicker">{{ 'Aktywność' | t:'Activity' }}</p>
+      <h2>{{ 'Nowe utwory społeczności' | t:'New community tracks' }}</h2>
+      <p class="sub">{{ 'Ostatnie 14 dni, czas warszawski' | t:'Last 14 days, Warsaw time' }}</p>
+    </div>
+    <div class="today-block" *ngIf="today">
+      <strong>{{ today.count }}</strong>
+      <span>{{ 'dziś' | t:'today' }}</span>
+      <span class="yest" *ngIf="yesterday">{{ 'wczoraj' | t:'yesterday' }} {{ yesterday.count }}</span>
+    </div>
+  </div>
+  <div class="scroll" #scroller>
+    <div class="chart" role="list">
+      <div class="col" role="listitem" *ngFor="let day of days" [class.today]="day.today" [class.yesterday]="day.yesterday" [attr.aria-label]="day.aria">
+        <span class="count">{{ day.count }}</span>
+        <span class="well" aria-hidden="true">
+          <span class="bar" [class.zero]="!day.count" [style.height.px]="day.barPx"></span>
+        </span>
+        <span class="label">{{ day.label }}</span>
+      </div>
+    </div>
+  </div>
+</section>

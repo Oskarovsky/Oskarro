@@ -22,8 +22,8 @@ export class VideoService {
   constructor(private http: HttpClient,
               private sanitizer: DomSanitizer) { }
 
-  channel(): Observable<Array<{id: string, title: string, duration: string, published: string}>> {
-    return this.http.get<Array<{id: string, title: string, duration: string, published: string}>>(VIDEO_API + '/channel');
+  channel(): Observable<Array<{id: string, title: string, duration: string, published: string, views: string}>> {
+    return this.http.get<Array<{id: string, title: string, duration: string, published: string, views: string}>>(VIDEO_API + '/channel');
   }
 
   /** GET all video */

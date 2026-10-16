@@ -6,6 +6,9 @@ import { HttpEventType, HttpResponse, HttpClient } from '@angular/common/http';
 import {ActivatedRoute} from '@angular/router';
 import {environment} from '../../environments/environment';
 import {TrackService} from '../services/track/track.service';
+import {PlaybackService} from '../tracks/playback.service';
+import {LangService} from '../lang.service';
+import {GENRES, genreLabel} from '../tracks/genres';
 
 @Component({
   selector: 'app-profile',
@@ -19,6 +22,14 @@ export class ProfileComponent implements OnInit {
   profile: any;
   self = false;
   bio = '';
+  firstName = '';
+  lastName = '';
+  website = '';
+  favorite = new Set<string>();
+  genres = GENRES;
+  currentPassword = '';
+  nextPassword = '';
+  confirmPassword = '';
   grantTitle = '';
   grantUser = '';
   message = '';
@@ -26,12 +37,17 @@ export class ProfileComponent implements OnInit {
   selectedFile: File = null;
   missing = false;
   loading = false;
+  autoplayNext = true;
+  trackPage = 1;
+  readonly pageSize = 10;
 
   constructor(private token: TokenStorageService,
               private uploadService: UploadFileService,
               private http: HttpClient,
               private route: ActivatedRoute,
-              private trackService: TrackService) { }
+              private trackService: TrackService,
+              private playback: PlaybackService,
+              readonly lang: LangService) { }
 
   ngOnInit() {
     this.route.params.subscribe(params => this.load(params.username));
@@ -41,13 +57,100 @@ export class ProfileComponent implements OnInit {
     return this.trackService.coverUrl(track.id);
   }
 
+  get trackPages() {
+    const total = this.profile?.shared?.length || 0;
+    return Math.max(1, Math.ceil(total / this.pageSize));
+  }
+
+  get shownTracks() {
+    const all = this.profile?.shared || [];
+    const page = Math.min(this.trackPage, this.trackPages);
+    const start = (page - 1) * this.pageSize;
+    return all.slice(start, start + this.pageSize);
+  }
+
+  showTracks(page: number) {
+    this.trackPage = page;
+  }
+
+  saveAutoplay(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const on = input.checked;
+    this.autoplayNext = on;
+    this.playback.setAutoplayNext(on);
+    this.http.put<any>(environment.serverUrl + '/profile/me', {autoplayNext: on}).subscribe({
+      next: profile => {
+        this.profile = profile;
+        this.autoplayNext = profile.autoplayNext !== false;
+        this.playback.setAutoplayNext(this.autoplayNext);
+        this.message = 'Ustawienie zapisane.';
+      },
+      error: () => {
+        this.autoplayNext = !on;
+        this.playback.setAutoplayNext(this.autoplayNext);
+        input.checked = this.autoplayNext;
+        this.message = 'Nie udało się zapisać ustawienia.';
+      }
+    });
+  }
+
+  genreName(id: string) {
+    return genreLabel(id);
+  }
+
+  likedGenres() {
+    return (this.profile?.favoriteGenres || '').split(',').map((item: string) => item.trim()).filter(Boolean);
+  }
+
+  likedNames() {
+    return this.likedGenres().map((id: string) => genreLabel(id)).join(', ');
+  }
+
+  toggleGenre(id: string) {
+    if (this.favorite.has(id)) {
+      this.favorite.delete(id);
+    } else {
+      this.favorite.add(id);
+    }
+  }
+
   saveBio() {
-    this.http.put<any>(environment.serverUrl + '/profile/me', {bio: this.bio}).subscribe({
+    const website = this.website.trim();
+    if (website && !/^https?:\/\//i.test(website)) {
+      this.message = 'Strona musi zaczynać się od https://';
+      return;
+    }
+    this.http.put<any>(environment.serverUrl + '/profile/me', {
+      bio: this.bio,
+      firstName: this.firstName.trim(),
+      lastName: this.lastName.trim(),
+      website,
+      favoriteGenres: [...this.favorite].join(',')
+    }).subscribe({
       next: profile => {
         this.profile = profile;
         this.message = 'Zapisane.';
       },
       error: () => this.message = 'Nie udało się zapisać opisu.'
+    });
+  }
+
+  savePassword() {
+    if (this.nextPassword.length < 6 || this.nextPassword !== this.confirmPassword) {
+      this.message = 'Hasło musi mieć od 6 znaków i być powtórzone tak samo.';
+      return;
+    }
+    this.http.post(environment.serverUrl + '/profile/password', {
+      current: this.currentPassword,
+      next: this.nextPassword
+    }).subscribe({
+      next: () => {
+        this.currentPassword = '';
+        this.nextPassword = '';
+        this.confirmPassword = '';
+        this.message = 'Hasło zmienione.';
+      },
+      error: () => this.message = 'Nie udało się zmienić hasła.'
     });
   }
 
@@ -92,6 +195,7 @@ export class ProfileComponent implements OnInit {
 
   private load(username: string) {
     this.profile = null;
+    this.trackPage = 1;
     this.missing = false;
     this.loading = true;
     this.imageToShow = null;
@@ -110,8 +214,16 @@ export class ProfileComponent implements OnInit {
         this.loading = false;
         this.profile = profile;
         this.bio = profile.bio || '';
+        this.firstName = profile.firstName || '';
+        this.lastName = profile.lastName || '';
+        this.website = profile.website || '';
+        this.favorite = new Set((profile.favoriteGenres || '').split(',').map((item: string) => item.trim()).filter(Boolean));
         this.grantTitle = profile.granted ? profile.rank : '';
         this.self = !!logged && logged.username === profile.username;
+        if (this.self) {
+          this.autoplayNext = profile.autoplayNext !== false;
+          this.playback.setAutoplayNext(this.autoplayNext);
+        }
         this.getImageFromService();
       },
       error: () => {

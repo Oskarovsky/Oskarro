@@ -35,6 +35,20 @@ export function scoreTag(score: number): string {
   return '';
 }
 
+const RANK_MARK: Record<string, string> = {
+  'Słuchacz': '🎧',
+  'Bywalec': '🔥',
+  'Rezydent': '💿',
+  'Selekcjoner': '🎚️',
+  'Didżej': '🎛️',
+  'Gwiazda': '🌟',
+  'Legenda': '👑'
+};
+
+export function rankMark(rank: string): string {
+  return RANK_MARK[(rank || '').trim()] || '🎧';
+}
+
 export function scoreText(score: number): string {
   const value = Number(score) || 0;
   return (value > 0 ? '+' : '') + value;

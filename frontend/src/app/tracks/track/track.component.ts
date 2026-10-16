@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import {RefreshAfterHttpDirective} from '../../services/ui-refresh';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
@@ -7,6 +7,11 @@ import {TrackService} from "../../services/track/track.service";
 import {Track} from "./model/track";
 import {TokenStorageService} from "../../services/auth/token-storage.service";
 import {audioRef} from "../../services/audio-hosts";
+import {genreLabel, genreSlug} from "../genres";
+import {SeoService} from "../../seo.service";
+import {PlaybackService, PlayableTrack} from "../playback.service";
+import {PlaylistService} from "../../services/playlist/playlist.service";
+import {LangService} from "../../lang.service";
 
 @Component({
   selector: 'app-track',
@@ -15,7 +20,7 @@ import {audioRef} from "../../services/audio-hosts";
   standalone: false,
   hostDirectives: [RefreshAfterHttpDirective]
 })
-export class TrackComponent implements OnInit {
+export class TrackComponent implements OnInit, OnDestroy {
 
   track: any = {};
   tracks: Track[] = [];
@@ -29,17 +34,35 @@ export class TrackComponent implements OnInit {
   genrePath = 'club';
   genreLabel = 'Club';
   coverStamp = '';
+  similar: PlayableTrack[] = [];
+  playlists: Array<{id: number, name: string}> = [];
+  saveOpen = false;
+  saved = '';
+  shared = false;
+  shareUrl = '';
+  lista = '';
+  besideRadio = false;
+  file: {bytes: number, bitrate: number, sampleRate: number, channels: number, bitDepth: number, bpm: number, format: string} | null = null;
+  fileState: 'idle' | 'loading' | 'done' = 'idle';
 
   sub: Subscription;
+  private playbackSub: Subscription;
 
   constructor(private trackService: TrackService,
               private route: ActivatedRoute,
-              private tokenStorage: TokenStorageService) { }
+              private tokenStorage: TokenStorageService,
+              private seo: SeoService,
+              readonly playback: PlaybackService,
+              private playlistService: PlaylistService,
+              private view: ChangeDetectorRef,
+              readonly lang: LangService) { }
 
   ngOnInit() {
+    this.playbackSub = this.playback.changes.subscribe(() => this.view.detectChanges());
     this.isLoggedIn = !!this.tokenStorage.getToken();
     this.sub = this.route.params.subscribe(params => {
       const id = params.id;
+      this.lista = this.route.snapshot.queryParamMap.get('lista') || '';
       if (id) {
         this.loadTrack(id);
         this.trackService.getComments(id).subscribe(comments => this.comments = comments || []);
@@ -48,25 +71,203 @@ export class TrackComponent implements OnInit {
     });
   }
 
+  ngOnDestroy() {
+    this.playbackSub?.unsubscribe();
+    this.sub?.unsubscribe();
+  }
+
+  get ownsPlayback() {
+    return !!this.track?.id && this.playback.track?.id === this.track.id;
+  }
+
+  get radioPinned() {
+    return this.playback.pinned && this.playback.fromRadio;
+  }
+
+  get showDeck() {
+    return this.ownsPlayback && !this.radioPinned;
+  }
+
+  playHere() {
+    if (!this.track?.id) {
+      return;
+    }
+    this.besideRadio = false;
+    this.startPlayback(this.track);
+  }
+
   loadTrack(id: string) {
     this.trackService.getTrackById(id).subscribe((track: any) => {
+      const changed = this.track?.id !== track.id;
       this.track = track;
-      this.genrePath = (track.genre || 'club').toLowerCase();
-      const names: Record<string, string> = {club: 'Club', dance: 'Dance', house: 'House', retro: 'Retro'};
-      this.genreLabel = names[this.genrePath] || track.genre || 'Utwory';
+      this.genrePath = genreSlug(track.genre);
+      this.genreLabel = genreLabel(track.genre);
+      this.seo.track(track);
+      if (changed) {
+        this.saved = '';
+        this.shared = false;
+        this.shareUrl = '';
+        this.saveOpen = false;
+        this.loadFile(track);
+        this.startPlayback(track);
+      }
     });
+  }
+
+  toggleSave() {
+    this.saveOpen = !this.saveOpen;
+    if (!this.saveOpen || this.playlists.length) {
+      return;
+    }
+    const username = this.tokenStorage.getUser()?.username;
+    if (!username) {
+      return;
+    }
+    this.playlistService.getAllPlaylistsByUsername(username).subscribe(lists => {
+      this.playlists = lists || [];
+    });
+  }
+
+  pin(list: {id: number, name: string}) {
+    this.playlistService.pin(list.id, this.track.id).subscribe({
+      next: saved => {
+        this.saved = saved?.name || list.name;
+        this.saveOpen = false;
+      }
+    });
+  }
+
+  async share() {
+    const url = 'https://oskarro.com/track/' + this.track.id;
+    const data = {title: this.track.title, text: this.track.artist, url};
+    if (navigator.share) {
+      try {
+        await navigator.share(data);
+        this.shared = true;
+        this.shareUrl = '';
+        return;
+      } catch (error: any) {
+        if (error?.name === 'AbortError') {
+          return;
+        }
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      this.shared = true;
+      this.shareUrl = '';
+    } catch {
+      this.shareUrl = url;
+    }
+  }
+
+  private startPlayback(track: PlayableTrack) {
+    const radioWasPinned = this.playback.pinned && this.playback.fromRadio;
+    this.trackService.getAllTracks().subscribe(all => {
+      if (this.track?.id !== track.id) {
+        return;
+      }
+      const community = ((all || []) as PlayableTrack[]).filter(item => item?.id && item.url && item.genre);
+      this.similar = this.pickSimilar(track, community);
+      if (radioWasPinned || (this.playback.pinned && this.playback.fromRadio)) {
+        this.besideRadio = true;
+        return;
+      }
+      this.besideRadio = false;
+      const genreQueue = community
+        .filter(item => item.genre === track.genre)
+        .sort((a, b) => (b.score || 0) - (a.score || 0) || (b.id || 0) - (a.id || 0));
+      if (!this.lista) {
+        if (this.playback.allows(track.id)) {
+          this.playback.open(track, genreQueue);
+        }
+        return;
+      }
+      this.playlistService.getAllTracksFromPlaylist(this.lista).subscribe(rows => {
+        const queue = ((rows || []) as PlayableTrack[]).filter(item => item?.id && item.url);
+        if (this.playback.allows(track.id)) {
+          this.playback.open(track, queue.length ? queue : genreQueue);
+        }
+      });
+    });
+  }
+
+  private pickSimilar(track: PlayableTrack, community: PlayableTrack[]) {
+    const artist = (track.artist || '').trim().toLowerCase();
+    const sameArtist = community.filter(item => item.id !== track.id && (item.artist || '').trim().toLowerCase() === artist);
+    const used = new Set(sameArtist.map(item => item.id));
+    const sameGenre = community.filter(item => item.id !== track.id && item.genre === track.genre && !used.has(item.id));
+    return [...sameArtist, ...sameGenre].slice(0, 4);
   }
 
   get playable() {
     return !!audioRef(this.track.url || '');
   }
 
-  get downloadLabel() {
-    const ref = audioRef(this.track.url || '');
-    if (ref?.host === 'soundfiles') {
-      return 'Pobierz z soundfiles';
+  get quality() {
+    const file = this.file;
+    if (!file) {
+      return '';
     }
-    return 'Pobierz z hostuje';
+    const parts: string[] = [];
+    if (file.format === 'FLAC') {
+      parts.push(file.bitDepth ? 'FLAC, ' + file.bitDepth + ' bit' : 'FLAC');
+    } else if (file.format === 'VBR') {
+      parts.push(file.bitrate ? 'VBR, ' + this.lang.t('około', 'about') + ' ' + file.bitrate + ' kb/s' : 'VBR');
+    } else if (file.bitrate) {
+      parts.push(file.bitrate + ' kb/s');
+    }
+    if (file.sampleRate) {
+      const locale = this.lang.en ? 'en-GB' : 'pl-PL';
+      parts.push((file.sampleRate / 1000).toLocaleString(locale, {maximumFractionDigits: 1}) + ' kHz');
+    }
+    if (file.channels === 1) {
+      parts.push('mono');
+    } else if (file.channels === 2) {
+      parts.push('stereo');
+    }
+    return parts.join(', ');
+  }
+
+  get fileSize() {
+    const bytes = this.file?.bytes;
+    if (!bytes) {
+      return '';
+    }
+    const locale = this.lang.en ? 'en-GB' : 'pl-PL';
+    if (bytes < 1024 * 1024) {
+      return Math.max(1, Math.round(bytes / 1024)).toLocaleString(locale) + ' KB';
+    }
+    return (bytes / 1024 / 1024).toLocaleString(locale, {minimumFractionDigits: 1, maximumFractionDigits: 1}) + ' MB';
+  }
+
+  words(count: number, kind: 'views' | 'comments') {
+    if (kind === 'views') {
+      return this.lang.plural(count, ['wyświetlenie', 'wyświetlenia', 'wyświetleń'], ['view', 'views']);
+    }
+    return this.lang.plural(count, ['komentarz', 'komentarze', 'komentarzy'], ['comment', 'comments']);
+  }
+
+  private loadFile(track) {
+    this.file = null;
+    if (!audioRef(track?.url || '')) {
+      this.fileState = 'done';
+      return;
+    }
+    this.fileState = 'loading';
+    this.trackService.fileFacts(track.id).subscribe({
+      next: file => {
+        if (this.track?.id === track.id) {
+          this.file = file;
+          this.fileState = 'done';
+        }
+      },
+      error: () => {
+        if (this.track?.id === track.id) {
+          this.fileState = 'done';
+        }
+      }
+    });
   }
 
   coverSrc() {
@@ -75,6 +276,10 @@ export class TrackComponent implements OnInit {
     }
     const stamp = this.coverStamp ? '?t=' + this.coverStamp : '';
     return this.trackService.coverUrl(this.track.id) + stamp;
+  }
+
+  coverOf(item: PlayableTrack) {
+    return this.trackService.coverUrl(item.id);
   }
 
   vote(value: number) {

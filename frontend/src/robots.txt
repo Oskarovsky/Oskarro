@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+Disallow: /login
+Disallow: /register
+Disallow: /profile
+Disallow: /admin
+Disallow: /mod
+Disallow: /user
+Disallow: /toplist
+Disallow: /track/add
+Disallow: /playlist/add
+
+Sitemap: https://oskarro.com/sitemap.xml

@@ -41,5 +41,11 @@ public interface TrackRepository extends CrudRepository<Track, Integer> {
     @Query("select t.id, t.url from Track t where t.genre is not null and t.genre <> '' and t.url is not null and t.url <> '' order by t.id desc")
     List<Object[]> communityIdsAndUrls();
 
+    @Query("select count(t) from Track t where t.genre is not null and t.genre <> '' and t.url is not null and t.url <> ''")
+    long countCommunity();
+
+    @Query("select t.createdAt from Track t where t.genre is not null and t.genre <> '' and t.url is not null and t.url <> '' and t.createdAt >= :from")
+    List<Instant> findCommunityCreatedSince(@Param("from") Instant from);
+
     void deleteById(Integer id);
 }

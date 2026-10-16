@@ -18,6 +18,7 @@ export class TrackPlayerComponent implements AfterViewChecked, OnDestroy {
   current = 0;
   duration = 0;
   peaks: number[] = [];
+  deadBars = [28, 46, 62, 34, 74, 41, 55, 30, 68, 48, 36, 80, 44, 58, 32, 70, 40, 52, 26, 64, 47, 38, 72, 33, 57, 43, 66, 31, 50, 37];
 
   @ViewChild('audio') audio?: ElementRef<HTMLAudioElement>;
   @ViewChild('canvas') canvas?: ElementRef<HTMLCanvasElement>;
@@ -27,6 +28,7 @@ export class TrackPlayerComponent implements AfterViewChecked, OnDestroy {
   private watched: HTMLCanvasElement = null;
   private resize: ResizeObserver = null;
   private generation = 0;
+  private playPath: string = null;
   private sourceTries = 0;
   private mediaTries = 0;
   private retryTimer: number = null;
@@ -43,6 +45,7 @@ export class TrackPlayerComponent implements AfterViewChecked, OnDestroy {
       return;
     }
     const path = ref.host + '/' + encodeURIComponent(ref.id);
+    this.playPath = path;
     const generation = this.generation;
     this.loadSource(path, generation);
     this.http.get<{duration: number, peaks: number[]}>(environment.serverUrl + '/tracks/peaks/' + path).subscribe({
@@ -84,8 +87,14 @@ export class TrackPlayerComponent implements AfterViewChecked, OnDestroy {
   retry() {
     this.failed = false;
     this.mediaTries = 0;
+    this.sourceTries = 0;
     this.playing = false;
-    this.reloadAudio();
+    if (this.playPath && !this.audioUrl) {
+      this.loadSource(this.playPath, this.generation);
+    } else {
+      this.view.detectChanges();
+      this.reloadAudio();
+    }
     this.view.detectChanges();
   }
 
@@ -189,6 +198,7 @@ export class TrackPlayerComponent implements AfterViewChecked, OnDestroy {
     this.sourceTries = 0;
     this.mediaTries = 0;
     this.audio?.nativeElement?.pause();
+    this.playPath = null;
     this.audioUrl = null;
     this.failed = false;
     this.playing = false;

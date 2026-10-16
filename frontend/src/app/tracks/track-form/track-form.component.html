@@ -1,60 +1,60 @@
 <div class="page" *ngIf="!loggedIn">
-  <p class="kicker">Nowy utwór</p>
-  <h1 class="display">Najpierw konto</h1>
-  <p class="lede"><a routerLink="/login">Zaloguj się</a>, żeby dodać utwór.</p>
+  <p class="kicker">{{ 'Nowy utwór' | t:'New track' }}</p>
+  <h1 class="display">{{ 'Najpierw konto' | t:'An account first' }}</h1>
+  <p class="lede"><a routerLink="/login">{{ 'Zaloguj się' | t:'Sign in' }}</a>{{ ', żeby dodać utwór.' | t:' to add a track.' }}</p>
 </div>
 
 <div class="page" *ngIf="loggedIn && closed">
-  <p class="kicker">Edycja</p>
-  <h1 class="display">Ten utwór jest już zamknięty</h1>
-  <p class="lede">Poprawki może wprowadzić tylko autor i tylko przez 24 godziny od dodania.</p>
-  <p><a class="btn-ghost" [routerLink]="['/tracklist', backGenre]">Wróć do listy</a></p>
+  <p class="kicker">{{ 'Edycja' | t:'Edit' }}</p>
+  <h1 class="display">{{ 'Ten utwór jest już zamknięty' | t:'This track is already closed' }}</h1>
+  <p class="lede">{{ 'Poprawki może wprowadzić tylko autor i tylko przez 24 godziny od dodania.' | t:'Only the author can edit it, and only for 24 hours after it was added.' }}</p>
+  <p><a class="btn-ghost" [routerLink]="['/tracklist', backGenre]">{{ 'Wróć do listy' | t:'Back to the list' }}</a></p>
 </div>
 
 <div class="page" *ngIf="loggedIn && !closed">
   <a class="back" [routerLink]="['/tracklist', backGenre]">← {{ backGenre }}</a>
-  <p class="kicker">{{ editing ? 'Poprawka' : 'Nowy utwór' }}</p>
-  <h1 class="display">{{ editing ? 'Popraw utwór' : 'Dodaj utwór' }}</h1>
-  <p class="lede" *ngIf="!editing">Po zapisaniu autor może jeszcze poprawić dane przez 24 godziny. Potem utwór zostaje w tej postaci.</p>
-  <p class="lede" *ngIf="editing && editableUntil">Możesz poprawiać do {{ editableUntil | date:'dd.MM.yyyy HH:mm' }}.</p>
+  <p class="kicker">{{ editing ? ('Poprawka' | t:'Edit') : ('Nowy utwór' | t:'New track') }}</p>
+  <h1 class="display">{{ editing ? ('Popraw utwór' | t:'Edit track') : ('Dodaj utwór' | t:'Add a track') }}</h1>
+  <p class="lede" *ngIf="!editing">{{ 'Po zapisaniu autor może jeszcze poprawić dane przez 24 godziny. Potem utwór zostaje w tej postaci.' | t:'After saving, the author can still edit the details for 24 hours. Then the track stays as it is.' }}</p>
+  <p class="lede" *ngIf="editing && editableUntil">{{ 'Możesz poprawiać do' | t:'You can edit until' }} {{ editableUntil | date:'dd.MM.yyyy HH:mm' }}.</p>
 
   <form class="composer" (submit)="$event.preventDefault(); save()">
     <div class="form-grid">
-      <label>Tytuł
+      <label>{{ 'Tytuł' | t:'Title' }}
         <input [(ngModel)]="draft.title" name="title" type="text" maxlength="80" required>
       </label>
-      <label>Wykonawca
+      <label>{{ 'Wykonawca' | t:'Artist' }}
         <input [(ngModel)]="draft.artist" name="artist" type="text" maxlength="80" required>
       </label>
-      <label>Remixer lub wersja
-        <input [(ngModel)]="draft.version" name="version" type="text" maxlength="80" placeholder="np. Extended Mix, Remix by…">
+      <label>{{ 'Remixer lub wersja' | t:'Remixer or version' }}
+        <input [(ngModel)]="draft.version" name="version" type="text" maxlength="80" [placeholder]="'np. Extended Mix, Remix by…' | t:'e.g. Extended Mix, Remix by…'">
       </label>
-      <label>Gatunek
+      <label>{{ 'Gatunek' | t:'Genre' }}
         <select [(ngModel)]="draft.genre" name="genre">
           <option *ngFor="let genre of genres" [value]="genre.id">{{ genre.label }}</option>
         </select>
       </label>
-      <label>Gdzie jest plik
+      <label>{{ 'Gdzie jest plik' | t:'Where the file is' }}
         <select [(ngModel)]="source" name="source">
           <option value="hostuje">hostuje.net</option>
           <option value="soundfiles">soundfiles.eu</option>
         </select>
       </label>
-      <label class="wide">Link do pliku
+      <label class="wide">{{ 'Link do pliku' | t:'File link' }}
         <input [(ngModel)]="draft.url" name="url" type="text"
                [placeholder]="source === 'hostuje' ? 'https://hostuje.net/file.php?id=...' : 'https://soundfiles.eu/QN9mExDZG6dW/file'"
                required>
       </label>
-      <p class="meta wide">hostuje.net ma 32 znaki po <span class="meta">id=</span>. soundfiles.eu ma 12 znaków w adresie pliku.</p>
-      <label class="wide">Zdjęcie utworu
+      <p class="meta wide">{{ 'hostuje.net ma 32 znaki po' | t:'hostuje.net has 32 characters after' }} <span class="meta">id=</span>. {{ 'soundfiles.eu ma 12 znaków w adresie pliku.' | t:'soundfiles.eu has 12 characters in the file address.' }}</p>
+      <label class="wide">{{ 'Zdjęcie utworu' | t:'Track photo' }}
         <input type="file" accept="image/jpeg,image/png,image/gif,image/webp" (change)="selectCover($event)">
       </label>
     </div>
-    <p class="meta">JPEG, PNG albo GIF do 2 MB. Serwer zawsze zapisuje miniaturę: dłuższy bok do 480 px, plik poniżej 80 KB.</p>
-    <img *ngIf="coverSrc()" class="cover" [src]="coverSrc()" alt="" style="margin-top: 12px;">
-    <p class="alert" *ngIf="notice">{{ notice }}</p>
+    <p class="meta">{{ 'JPEG, PNG albo GIF do 2 MB. Serwer zawsze zapisuje miniaturę: dłuższy bok do 480 px, plik poniżej 80 KB.' | t:'JPEG, PNG or GIF up to 2 MB. The server always saves a thumbnail: the longer side up to 480 px, the file under 80 KB.' }}</p>
+    <app-cover class="cover" [hasCover]="!!coverSrc()" [src]="coverSrc()" [genre]="draft.genre"></app-cover>
+    <p class="alert" *ngIf="notice">{{ notice | t }}</p>
     <button class="btn-accent" type="submit" style="margin-top: 16px;" [disabled]="saving">
-      {{ editing ? 'Zapisz poprawkę' : 'Dodaj utwór' }}
+      {{ editing ? ('Zapisz poprawkę' | t:'Save edit') : ('Dodaj utwór' | t:'Add a track') }}
     </button>
   </form>
 </div>

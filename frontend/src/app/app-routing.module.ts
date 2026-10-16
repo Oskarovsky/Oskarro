@@ -25,6 +25,9 @@ import {HomeComponent} from './home/home.component';
 import {TrackFormComponent} from './tracks/track-form/track-form.component';
 import {RankingComponent} from './ranking/ranking.component';
 import {SearchComponent} from './search/search.component';
+import {RadioComponent} from './tracks/radio/radio.component';
+import {PasswordResetComponent} from './auth/password-reset.component';
+import {ActivateAccountComponent} from './auth/activate.component';
 
 
 const routes: Routes = [
@@ -43,7 +46,11 @@ const routes: Routes = [
   { path: 'playlist/:id/details', component: PlaylistDetailsComponent },
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
+  { path: 'przypomnij', component: PasswordResetComponent, data: {mode: 'forgot'} },
+  { path: 'haslo', component: PasswordResetComponent, data: {mode: 'reset'} },
+  { path: 'aktywuj', component: ActivateAccountComponent },
   { path: 'ranking', component: RankingComponent },
+  { path: 'radio', component: RadioComponent },
   { path: 'szukaj', component: SearchComponent },
   { path: 'profile', component: ProfileComponent },
   { path: 'profile/:username', component: ProfileComponent },

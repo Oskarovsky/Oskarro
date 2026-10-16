@@ -3,6 +3,7 @@ import {RefreshAfterHttpDirective} from '../../services/ui-refresh';
 import {DomSanitizer, SafeResourceUrl} from '@angular/platform-browser';
 import {ActivatedRoute} from '@angular/router';
 import {VideoService} from '../../services/video/video.service';
+import {SeoService} from '../../seo.service';
 
 @Component({
   selector: 'app-channel-set',
@@ -15,12 +16,14 @@ export class ChannelSetComponent implements OnInit {
 
   title = 'Set';
   published = '';
+  views = '';
   embed: SafeResourceUrl;
   watch = '';
 
   constructor(private route: ActivatedRoute,
               private videos: VideoService,
-              private sanitizer: DomSanitizer) {}
+              private sanitizer: DomSanitizer,
+              private seo: SeoService) {}
 
   ngOnInit() {
     this.route.paramMap.subscribe(params => {
@@ -35,6 +38,8 @@ export class ChannelSetComponent implements OnInit {
         if (match) {
           this.title = match.title;
           this.published = match.published;
+          this.views = match.views;
+          this.seo.setTitle(match.title + ' — set na imprezę | Oskarro', match.title + '. Set Oskarro na imprezę i na parkiet.', '/video/set/' + id);
         }
       });
     });

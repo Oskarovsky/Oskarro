@@ -79,6 +79,18 @@ public class Track {
     private Integer score;
 
     @Transient
+    private Integer viewsMonth;
+
+    @Transient
+    private Integer viewsYear;
+
+    @Transient
+    private Integer viewsAll;
+
+    @Transient
+    private Integer commentCount;
+
+    @Transient
     private Boolean hasCover;
 
     @Transient

@@ -14,6 +14,9 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.Locale;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -44,39 +47,67 @@ public class TrackSocialService {
     private final UserRepository userRepository;
     private final ProfileService profileService;
     private final CoverStorage coverStorage;
+    private final TrackViewRepository viewRepository;
+    private static final ZoneId WARSAW = ZoneId.of("Europe/Warsaw");
 
     public TrackSocialService(TrackRepository trackRepository,
                               TrackCommentRepository commentRepository,
                               TrackLikeRepository likeRepository,
                               UserRepository userRepository,
                               ProfileService profileService,
-                              CoverStorage coverStorage) {
+                              CoverStorage coverStorage,
+                              TrackViewRepository viewRepository) {
         this.trackRepository = trackRepository;
         this.commentRepository = commentRepository;
         this.likeRepository = likeRepository;
         this.userRepository = userRepository;
         this.profileService = profileService;
         this.coverStorage = coverStorage;
+        this.viewRepository = viewRepository;
     }
 
     public List<Track> listByGenre(String genre, String sort) {
         String normalized = normalizeGenre(genre);
         List<Track> tracks = new ArrayList<>(trackRepository.findTracksByGenre(normalized));
         decorateAll(tracks);
-        Comparator<Track> newest = Comparator.comparing(Track::getId, Comparator.nullsLast(Comparator.reverseOrder()));
-        if ("new".equalsIgnoreCase(sort)) {
-            tracks.sort(newest);
-        } else {
+        Comparator<Track> newest = Comparator
+                .comparing(Track::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder()))
+                .thenComparing(Track::getId, Comparator.nullsLast(Comparator.reverseOrder()));
+        String mode = sort == null ? "new" : sort.toLowerCase(Locale.ROOT);
+        if ("score".equals(mode)) {
             tracks.sort(Comparator.comparingInt(Track::getScore).reversed().thenComparing(newest));
+        } else if ("views-month".equals(mode)) {
+            tracks.sort(Comparator.comparingInt(Track::getViewsMonth).reversed().thenComparing(newest));
+        } else if ("views-year".equals(mode)) {
+            tracks.sort(Comparator.comparingInt(Track::getViewsYear).reversed().thenComparing(newest));
+        } else if ("views-all".equals(mode) || "views".equals(mode)) {
+            tracks.sort(Comparator.comparingInt(Track::getViewsAll).reversed().thenComparing(newest));
+        } else {
+            tracks.sort(newest);
         }
         return tracks;
+    }
+
+    public void recordView(Integer trackId) {
+        if (trackId == null || trackRepository.findById(trackId).isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Nie ma takiego utworu");
+        }
+        TrackView view = new TrackView();
+        view.setTrackId(trackId);
+        view.setPlayedAt(Instant.now());
+        viewRepository.save(view);
     }
 
     public List<Track> decorateAll(List<Track> tracks) {
         if (tracks.isEmpty()) {
             return tracks;
         }
-        Map<Integer, int[]> votes = voteTotals(tracks.stream().map(Track::getId).toList());
+        List<Integer> ids = tracks.stream().map(Track::getId).toList();
+        Map<Integer, int[]> votes = voteTotals(ids);
+        Map<Integer, Integer> viewsMonth = viewCounts(ids, monthStart());
+        Map<Integer, Integer> viewsYear = viewCounts(ids, yearStart());
+        Map<Integer, Integer> viewsAll = viewCounts(ids, null);
+        Map<Integer, Integer> comments = commentCounts(ids);
         Set<Integer> downloadable = downloadableIds();
         int slots = downloadSlots();
         Map<Integer, String> ranks = new HashMap<>();
@@ -89,6 +120,10 @@ public class TrackSocialService {
             track.setLikeCount(pair[0]);
             track.setDislikeCount(pair[1]);
             track.setScore(pair[0] - pair[1]);
+            track.setViewsMonth(viewsMonth.getOrDefault(track.getId(), 0));
+            track.setViewsYear(viewsYear.getOrDefault(track.getId(), 0));
+            track.setViewsAll(viewsAll.getOrDefault(track.getId(), 0));
+            track.setCommentCount(comments.getOrDefault(track.getId(), 0));
             track.setHasCover(coverStorage.exists(track.getId()));
             String file = downloadLink(track.getUrl());
             track.setDownloadUrl(file != null && downloadable.contains(track.getId()) ? file : null);
@@ -235,6 +270,42 @@ public class TrackSocialService {
         return state;
     }
 
+    private Instant monthStart() {
+        ZonedDateTime now = ZonedDateTime.now(WARSAW);
+        return now.toLocalDate().withDayOfMonth(1).atStartOfDay(WARSAW).toInstant();
+    }
+
+    private Instant yearStart() {
+        ZonedDateTime now = ZonedDateTime.now(WARSAW);
+        return now.toLocalDate().withDayOfYear(1).atStartOfDay(WARSAW).toInstant();
+    }
+
+    private Map<Integer, Integer> commentCounts(List<Integer> ids) {
+        Map<Integer, Integer> counts = new HashMap<>();
+        if (ids.isEmpty()) {
+            return counts;
+        }
+        for (Object[] row : commentRepository.countsForTracks(ids)) {
+            counts.put(((Number) row[0]).intValue(), ((Number) row[1]).intValue());
+        }
+        return counts;
+    }
+
+    private Map<Integer, Integer> viewCounts(Collection<Integer> ids, Instant since) {
+        Map<Integer, Integer> totals = new HashMap<>();
+        List<Integer> present = ids.stream().filter(id -> id != null).toList();
+        if (present.isEmpty()) {
+            return totals;
+        }
+        List<Object[]> rows = since == null
+                ? viewRepository.countsAll(present)
+                : viewRepository.countsSince(present, since);
+        for (Object[] row : rows) {
+            totals.put(((Number) row[0]).intValue(), ((Number) row[1]).intValue());
+        }
+        return totals;
+    }
+
     private Map<Integer, int[]> voteTotals(Collection<Integer> ids) {
         Map<Integer, int[]> totals = new HashMap<>();
         List<Integer> present = ids.stream().filter(id -> id != null).toList();
@@ -334,7 +405,11 @@ public class TrackSocialService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Genre is required");
         }
         try {
-            return Genre.valueOf(genre.trim().toUpperCase()).name();
+            String key = genre.trim().toUpperCase(Locale.ROOT).replace('-', '_').replace(' ', '_');
+            if ("BIGROOM".equals(key)) {
+                key = "BIG_ROOM";
+            }
+            return Genre.valueOf(key).name();
         } catch (IllegalArgumentException ex) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unknown genre");
         }

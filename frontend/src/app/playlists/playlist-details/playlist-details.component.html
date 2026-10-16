@@ -1,45 +1,28 @@
 <div class="page">
 
-  <a class="back" routerLink="/playlist/all">← Playlisty</a>
+  <a class="back" routerLink="/playlist/all">← {{ 'Playlisty' | t:'Playlists' }}</a>
   <p class="kicker">{{ playlist?.owner }}</p>
   <h1 class="display">{{ playlist?.name }}</h1>
   <p class="lede" *ngIf="playlist?.description">{{ playlist.description }}</p>
-  <p *ngIf="!isLoggedIn"><a routerLink="/login">Zaloguj się</a>, żeby odtworzyć utwory.</p>
+  <p class="track-actions" *ngIf="isLoggedIn && tracks.length">
+    <button class="btn-accent" type="button" (click)="playAll()">{{ 'Puść składankę' | t:'Play the playlist' }}</button>
+  </p>
+  <p *ngIf="!isLoggedIn"><a routerLink="/login">{{ 'Zaloguj się' | t:'Sign in' }}</a>{{ ', żeby puścić całą składankę. Jeden numer z linku można odsłuchać bez konta.' | t:' to play the whole playlist. One track opened from a link can be heard without an account.' }}</p>
 
 
-  <div class="col-md-9">
-    <div class="row">
-      <div class="col-md-12">
-        <p *ngIf="this.tracks.length === 0">Nie ma żadnych utworów w tej składance</p>
-      </div>
-    </div>
+  <p *ngIf="tracks.length === 0">{{ 'Nie ma żadnych utworów w tej składance.' | t:'There are no tracks in this playlist.' }}</p>
+
+  <div class="latest-grid" *ngIf="tracks.length">
+    <article class="track-row" *ngFor="let track of tracks; index as i">
+      <span class="pill">{{ i + 1 }}</span>
+      <span>
+        <h2><a [routerLink]="['/track', track.id]" [queryParams]="{lista: playlist?.id}">{{ track.title }}<span class="version" *ngIf="track | versionLabel as version"> ({{ version }})</span></a></h2>
+        <span class="meta">{{ track.artist }}<app-track-facts [track]="track"></app-track-facts></span>
+      </span>
+      <app-track-player *ngIf="showPlayer(track.url)" [url]="track.url"></app-track-player>
+    </article>
   </div>
 
-  <!-- Track list -->
-  <table class="table table-striped">
-    <thead>
-    <tr>
-      <th scope="col">#</th>
-      <th scope="col">Artist</th>
-      <th scope="col">Title</th>
-      <th scope="col">Version</th>
-    </tr>
-    </thead>
-    <tbody>
-    <ng-container *ngFor="let track of tracks; index as i">
-    <tr>
-      <th scope="row">{{ i + 1 }}</th>
-      <td>{{ track.artist }}</td>
-      <td>{{ track.title }}</td>
-      <td>{{ track.version }}</td>
-    </tr>
-    <tr *ngIf="showPlayer(track.url)">
-      <td colspan="4"><app-track-player [url]="track.url"></app-track-player></td>
-    </tr>
-    </ng-container>
-    </tbody>
-  </table>
-
-  <a class="btn-ghost" routerLink="../edit" *ngIf="canEdit">Edytuj</a>
+  <a class="btn-ghost" routerLink="../edit" *ngIf="canEdit">{{ 'Edytuj' | t:'Edit' }}</a>
 
 </div>

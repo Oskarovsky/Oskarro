@@ -3,6 +3,7 @@ import {RefreshAfterHttpDirective} from '../../services/ui-refresh';
 import {Playlist} from '../playlist/model/playlist';
 import {PlaylistService} from '../../services/playlist/playlist.service';
 import {TokenStorageService} from '../../services/auth/token-storage.service';
+import {LangService} from '../../lang.service';
 
 @Component({
   selector: 'app-playlist-all',
@@ -19,7 +20,8 @@ export class PlaylistAllComponent implements OnInit {
   loaded = false;
 
   constructor(private playlistService: PlaylistService,
-              private tokenStorage: TokenStorageService) { }
+              private tokenStorage: TokenStorageService,
+              readonly lang: LangService) { }
 
   ngOnInit() {
     this.loggedIn = !!this.tokenStorage.getToken();
@@ -27,6 +29,10 @@ export class PlaylistAllComponent implements OnInit {
       this.playlists = res || [];
       this.loaded = true;
     });
+  }
+
+  trackWord(count: number) {
+    return this.lang.plural(count || 0, ['utwór', 'utwory', 'utworów'], ['track', 'tracks']);
   }
 
   get visible(): Playlist[] {

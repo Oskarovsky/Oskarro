@@ -1,10 +1,11 @@
 package com.oskarro.oskarito.playlist;
 
 import com.oskarro.oskarito.track.Track;
-import com.oskarro.oskarito.track.TrackService;
+import com.oskarro.oskarito.track.TrackSocialService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping(value = "/api/playlist")
@@ -12,11 +13,11 @@ import java.util.List;
 public class PlaylistController {
 
     private final PlaylistService playlistService;
-    private final TrackService trackService;
+    private final TrackSocialService trackSocialService;
 
-    public PlaylistController(PlaylistService playlistService, TrackService trackService) {
+    public PlaylistController(PlaylistService playlistService, TrackSocialService trackSocialService) {
         this.playlistService = playlistService;
-        this.trackService = trackService;
+        this.trackSocialService = trackSocialService;
     }
 
     @GetMapping(value = "/findAll")
@@ -34,7 +35,13 @@ public class PlaylistController {
     @GetMapping(value = "/{id}/tracks")
     @CrossOrigin(origins = "*", allowedHeaders = "*")
     List<Track> getAllTracksFromPlaylist(@PathVariable Integer id) {
-        return trackService.findAllTracksFromPlaylist(id);
+        return trackSocialService.decorateAll(playlistService.tracks(id));
+    }
+
+    @PostMapping(value = "/{id}/pin/{trackId}")
+    @CrossOrigin(origins = "*", allowedHeaders = "*")
+    public Map<String, String> pin(@PathVariable Integer id, @PathVariable Integer trackId) {
+        return Map.of("name", playlistService.pin(id, trackId));
     }
 
     @PostMapping(value = "/add")
