@@ -1,19 +1,24 @@
-<div class="container">
+<div class="page" *ngIf="!loggedIn">
+  <p class="kicker">Nowa składanka</p>
+  <h1 class="display">Najpierw konto</h1>
+  <p class="lede"><a routerLink="/login">Zaloguj się</a>, żeby założyć własną playlistę.</p>
+</div>
 
-  <form name="form" #form="ngForm" (ngSubmit)="createPlaylist(playlistName.value)">
-    <mat-form-field appearance="fill">
-      <mat-label>Title</mat-label>
-      <input #playlistName matInput [(ngModel)]="modelPlaylist.name" name="name" />
-    </mat-form-field>
-    <br>
-    <button mat-raised-button
-            type="button"
-            (click)="createPlaylist(playlistName.value)"
-            color="primary"
-            routerLink="/playlist/all/{{modelUser.username}}"
-            style="margin-left: 10px;">Dodaj playlistę
-    </button>
+<div class="page" *ngIf="loggedIn">
+  <a class="back" routerLink="/playlist/all">← Playlisty</a>
+  <p class="kicker">Nowa składanka</p>
+  <h1 class="display">Załóż swoją playlistę</h1>
+  <p class="lede">Składanka należy do Ciebie. Najpierw nazwa i krótki opis, a zaraz potem dodasz utwory.</p>
+
+  <form class="composer" (submit)="$event.preventDefault(); create()">
+    <label>Nazwa
+      <input [(ngModel)]="name" name="name" type="text" maxlength="80" required placeholder="np. Parkiet na piątek">
+    </label>
+    <label>Po co ta składanka
+      <textarea [(ngModel)]="description" name="description" maxlength="280" rows="4" placeholder="Na imprezę, do auta, na rozgrzewkę."></textarea>
+    </label>
+    <p class="meta">{{ description.length }}/280</p>
+    <p class="warn" *ngIf="error">{{ error }}</p>
+    <button class="btn-accent" type="submit" [disabled]="busy">Utwórz składankę</button>
   </form>
-
-
 </div>

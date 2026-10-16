@@ -19,61 +19,60 @@
       <th scope="col">Artist</th>
       <th scope="col">Title</th>
       <th scope="col">Version</th>
+      <th scope="col">hostuje.net</th>
       <th scope="col"></th>
     </tr>
     </thead>
     <tbody>
-    <tr *ngFor="let track of tracks; index as i">
+    <ng-container *ngFor="let track of tracks; index as i">
+    <tr>
       <th scope="row">{{ i + 1 }}</th>
       <td><input type="text"
                  [(ngModel)]="track.artist"
                  (change)="updateTrack(track)"
                  class="input-label-lg"
-                 maxlength="18" style="width: 100%"
-                 value="{{track.artist}}"/></td>
+                 maxlength="80" style="width: 100%"/></td>
       <td><input type="text"
                  [(ngModel)]="track.title"
                  (change)="updateTrack(track)"
                  class="input-label-lg"
-                 maxlength="18" style="width: 100%"
-                 value="{{track.title}}"/></td>
+                 maxlength="80" style="width: 100%"/></td>
       <td><input type="text"
                  [(ngModel)]="track.version"
                  (change)="updateTrack(track)"
                  class="input-label-lg"
-                 maxlength="18" style="width: 100%"
-                 value="{{track.version}}"/></td>
+                 maxlength="80" style="width: 100%"/></td>
+      <td>
+        <input type="text"
+               [(ngModel)]="track.url"
+               (change)="updateTrack(track)"
+               placeholder="https://hostuje.net/file.php?id=..."
+               style="width: 100%"/>
+      </td>
       <td>
         <a (click)="deleteTrack(track.id)" class="pull-right text-danger">
           <i class="material-icons" style="float:right;">delete</i>
         </a>
       </td>
     </tr>
+    <tr *ngIf="showPlayer(track.url)">
+      <td colspan="6"><app-track-player [url]="track.url"></app-track-player></td>
+    </tr>
+    </ng-container>
     </tbody>
   </table>
 
   <!-- ADDING TRACK TO PLAYLIST PANEL -->
-  <div>
-    <input #newArtist
-           type="text"
-           class="input-label-lg"
-           maxlength="18" style="width: 25%"
-           value=""/>
-    <input #newTitle
-           type="text"
-           class="input-label-lg"
-           maxlength="18" style="width: 25%"
-           value=""/>
-    <input #newVersion
-           type="text"
-           class="input-label-lg"
-           maxlength="18" style="width: 30%"
-           value=""/>
+  <div style="margin-top: 12px;">
+    <input [(ngModel)]="draft.artist" type="text" placeholder="Wykonawca" maxlength="80" style="width: 24%; margin-right: 8px;"/>
+    <input [(ngModel)]="draft.title" type="text" placeholder="Tytuł" maxlength="80" style="width: 24%; margin-right: 8px;"/>
+    <input [(ngModel)]="draft.version" type="text" placeholder="Wersja" maxlength="80" style="width: 20%; margin-right: 8px;"/>
+    <input [(ngModel)]="draft.url" type="text" placeholder="Link hostuje.net" style="width: 28%;"/>
     <button mat-raised-button
-            (click)="addTrackToVideo(newArtist.value, newTitle.value, newVersion.value)"
+            (click)="addTrackToVideo()"
             type="button"
             color="primary"
-            style="margin-left: 10px;">Dodaj utwór
+            style="margin-left: 10px; margin-top: 8px;">Dodaj utwór
     </button>
   </div>
 

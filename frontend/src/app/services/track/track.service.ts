@@ -6,7 +6,6 @@ import {environment} from '../../../environments/environment';
 
 const API: string = environment.serverUrl;
 const TRACK_API = API + '/tracks';
-const PROVIDER_API = API + '/providers';
 
 @Injectable({providedIn: 'root'})
 export class TrackService {
@@ -19,23 +18,11 @@ export class TrackService {
   }
 
   getTrackById(id: string) {
-    return this.http.get(TRACK_API + '/' + id);
+    return this.http.get(TRACK_API + '/id/' + id);
   }
 
-  getTracksFromProviderByGenre(id: string, genre: string) {
-    return this.http.get(PROVIDER_API + '/' + id + '/' + genre);
-  }
-
-  getTracksByProviderId(id: string) {
-    return this.http.get(PROVIDER_API + '/' + id + '/tracks');
-  }
-
-  getTracksByGenre(genre: string) {
-    return this.http.get(TRACK_API + '/genre/' + genre);
-  }
-
-  getTracksByProviderName(providerName: string) {
-    return this.http.get(PROVIDER_API + '/' + providerName + '/all-tracks')
+  getTracksByGenre(genre: string, sort = 'score') {
+    return this.http.get(TRACK_API + '/genre/' + genre, {params: {sort}});
   }
 
   addTrackToRanking(track: Track): Observable<any> {
@@ -52,6 +39,42 @@ export class TrackService {
 
   deleteTrackFromPlaylist(id: number): Observable<any> {
     return this.http.delete(TRACK_API + '/' + id);
+  }
+
+  shareTrack(track: Track): Observable<Track> {
+    return this.http.post<Track>(TRACK_API + '/share', track);
+  }
+
+  updateTrack(id: number, track: Track): Observable<Track> {
+    return this.http.put<Track>(TRACK_API + '/' + id, track);
+  }
+
+  getComments(id: string): Observable<Array<{id: number, text: string, author: string, createdAt: string}>> {
+    return this.http.get<Array<{id: number, text: string, author: string, createdAt: string}>>(TRACK_API + '/' + id + '/comments');
+  }
+
+  addComment(id: string, text: string) {
+    return this.http.post<{id: number, text: string, author: string, createdAt: string}>(
+      TRACK_API + '/' + id + '/comments', {text});
+  }
+
+  getLikes(id: string) {
+    return this.http.get<{likes: number, dislikes: number, score: number, mine: number}>(TRACK_API + '/' + id + '/likes');
+  }
+
+  vote(id: string, vote: number) {
+    return this.http.post<{likes: number, dislikes: number, score: number, mine: number}>(
+      TRACK_API + '/' + id + '/vote', {vote});
+  }
+
+  coverUrl(id: number) {
+    return TRACK_API + '/' + id + '/cover';
+  }
+
+  uploadCover(id: number, file: File) {
+    const data = new FormData();
+    data.append('file', file);
+    return this.http.post<{hasCover: boolean}>(TRACK_API + '/' + id + '/cover', data);
   }
 
 }

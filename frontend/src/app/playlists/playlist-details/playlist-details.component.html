@@ -1,6 +1,10 @@
-<div class="container">
+<div class="page">
 
-  <h3>Playlista: {{playlist.name}}</h3>
+  <a class="back" routerLink="/playlist/all">← Playlisty</a>
+  <p class="kicker">{{ playlist?.owner }}</p>
+  <h1 class="display">{{ playlist?.name }}</h1>
+  <p class="lede" *ngIf="playlist?.description">{{ playlist.description }}</p>
+  <p *ngIf="!isLoggedIn"><a routerLink="/login">Zaloguj się</a>, żeby odtworzyć utwory.</p>
 
 
   <div class="col-md-9">
@@ -22,15 +26,20 @@
     </tr>
     </thead>
     <tbody>
-    <tr *ngFor="let track of tracks; index as i">
+    <ng-container *ngFor="let track of tracks; index as i">
+    <tr>
       <th scope="row">{{ i + 1 }}</th>
-      <td>{{ track.title }}</td>
       <td>{{ track.artist }}</td>
+      <td>{{ track.title }}</td>
       <td>{{ track.version }}</td>
     </tr>
+    <tr *ngIf="showPlayer(track.url)">
+      <td colspan="4"><app-track-player [url]="track.url"></app-track-player></td>
+    </tr>
+    </ng-container>
     </tbody>
   </table>
 
-  <button type="button" class="btn btn-dark" routerLink="../edit">Edytuj</button>
+  <a class="btn-ghost" routerLink="../edit" *ngIf="canEdit">Edytuj</a>
 
 </div>

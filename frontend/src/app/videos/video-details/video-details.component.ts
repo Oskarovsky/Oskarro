@@ -7,6 +7,8 @@ import {DomSanitizer} from '@angular/platform-browser';
 import {TrackService} from '../../services/track/track.service';
 import {Subscription} from 'rxjs';
 import {ActivatedRoute} from '@angular/router';
+import {hostujePlayer} from '../../services/hostuje';
+import {TokenStorageService} from '../../services/auth/token-storage.service';
 
 @Component({
   selector: 'app-video-details',
@@ -21,12 +23,20 @@ export class VideoDetailsComponent implements OnInit {
   tracks: Track[];
   sub: Subscription;
 
+  isLoggedIn = false;
+
   constructor(private videoService: VideoService,
               private trackService: TrackService,
               private route: ActivatedRoute,
-              private sanitizer: DomSanitizer) {}
+              private sanitizer: DomSanitizer,
+              private tokenStorage: TokenStorageService) {}
+
+  showPlayer(url: string) {
+    return this.isLoggedIn && !!hostujePlayer(url);
+  }
 
   ngOnInit() {
+    this.isLoggedIn = !!this.tokenStorage.getToken();
     this.getVideoById();
     this.getAllTracksFromVideo();
   }

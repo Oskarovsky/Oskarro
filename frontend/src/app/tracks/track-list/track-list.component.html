@@ -1,15 +1,41 @@
+<div class="page" *ngIf="community">
+  <p class="kicker">Gatunek</p>
+  <h1 class="display">{{ genreLabel }}</h1>
+  <p class="lede">Żeby znaleźć numer, wpisz frazę u góry i naciśnij OK.</p>
 
-<div class="container">
-<mat-card>
-  <mat-card-title>Muzikum</mat-card-title>
-  <mat-card-content>
-    <mat-list>
-      <mat-list-item *ngFor="let track of tracks">
-        <h3 mat-line>{{track.title}}</h3>
-        <h2 mat-line>{{track.version}}</h2>
-        <h2 mat-line>{{track.artist}}</h2>
-      </mat-list-item>
-    </mat-list>
-  </mat-card-content>
-</mat-card>
+  <div class="votes">
+    <button class="like" type="button" [class.on]="sort === 'score'" (click)="setSort('score')">Najlepsza ocena</button>
+    <button class="like" type="button" [class.on]="sort === 'new'" (click)="setSort('new')">Najnowsze</button>
+  </div>
+
+  <p *ngIf="tracks.length === 0">Nikt jeszcze nie dodał utworu w tym gatunku.</p>
+
+  <div class="latest-grid" *ngIf="tracks.length">
+    <a class="track-row" *ngFor="let track of tracks" [routerLink]="['/track', track.id]">
+      <span class="thumb-slot">
+        <img *ngIf="track.hasCover" class="thumb" [src]="coverSrc(track)" alt="">
+        <span class="pill" *ngIf="!track.hasCover">{{ genreLabel }}</span>
+      </span>
+      <span>
+        <h2>{{ track.title }}<span class="version" *ngIf="track | versionLabel as version"> ({{ version }})</span></h2>
+        <span class="meta">{{ track.artist }}<span *ngIf="track.sharedBy"> · {{ track.sharedBy }}</span><span *ngIf="track.authorRank"> · {{ track.authorRank }}</span></span>
+      </span>
+      <app-score [value]="track.score"></app-score>
+    </a>
+  </div>
+
+</div>
+
+<div class="page" *ngIf="!community">
+  <p class="lede" *ngIf="!isLoggedIn"><a routerLink="/login">Zaloguj się</a>, żeby odtworzyć utwory.</p>
+  <div class="latest-grid">
+    <article class="track-row" *ngFor="let track of tracks">
+      <span class="pill">{{ track.genre || 'Utwór' }}</span>
+      <span>
+        <h2>{{ track.title }}<span class="version" *ngIf="track | versionLabel as version"> ({{ version }})</span></h2>
+        <span class="meta">{{ track.artist }}</span>
+      </span>
+      <app-track-player [url]="track.url"></app-track-player>
+    </article>
+  </div>
 </div>

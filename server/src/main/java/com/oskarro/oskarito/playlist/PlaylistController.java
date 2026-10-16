@@ -1,12 +1,10 @@
 package com.oskarro.oskarito.playlist;
 
 import com.oskarro.oskarito.track.Track;
-import com.oskarro.oskarito.track.TrackRepository;
 import com.oskarro.oskarito.track.TrackService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping(value = "/api/playlist")
@@ -15,26 +13,22 @@ public class PlaylistController {
 
     private final PlaylistService playlistService;
     private final TrackService trackService;
-    private final PlaylistRepository playlistRepository;
-    private final TrackRepository trackRepository;
 
-    public PlaylistController(PlaylistService playlistService, TrackService trackService, PlaylistRepository playlistRepository, TrackRepository trackRepository) {
+    public PlaylistController(PlaylistService playlistService, TrackService trackService) {
         this.playlistService = playlistService;
         this.trackService = trackService;
-        this.playlistRepository = playlistRepository;
-        this.trackRepository = trackRepository;
     }
 
     @GetMapping(value = "/findAll")
     @CrossOrigin(origins = "*", allowedHeaders = "*")
-    List<Playlist> findAll() {
-        return playlistService.getAllPlaylist();
+    List<PlaylistView> findAll() {
+        return playlistService.listAll();
     }
 
     @GetMapping(value = "/{id}")
     @CrossOrigin(origins = "*", allowedHeaders = "*")
-    Optional<Playlist> getPlaylistById(@PathVariable Integer id) {
-        return playlistService.findPlaylistById(id);
+    PlaylistView getPlaylistById(@PathVariable Integer id) {
+        return playlistService.view(id);
     }
 
     @GetMapping(value = "/{id}/tracks")
@@ -45,20 +39,19 @@ public class PlaylistController {
 
     @PostMapping(value = "/add")
     @CrossOrigin(origins = "*", allowedHeaders = "*")
-    public void addPlaylist(@RequestBody Playlist playlist) {
-        playlistService.addPlaylist(playlist);
+    public PlaylistView addPlaylist(@RequestBody PlaylistDraft draft) {
+        return playlistService.create(draft);
     }
 
     @DeleteMapping(value = "/{id}")
     @CrossOrigin(origins = "*", allowedHeaders = "*")
     public void delete(@PathVariable Integer id) {
-        trackRepository.findTracksByPlaylistId(id).forEach(trackRepository::delete);
-        this.playlistRepository.deleteById(id);
+        playlistService.deleteOwned(id);
     }
 
     @GetMapping(value = "/all/{username}")
     @CrossOrigin(origins = "*", allowedHeaders = "*")
-    public List<Playlist> getAllPlaylistByUserName(@PathVariable String username) {
-        return playlistService.findAllPlaylistByUsername(username);
+    public List<PlaylistView> getAllPlaylistByUserName(@PathVariable String username) {
+        return playlistService.listByUsername(username);
     }
 }

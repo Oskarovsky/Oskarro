@@ -1,0 +1,60 @@
+<div class="page" *ngIf="!loggedIn">
+  <p class="kicker">Nowy utwór</p>
+  <h1 class="display">Najpierw konto</h1>
+  <p class="lede"><a routerLink="/login">Zaloguj się</a>, żeby dodać utwór.</p>
+</div>
+
+<div class="page" *ngIf="loggedIn && closed">
+  <p class="kicker">Edycja</p>
+  <h1 class="display">Ten utwór jest już zamknięty</h1>
+  <p class="lede">Poprawki może wprowadzić tylko autor i tylko przez 24 godziny od dodania.</p>
+  <p><a class="btn-ghost" [routerLink]="['/tracklist', backGenre]">Wróć do listy</a></p>
+</div>
+
+<div class="page" *ngIf="loggedIn && !closed">
+  <a class="back" [routerLink]="['/tracklist', backGenre]">← {{ backGenre }}</a>
+  <p class="kicker">{{ editing ? 'Poprawka' : 'Nowy utwór' }}</p>
+  <h1 class="display">{{ editing ? 'Popraw utwór' : 'Dodaj utwór' }}</h1>
+  <p class="lede" *ngIf="!editing">Po zapisaniu autor może jeszcze poprawić dane przez 24 godziny. Potem utwór zostaje w tej postaci.</p>
+  <p class="lede" *ngIf="editing && editableUntil">Możesz poprawiać do {{ editableUntil | date:'dd.MM.yyyy HH:mm' }}.</p>
+
+  <form class="composer" (submit)="$event.preventDefault(); save()">
+    <div class="form-grid">
+      <label>Tytuł
+        <input [(ngModel)]="draft.title" name="title" type="text" maxlength="80" required>
+      </label>
+      <label>Wykonawca
+        <input [(ngModel)]="draft.artist" name="artist" type="text" maxlength="80" required>
+      </label>
+      <label>Remixer lub wersja
+        <input [(ngModel)]="draft.version" name="version" type="text" maxlength="80" placeholder="np. Extended Mix, Remix by…">
+      </label>
+      <label>Gatunek
+        <select [(ngModel)]="draft.genre" name="genre">
+          <option *ngFor="let genre of genres" [value]="genre.id">{{ genre.label }}</option>
+        </select>
+      </label>
+      <label>Gdzie jest plik
+        <select [(ngModel)]="source" name="source">
+          <option value="hostuje">hostuje.net</option>
+          <option value="soundfiles">soundfiles.eu</option>
+        </select>
+      </label>
+      <label class="wide">Link do pliku
+        <input [(ngModel)]="draft.url" name="url" type="text"
+               [placeholder]="source === 'hostuje' ? 'https://hostuje.net/file.php?id=...' : 'https://soundfiles.eu/QN9mExDZG6dW/file'"
+               required>
+      </label>
+      <p class="meta wide">hostuje.net ma 32 znaki po <span class="meta">id=</span>. soundfiles.eu ma 12 znaków w adresie pliku.</p>
+      <label class="wide">Zdjęcie utworu
+        <input type="file" accept="image/jpeg,image/png,image/gif,image/webp" (change)="selectCover($event)">
+      </label>
+    </div>
+    <p class="meta">JPEG, PNG albo GIF do 2 MB. Serwer zawsze zapisuje miniaturę: dłuższy bok do 480 px, plik poniżej 80 KB.</p>
+    <img *ngIf="coverSrc()" class="cover" [src]="coverSrc()" alt="" style="margin-top: 12px;">
+    <p class="alert" *ngIf="notice">{{ notice }}</p>
+    <button class="btn-accent" type="submit" style="margin-top: 16px;" [disabled]="saving">
+      {{ editing ? 'Zapisz poprawkę' : 'Dodaj utwór' }}
+    </button>
+  </form>
+</div>

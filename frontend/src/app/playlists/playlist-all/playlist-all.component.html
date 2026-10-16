@@ -1,27 +1,21 @@
-<div class="container">
-
-  <!-- Playlist menu -->
-  <div class="row" style="margin-top: 12px;">
-    <input type="text"
-           [(ngModel)]="searchText"
-           class="mat-form-field"
-           style="width: 50%;"
-           placeholder="Wyszukaj playlistę..." />
+<div class="page">
+  <p class="kicker">Składanki</p>
+  <div class="section-head">
+    <h1 class="display">Playlisty</h1>
+    <a class="btn-accent" routerLink="/playlist/add" *ngIf="loggedIn">Nowa składanka</a>
   </div>
+  <p class="lede">Zestawy złożone przez ludzi z Oskarro. Każda składanka ma autora, nazwę i opis.</p>
 
-  <!-- Playlist content -->
-  <div class="row" style="margin-top: 28px;">
-    <div class="col-md-3">
-      <br>
-      <div class="list-group list-group-flush">
-        <div *ngFor="let playlist of playlists | playlistFilter:searchText">
-          <a class="list-group-item list-group-item-action">
-            {{ playlist.name }}
-            <i class="material-icons" style="float:right; margin-right: 2px;" routerLink="../../playlist/{{playlist.id}}/details">slideshow</i>
-          </a>
-        </div>
-      </div>
-    </div>
+  <label class="find">
+    <input [(ngModel)]="searchText" type="search" placeholder="Szukaj składanki">
+  </label>
+
+  <div class="stack" *ngIf="visible.length">
+    <a class="playlist-card" *ngFor="let playlist of visible" [routerLink]="['/playlist', playlist.id, 'details']">
+      <strong>{{ playlist.name }}</strong>
+      <span>{{ playlist.description || 'Bez opisu' }}</span>
+      <em>{{ playlist.owner || 'Oskarro' }} · {{ playlist.tracks || 0 }} {{ playlist.tracks === 1 ? 'utwór' : 'utworów' }}</em>
+    </a>
   </div>
-
+  <p class="lede" *ngIf="loaded && !visible.length">Nie ma składanki o takiej nazwie.</p>
 </div>

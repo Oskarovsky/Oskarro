@@ -8,6 +8,8 @@ import {TrackService} from '../../services/track/track.service';
 import {ActivatedRoute} from '@angular/router';
 import {VideoService} from '../../services/video/video.service';
 import {DomSanitizer} from '@angular/platform-browser';
+import {hostujePlayer} from '../../services/hostuje';
+import {TokenStorageService} from '../../services/auth/token-storage.service';
 
 @Component({
   selector: 'app-video-edit',
@@ -21,13 +23,18 @@ export class VideoEditComponent implements OnInit {
   tracks: Track[] = [];
   sub: Subscription;
   video: Video;
+  draft = {artist: '', title: '', version: '', url: ''};
+
+  isLoggedIn = false;
 
   constructor(private videoService: VideoService,
               private trackService: TrackService,
               private sanitizer: DomSanitizer,
-              private route: ActivatedRoute) { }
+              private route: ActivatedRoute,
+              private tokenStorage: TokenStorageService) { }
 
   ngOnInit() {
+    this.isLoggedIn = !!this.tokenStorage.getToken();
     this.getVideoById();
     this.getAllTracksFromVideo();
   }
@@ -74,7 +81,23 @@ export class VideoEditComponent implements OnInit {
     );
   }
 
-  addTrackToVideo(title: string, artist: string, version: string) {
+  showPlayer(url: string) {
+    return this.isLoggedIn && !!hostujePlayer(url);
+  }
+
+  addTrackToVideo() {
+    const artist = this.draft.artist.trim();
+    const title = this.draft.title.trim();
+    const version = this.draft.version.trim();
+    const url = this.draft.url.trim();
+    if (!artist || !title) {
+      alert('Podaj wykonawcę i tytuł.');
+      return;
+    }
+    if (!hostujePlayer(url)) {
+      alert('Podaj link do pliku na hostuje.net.');
+      return;
+    }
     const newTrack: Track = {
       id: null,
       title,
@@ -82,7 +105,7 @@ export class VideoEditComponent implements OnInit {
       points: null,
       genre: '',
       version,
-      url: '',
+      url,
       position: null,
       playlist: null,
       video: this.video
@@ -90,10 +113,11 @@ export class VideoEditComponent implements OnInit {
 
     this.trackService.saveTrackToVideo(newTrack).subscribe(
       response => {
-        this.tracks.push(newTrack);
+        this.tracks.push(response && response.id ? response : newTrack);
+        this.draft = {artist: '', title: '', version: '', url: ''};
       },
       error => {
-        alert('An error with adding track to video has occurred');
+        alert('Nie udało się dodać utworu.');
       }
     );
   }

@@ -7,7 +7,15 @@ public interface PlaylistService {
 
     List<com.oskarro.oskarito.playlist.Playlist> getAllPlaylist();
 
-    void addPlaylist(com.oskarro.oskarito.playlist.Playlist playlist);
+    PlaylistView create(PlaylistDraft draft);
+
+    PlaylistView view(Integer id);
+
+    List<PlaylistView> listAll();
+
+    List<PlaylistView> listByUsername(String username);
+
+    void deleteOwned(Integer id);
 
     Optional<com.oskarro.oskarito.playlist.Playlist> findPlaylistById(Integer id);
 

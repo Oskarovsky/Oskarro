@@ -1,11 +1,59 @@
+<div class="page" *ngIf="track.id">
+  <a class="back" [routerLink]="['/tracklist', genrePath]">← {{ genreLabel }}</a>
+  <div class="track-layout">
+    <img *ngIf="track.hasCover" class="cover" [src]="coverSrc()" alt="">
+    <section class="track-hero">
+      <p class="kicker">{{ genreLabel }}</p>
+      <h1>{{ track.title }}<span class="version" *ngIf="track | versionLabel as version"> ({{ version }})</span></h1>
+      <p class="artist">{{ track.artist }}</p>
+      <p class="meta">
+        <span *ngIf="track.sharedBy">
+          dodał
+          <a [routerLink]="['/profile', track.sharedBy]">{{ track.sharedBy }}</a>
+        </span>
+        <span *ngIf="track.authorRank"> · {{ track.authorRank }}</span>
+      </p>
 
-<div class="container">
-<mat-card>
-  <mat-card-title>Muzikum</mat-card-title>
-  <mat-card-content>
-    <h3 mat-line>{{track.title}}</h3>
-    <h2 mat-line>{{track.version}}</h2>
-    <h2 mat-line>{{track.artist}}</h2>
-  </mat-card-content>
-</mat-card>
+      <app-track-player [url]="track.url"></app-track-player>
+      <p class="gate" *ngIf="!isLoggedIn && playable"><a routerLink="/login">Zaloguj się</a>, żeby odsłuchać ten utwór.</p>
+
+      <div class="votes" *ngIf="isLoggedIn">
+        <app-score [value]="score"></app-score>
+        <button class="like" [class.on]="mine === 1" type="button" (click)="vote(1)">Lubię to</button>
+        <button class="like down" [class.on]="mine === -1" type="button" (click)="vote(-1)">Nie podoba mi się</button>
+      </div>
+      <p class="meta" *ngIf="!isLoggedIn"><app-score [value]="score"></app-score> <a routerLink="/login">Zaloguj się</a>, żeby zagłosować.</p>
+
+      <p class="votes" *ngIf="isLoggedIn && track.downloadUrl">
+        <a class="btn-accent" [href]="track.downloadUrl" target="_blank" rel="noopener">{{ downloadLabel }}</a>
+      </p>
+      <p class="meta" *ngIf="isLoggedIn && playable && !track.downloadUrl && !track.downloadSlots">
+        Oceń albo skomentuj utwór. Jedna taka aktywność otwiera pobieranie 10 najnowszych utworów.
+      </p>
+      <p class="meta" *ngIf="isLoggedIn && playable && !track.downloadUrl && track.downloadSlots">
+        Ten utwór jest poza pulą. Masz otwarte {{ track.downloadSlots }} najnowszych. Kolejna ocena albo komentarz otwiera następne 10.
+      </p>
+      <p class="meta" *ngIf="!isLoggedIn && playable"><a routerLink="/login">Zaloguj się</a>, żeby pobrać plik. Przycisk pojawia się po ocenie albo komentarzu.</p>
+      <p class="meta" *ngIf="track.editable">
+        <a [routerLink]="['/track', track.id, 'edit']">Popraw utwór</a>
+        — autor może to zrobić do {{ track.editableUntil | date:'dd.MM.yyyy HH:mm' }}.
+      </p>
+    </section>
+  </div>
+
+  <section class="comments">
+    <h2>Komentarze</h2>
+    <p class="meta" *ngIf="comments.length === 0">Jeszcze nikt nie zostawił zdania. Pierwszy komentarz zostaje na stronie.</p>
+    <article class="comment" *ngFor="let comment of comments">
+      <strong><a [routerLink]="['/profile', comment.author]">{{ comment.author }}</a></strong>
+      <time>{{ comment.createdAt | date:'dd.MM.yyyy HH:mm' }}</time>
+      <div>{{ comment.text }}</div>
+    </article>
+
+    <form class="composer" *ngIf="isLoggedIn" (submit)="$event.preventDefault(); addComment()">
+      <textarea [(ngModel)]="draft" name="comment" rows="3" maxlength="1000" placeholder="Co sądzisz o tym numerze?"></textarea>
+      <button class="btn-accent" type="submit" style="margin-top: 12px;">Skomentuj</button>
+    </form>
+    <p class="gate" *ngIf="!isLoggedIn"><a routerLink="/login">Zaloguj się</a>, żeby skomentować.</p>
+  </section>
 </div>

@@ -13,11 +13,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { TrackComponent } from './tracks/track/track.component';
 import { TrackListComponent } from './tracks/track-list/track-list.component';
-import { ProviderComponent } from './providers/provider/provider.component';
 import { MatGridListModule } from '@angular/material/grid-list';
-import { ProviderListComponent } from './providers/provider-list/provider-list.component';
-import { ProviderDetailsComponent } from './providers/provider-details/provider-details.component';
-import { AddProviderComponent } from './providers/provider-add/add-provider.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NavigationComponent } from './navigation/navigation.component';
 import { MatMenuModule } from '@angular/material/menu';
@@ -42,6 +38,7 @@ import { BoardAdminComponent } from './user/board-admin/board-admin.component';
 import { BoardModeratorComponent } from './user/board-moderator/board-moderator.component';
 import { BoardUserComponent } from './user/board-user/board-user.component';
 import { VideoComponent } from './videos/video/video.component';
+import { ChannelSetComponent } from './videos/channel-set/channel-set.component';
 import { VideoAddComponent } from './videos/video-add/video-add.component';
 import {VideoFilterPipe} from './services/video/video-filter.pipe';
 import { VideoDetailsComponent } from './videos/video-details/video-details.component';
@@ -49,17 +46,20 @@ import { VideoEditComponent } from './videos/video-edit/video-edit.component';
 import { PlaylistAllComponent } from './playlists/playlist-all/playlist-all.component';
 import { HomeComponent } from './home/home.component';
 import { FooterComponent } from './footer/footer.component';
+import { TrackPlayerComponent } from './tracks/kraken-player/kraken-player.component';
+import { TrackFormComponent } from './tracks/track-form/track-form.component';
+import { RankingComponent } from './ranking/ranking.component';
+import { SearchComponent } from './search/search.component';
+import { VersionLabelPipe } from './tracks/version-label.pipe';
+import { ScoreBadgeComponent } from './tracks/score-badge/score-badge.component';
 
 
 @NgModule({
   declarations: [
     AppComponent,
     TrackComponent,
+    TrackFormComponent,
     TrackListComponent,
-    ProviderComponent,
-    ProviderListComponent,
-    ProviderDetailsComponent,
-    AddProviderComponent,
     NavigationComponent,
     NotFoundComponent,
     ToplistComponent,
@@ -76,13 +76,19 @@ import { FooterComponent } from './footer/footer.component';
     BoardModeratorComponent,
     BoardUserComponent,
     VideoComponent,
+    ChannelSetComponent,
     VideoAddComponent,
     VideoFilterPipe,
     VideoDetailsComponent,
     VideoEditComponent,
     PlaylistAllComponent,
     HomeComponent,
-    FooterComponent
+    FooterComponent,
+    TrackPlayerComponent,
+    RankingComponent,
+    SearchComponent,
+    VersionLabelPipe,
+    ScoreBadgeComponent
   ],
   imports: [
     BrowserModule,

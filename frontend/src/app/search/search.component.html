@@ -1,0 +1,22 @@
+<div class="page">
+  <p class="kicker">Szukaj</p>
+  <h1 class="display" *ngIf="query">Wyniki dla „{{ query }}”</h1>
+  <h1 class="display" *ngIf="!query">Szukaj utworu</h1>
+  <p class="lede" *ngIf="!query">Wpisz tytuł, wykonawcę albo remix u góry i naciśnij OK.</p>
+  <p class="lede" *ngIf="query && results.length === 0">Nic nie pasuje do „{{ query }}”. Dodaj go z menu u góry.</p>
+  <p class="meta" *ngIf="query && results.length">{{ results.length }}</p>
+
+  <div class="latest-grid" *ngIf="results.length">
+    <a class="track-row" *ngFor="let track of results" [routerLink]="['/track', track.id]">
+      <span class="thumb-slot">
+        <img *ngIf="track.hasCover" class="thumb" [src]="cover(track)" alt="">
+        <span class="pill" *ngIf="!track.hasCover">{{ genreName(track.genre) }}</span>
+      </span>
+      <span>
+        <h2>{{ track.title }}<span class="version" *ngIf="track | versionLabel as version"> ({{ version }})</span></h2>
+        <span class="meta">{{ genreName(track.genre) }} · {{ track.artist }}</span>
+      </span>
+      <app-score [value]="track.score"></app-score>
+    </a>
+  </div>
+</div>
