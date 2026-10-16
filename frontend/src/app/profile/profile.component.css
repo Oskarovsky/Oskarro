@@ -1,3 +1,66 @@
 :host {
   display: block;
 }
+
+.autoplay-switch {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+}
+
+.autoplay-switch input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  padding: 0;
+}
+
+.autoplay-track {
+  width: 52px;
+  height: 32px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: #2b271f;
+  border: 1px solid rgba(244, 236, 214, 0.14);
+  position: relative;
+}
+
+.autoplay-track::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #f6f1e6;
+  transition: transform 0.15s ease;
+}
+
+.autoplay-switch input:checked + .autoplay-track {
+  background: #e4ff4a;
+  border-color: #e4ff4a;
+}
+
+.autoplay-switch input:checked + .autoplay-track::after {
+  transform: translateX(20px);
+  background: #17160c;
+}
+
+.autoplay-switch input:focus-visible + .autoplay-track {
+  outline: 2px solid rgba(228, 255, 74, 0.45);
+  outline-offset: 2px;
+}
+
+.autoplay-copy {
+  display: grid;
+  gap: 2px;
+}
+
+.autoplay-copy strong {
+  font-weight: 650;
+}

@@ -1,82 +1,78 @@
 <div class="auth-wrap">
-<div class="card bg-light">
-  <article class="card-body mx-auto" style="max-width: 400px;">
+  <div class="auth-card">
+    <h1 class="display" style="font-size: 2.4rem; margin: 12px 8px 0;">{{ 'Załóż konto' | t:'Create an account' }}</h1>
+    <p class="lede" style="margin: 8px;">{{ 'Potem możesz dodawać utwory, słuchać ich i zostawiać komentarze.' | t:'Then you can add tracks, listen to them and leave comments.' }}</p>
 
-    <form *ngIf="!isSuccessful" name="form" (ngSubmit)="f.form.valid && onSubmit()" #f="ngForm" novalidate>
-
-      <h4 class="card-title mt-3 text-center">Załóż konto</h4>
-      <p class="text-center">Potem możesz dodawać utwory, słuchać ich i zostawiać komentarze.</p>
-
-      <div class="form-group input-group">
-        <div class="input-group-prepend">
-          <span class="input-group-text"> <i class="fa fa-user fa-2x"></i> </span>
+    <form *ngIf="!isSuccessful" (ngSubmit)="onSubmit()" #f="ngForm" novalidate>
+      <div class="form-group">
+        <label for="username">{{ 'Nazwa użytkownika' | t:'Username' }}</label>
+        <input id="username" type="text" class="form-control" name="username" [(ngModel)]="form.username"
+               required minlength="3" maxlength="32" #username="ngModel" autocomplete="username">
+        <div class="alert alert-danger" *ngIf="submitted && (username.invalid || usernameHint)">
+          <div *ngIf="username.errors?.required">{{ 'Nazwa użytkownika jest wymagana' | t:'Username is required' }}</div>
+          <div *ngIf="username.errors?.minlength">{{ 'Nazwa: 3–32 znaki, litery, cyfry, kropka, myślnik albo _.' | t:'Username: 3–32 characters, letters, digits, a dot, a hyphen or _.' }}</div>
+          <div *ngIf="usernameHint">{{ usernameHint }}</div>
         </div>
-        <div class="alert-danger" style="position: relative; text-align: center; font-size: 15px;" *ngIf="f.submitted && username.invalid">
-          <div *ngIf="username.errors.required">Nazwa użytkownika jest wymagana</div>
-          <div *ngIf="username.errors.minlength">Nazwa użytkownika musi zawierać minimum 3 znaki</div>
-          <div *ngIf="username.errors.maxlength">Nazwa użytkownika nie może zawierać więcej niż 20 znaków</div>
-        </div>
-        <input type="text" class="form-control" name="username" [(ngModel)]="form.username"
-               required minlength="3" maxlength="20" #username="ngModel" placeholder="Nazwa użytkownika" />
-      </div> <!-- form-group// -->
-
-      <div class="form-group input-group">
-        <div class="input-group-prepend">
-          <span class="input-group-text"> <i class="fa fa-envelope fa-lg" style="margin-bottom: 2px; margin-top: 2px"></i> </span>
-        </div>
-        <div class="alert-danger" style="position: relative; text-align: center; font-size: 15px;" *ngIf="f.submitted && email.invalid">
-          <div *ngIf="email.errors.required">Wymagany adres email</div><div *ngIf="email.errors.email">Niepoprawny email</div>
-        </div>
-        <input type="email" class="form-control" name="email" [(ngModel)]="form.email"
-          required email #email="ngModel" placeholder="Email" />
-      </div> <!-- form-group end.// -->
-
-      <div class="form-group input-group">
-        <div class="input-group-prepend">
-          <span class="input-group-text"> <i class="fa fa-lock fa-2x"></i> </span>
-        </div>
-        <div class="alert-danger" style="position: relative; text-align: center; font-size: 15px;" *ngIf="f.submitted && password.invalid">
-          <div *ngIf="password.errors.required">Wymagane hasło</div>
-          <div *ngIf="password.errors.minlength">Hasło musi zawierać minimum 6 znaków</div>
-        </div>
-        <input type="password" class="form-control" name="password" [(ngModel)]="form.password"
-          required minlength="6" #password="ngModel" placeholder="Hasło" id="password" />
-      </div> <!-- form-group// -->
-
-      <div class="form-group input-group">
-        <div class="input-group-prepend">
-          <span class="input-group-text"> <i class="fa fa-lock fa-2x"></i> </span>
-        </div>
-        <div class="alert-danger" style="position: relative; text-align: center; font-size: 15px;">
-          <div id="message"></div>
-        </div>
-        <input class="form-control" placeholder="Powtórz hasło" type="password"
-               id="confirm_password" name="confirm_password" onkeyup='check();'> <br/>
-      </div> <!-- form-group// -->
+      </div>
 
       <div class="form-group">
-        <div style="position: relative; text-align: center; font-size: 15px;">
-          <input type="checkbox" name="terms" id="terms"> Zgadzam się na warunki regulaminu
+        <label for="email">Email</label>
+        <input id="email" type="email" class="form-control" name="email" [(ngModel)]="form.email"
+               required email maxlength="50" #email="ngModel" autocomplete="email">
+        <div class="alert alert-danger" *ngIf="submitted && email.invalid">
+          <div *ngIf="email.errors?.required">{{ 'Wymagany adres email' | t:'Email address is required' }}</div>
+          <div *ngIf="email.errors?.email">{{ 'Niepoprawny email' | t:'Invalid email' }}</div>
         </div>
-      </div><!-- form-group// -->
-
+      </div>
 
       <div class="form-group">
-        <button type="submit" class="btn btn-primary btn-block" id="submit_register" disabled>Dodaj konto</button>
-      </div> <!-- form-group// -->
+        <label for="reg-password">{{ 'Hasło' | t:'Password' }}</label>
+        <input id="reg-password" type="password" class="form-control" name="password" [(ngModel)]="form.password"
+               required minlength="6" maxlength="40" #password="ngModel" autocomplete="new-password">
+        <div class="alert alert-danger" *ngIf="submitted && password.invalid">
+          <div *ngIf="password.errors?.required">{{ 'Wymagane hasło' | t:'Password is required' }}</div>
+          <div *ngIf="password.errors?.minlength">{{ 'Hasło musi zawierać minimum 6 znaków' | t:'The password must be at least 6 characters' }}</div>
+        </div>
+      </div>
 
+      <div class="form-group">
+        <label for="reg-confirm">{{ 'Powtórz hasło' | t:'Repeat the password' }}</label>
+        <input id="reg-confirm" type="password" class="form-control" name="confirm" [(ngModel)]="form.confirm"
+               required #confirm="ngModel" autocomplete="new-password">
+        <div class="alert alert-danger" *ngIf="submitted && mismatch">
+          {{ 'Hasła nie są takie same.' | t:'The passwords do not match.' }}
+        </div>
+      </div>
 
-      <p class="text-center">Masz już konto? <a href="">Zaloguj się!</a> </p>
-      <div class="alert alert-warning" *ngIf="f.submitted && isSignUpFailed">
-        Wystąpił błąd podczas rejestracji!<br />{{ errorMessage }}
+      <div class="form-group">
+        <label>
+          <input type="checkbox" name="terms" [(ngModel)]="form.terms" required #terms="ngModel">
+          {{ 'Zgadzam się na warunki regulaminu' | t:'I agree to the terms' }}
+        </label>
+        <div class="alert alert-danger" *ngIf="submitted && terms.invalid">
+          {{ 'Zaznacz zgodę, żeby założyć konto.' | t:'Tick the agreement to create an account.' }}
+        </div>
+      </div>
+
+      <div class="hp" aria-hidden="true">
+        <input name="oskarro_hp" [(ngModel)]="form.hp" tabindex="-1" autocomplete="off">
+      </div>
+
+      <div class="form-group">
+        <button class="btn btn-primary btn-block" type="submit" [disabled]="busy">{{ 'Dodaj konto' | t:'Create account' }}</button>
+      </div>
+
+      <div class="alert alert-danger" *ngIf="isSignUpFailed">
+        {{ 'Wystąpił błąd podczas rejestracji!' | t:'Registration failed.' }}<br>{{ errorMessage }}
       </div>
     </form>
-    <div class="alert alert-success" *ngIf="isSuccessful">
-      Zarejestrowałeś się w portalu oskarro.com !
+
+    <p class="meta" *ngIf="!isSuccessful">{{ 'Masz już konto?' | t:'Already have an account?' }} <a routerLink="/login">{{ 'Zaloguj się' | t:'Sign in' }}</a></p>
+    <div class="alert alert-success" *ngIf="isSuccessful && delivered">
+      {{ 'Konto jest zapisane. Sprawdź skrzynkę i otwórz link aktywacyjny. Dopiero wtedy można się zalogować.' | t:'The account is saved. Check your inbox and open the activation link. You can sign in only after that.' }}
     </div>
-  </article>
+    <div class="alert alert-success" *ngIf="isSuccessful && !delivered">
+      {{ 'Konto jest zapisane i czeka na aktywację. Mail nie wyszedł, bo skrzynka nie jest jeszcze podłączona. Zalogować się będzie można po otwarciu linku z maila.' | t:'The account is saved and waiting for activation. The email was not sent, because the mailbox is not connected yet. You can sign in after opening the link from the email.' }}
+    </div>
+  </div>
 </div>
-</div>
-
-
-

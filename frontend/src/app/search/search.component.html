@@ -1,22 +1,28 @@
 <div class="page">
-  <p class="kicker">Szukaj</p>
-  <h1 class="display" *ngIf="query">Wyniki dla „{{ query }}”</h1>
-  <h1 class="display" *ngIf="!query">Szukaj utworu</h1>
-  <p class="lede" *ngIf="!query">Wpisz tytuł, wykonawcę albo remix u góry i naciśnij OK.</p>
-  <p class="lede" *ngIf="query && results.length === 0">Nic nie pasuje do „{{ query }}”. Dodaj go z menu u góry.</p>
+  <p class="kicker">{{ 'Szukaj' | t:'Search' }}</p>
+  <h1 class="display" *ngIf="query">{{ lang.en ? 'Results for “' + query + '”' : 'Wyniki dla „' + query + '”' }}</h1>
+  <h1 class="display" *ngIf="!query">{{ 'Szukaj utworu' | t:'Search for a track' }}</h1>
+  <p class="lede" *ngIf="!query">{{ 'Wpisz tytuł albo wykonawcę w polu na górze i naciśnij OK.' | t:'Type a title or an artist in the field at the top and press OK.' }}</p>
+  <p class="lede" *ngIf="query && results.length === 0">{{ lang.en ? 'Nothing matches “' + query + '”. Add it from the menu next to your name.' : 'Nic nie pasuje do „' + query + '”. Dodaj go z menu przy swojej nazwie.' }}</p>
   <p class="meta" *ngIf="query && results.length">{{ results.length }}</p>
 
   <div class="latest-grid" *ngIf="results.length">
-    <a class="track-row" *ngFor="let track of results" [routerLink]="['/track', track.id]">
-      <span class="thumb-slot">
-        <img *ngIf="track.hasCover" class="thumb" [src]="cover(track)" alt="">
-        <span class="pill" *ngIf="!track.hasCover">{{ genreName(track.genre) }}</span>
-      </span>
-      <span>
-        <h2>{{ track.title }}<span class="version" *ngIf="track | versionLabel as version"> ({{ version }})</span></h2>
-        <span class="meta">{{ genreName(track.genre) }} · {{ track.artist }}</span>
-      </span>
-      <app-score [value]="track.score"></app-score>
-    </a>
+    <ng-container *ngFor="let track of pageResults; let i = index">
+      <a class="track-row" [routerLink]="['/track', track.id]">
+        <span class="thumb-col">
+          <span class="thumb-slot">
+            <app-cover [hasCover]="track.hasCover" [src]="cover(track)" [genre]="track.genre"></app-cover>
+          </span>
+          <app-score [value]="track.score"></app-score>
+        </span>
+        <span>
+          <h2>{{ track.title }}<span class="version" *ngIf="track | versionLabel as version"> ({{ version }})</span></h2>
+          <span class="meta">{{ genreName(track.genre) }} · {{ track.artist }}<app-track-facts [track]="track"></app-track-facts></span>
+        </span>
+      </a>
+      <app-ad-slot *ngIf="i === 3" slot="szukaj" format="banner"></app-ad-slot>
+    </ng-container>
+    <app-ad-slot *ngIf="pageResults.length < 4" slot="szukaj" format="banner"></app-ad-slot>
   </div>
+  <app-pager *ngIf="results.length" [page]="currentPage" [count]="pageCount" (pageChange)="showPage($event)"></app-pager>
 </div>

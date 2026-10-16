@@ -2,7 +2,9 @@ package com.oskarro.oskarito.track;
 
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
 
+import java.util.Collection;
 import java.util.List;
 
 public interface TrackCommentRepository extends CrudRepository<TrackComment, Integer> {
@@ -15,4 +17,7 @@ public interface TrackCommentRepository extends CrudRepository<TrackComment, Int
 
     @Query("select c.track.author.id, count(c) from TrackComment c where c.track.author is not null group by c.track.author.id")
     List<Object[]> countGroupedByTrackAuthor();
+
+    @Query("select c.track.id, count(c) from TrackComment c where c.track.id in :ids group by c.track.id")
+    List<Object[]> countsForTracks(@Param("ids") Collection<Integer> ids);
 }

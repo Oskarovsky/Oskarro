@@ -6,8 +6,11 @@ import {Subscription} from "rxjs";
 import {ActivatedRoute} from "@angular/router";
 import {TrackService} from "../../services/track/track.service";
 import {Track} from "../../tracks/track/model/track";
-import {hostujePlayer} from "../../services/hostuje";
+import {audioRef} from "../../services/audio-hosts";
 import {TokenStorageService} from "../../services/auth/token-storage.service";
+import {SeoService} from "../../seo.service";
+import {PlaybackService} from "../../tracks/playback.service";
+import {Router} from "@angular/router";
 
 @Component({
   selector: 'app-playlist-details',
@@ -29,10 +32,22 @@ export class PlaylistDetailsComponent implements OnInit {
   constructor(private playlistService: PlaylistService,
               private trackService: TrackService,
               private route: ActivatedRoute,
-              private tokenStorage: TokenStorageService) { }
+              private tokenStorage: TokenStorageService,
+              private seo: SeoService,
+              private playback: PlaybackService,
+              private router: Router) { }
+
+  playAll() {
+    const queue = (this.tracks || []).filter(track => !!audioRef(track?.url));
+    if (!queue.length) {
+      return;
+    }
+    this.playback.open(queue[0], queue);
+    this.router.navigate(['/track', queue[0].id], {queryParams: {lista: this.playlist?.id}});
+  }
 
   showPlayer(url: string) {
-    return this.isLoggedIn && !!hostujePlayer(url);
+    return this.isLoggedIn && !!audioRef(url);
   }
 
   get canEdit() {
@@ -80,6 +95,7 @@ export class PlaylistDetailsComponent implements OnInit {
         this.playlistService.getPlaylist(id).subscribe(
           response => {
             this.playlist = response;
+            this.seo.playlist(response);
           },
           error => {
             alert('An error with fetching playlist has occurred')

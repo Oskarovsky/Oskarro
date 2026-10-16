@@ -155,7 +155,42 @@ public class ChannelCatalog {
         if (title.isEmpty()) {
             return null;
         }
-        return new ChannelVideo(id, title, findDuration(lockup.optJSONObject("contentImage")), findPublished(metadata));
+        return new ChannelVideo(
+                id,
+                title,
+                findDuration(lockup.optJSONObject("contentImage")),
+                findPublished(metadata),
+                findViews(metadata));
+    }
+
+    private String findViews(JSONObject metadata) {
+        return firstLabel(metadata, "wyświetle");
+    }
+
+    private String firstLabel(Object node, String needle) {
+        if (node instanceof JSONObject obj) {
+            Object value = obj.opt("accessibilityLabel");
+            if (value instanceof String text) {
+                String trimmed = text.replace('\u00a0', ' ').trim();
+                if (trimmed.toLowerCase().contains(needle)) {
+                    return trimmed;
+                }
+            }
+            for (String key : obj.keySet()) {
+                String found = firstLabel(obj.get(key), needle);
+                if (!found.isEmpty()) {
+                    return found;
+                }
+            }
+        } else if (node instanceof JSONArray arr) {
+            for (int i = 0; i < arr.length(); i++) {
+                String found = firstLabel(arr.get(i), needle);
+                if (!found.isEmpty()) {
+                    return found;
+                }
+            }
+        }
+        return "";
     }
 
     private String findDuration(JSONObject node) {

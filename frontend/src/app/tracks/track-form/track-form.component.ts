@@ -5,13 +5,7 @@ import {TrackService} from '../../services/track/track.service';
 import {TokenStorageService} from '../../services/auth/token-storage.service';
 import {AudioHost, audioHostOf, hostujeId, soundfilesId} from '../../services/audio-hosts';
 import {Track} from '../track/model/track';
-
-const GENRES = [
-  {id: 'CLUB', label: 'Club'},
-  {id: 'DANCE', label: 'Dance'},
-  {id: 'HOUSE', label: 'House'},
-  {id: 'RETRO', label: 'Retro'}
-];
+import {GENRES} from '../genres';
 
 @Component({
   selector: 'app-track-form',
@@ -49,10 +43,10 @@ export class TrackFormComponent implements OnInit {
       this.notice = '';
       this.coverFile = null;
       this.previewUrl = '';
-      const requested = (this.route.snapshot.queryParamMap.get('genre') || 'club').toUpperCase();
-      const known = GENRES.some(genre => genre.id === requested);
+      const requested = (this.route.snapshot.queryParamMap.get('genre') || 'club').trim().toLowerCase();
+      const known = GENRES.find(genre => genre.slug === requested || genre.id.toLowerCase() === requested.replace(/-/g, '_'));
       this.source = 'hostuje';
-      this.draft = {artist: '', title: '', version: '', url: '', genre: known ? requested : 'CLUB'};
+      this.draft = {artist: '', title: '', version: '', url: '', genre: known ? known.id : 'CLUB'};
       if (this.editing && this.loggedIn) {
         this.trackService.getTrackById(String(this.trackId)).subscribe((track: any) => {
           if (!track.editable) {

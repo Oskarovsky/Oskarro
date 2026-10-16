@@ -1,22 +1,28 @@
 <div class="page">
-  <p class="kicker">Kanał Oskarro</p>
+  <p class="kicker">{{ 'Kanał Oskarro' | t:'Oskarro channel' }}</p>
   <div class="section-head">
-    <h1 class="display">Sety</h1>
-    <a class="btn-ghost" href="https://www.youtube.com/@Oskarro0" target="_blank" rel="noopener">Kanał na YouTube</a>
+    <h1 class="display">{{ 'Sety na imprezę' | t:'Party sets' }}</h1>
+    <a class="btn-ghost" href="https://www.youtube.com/@Oskarro0" target="_blank" rel="noopener">{{ 'Kanał na YouTube' | t:'YouTube channel' }}</a>
   </div>
-  <p class="lede">Wszystkie sety z kanału Oskarro. Mixy na imprezę, do auta i na parkiet.</p>
+  <p class="lede">{{ 'Wszystkie sety z kanału Oskarro. Mixy na imprezę, do auta i na parkiet.' | t:'Every set from the Oskarro channel. Mixes for a party, the car and the dance floor.' }}</p>
+
+  <app-ad-slot slot="wideo" format="banner"></app-ad-slot>
 
   <div class="set-grid" *ngIf="videos.length">
-    <a class="set-card" *ngFor="let video of videos" [routerLink]="['/video/set', video.id]">
+    <a class="set-card" *ngFor="let video of pageVideos" [routerLink]="['/video/set', video.id]">
       <span class="thumb">
-        <img [src]="thumb(video.id)" [alt]="video.title">
+        <img [src]="thumb(video.id)" [alt]="video.title" (error)="fallbackThumb($event)">
         <em *ngIf="video.duration">{{ video.duration }}</em>
       </span>
       <span class="copy">
         <strong>{{ video.title }}</strong>
-        <small *ngIf="video.published">{{ video.published }}</small>
+        <small class="set-meta" *ngIf="video.views || video.published">
+          <span *ngIf="video.views">{{ video.views }}</span>
+          <span *ngIf="video.published">{{ 'Dodane' | t:'Added' }} {{ video.published }}</span>
+        </small>
       </span>
     </a>
   </div>
-  <p class="lede" *ngIf="failed">Sety chwilowo się nie ładują. Zajrzyj prosto na <a href="https://www.youtube.com/@Oskarro0" target="_blank" rel="noopener">kanał Oskarro</a>.</p>
+  <app-pager *ngIf="videos.length" [page]="currentPage" [count]="pageCount" label="Strony setów" (pageChange)="showPage($event)"></app-pager>
+  <p class="lede" *ngIf="failed">{{ 'Sety chwilowo się nie ładują. Zajrzyj prosto na' | t:'The sets are not loading right now. Go straight to the' }} <a href="https://www.youtube.com/@Oskarro0" target="_blank" rel="noopener">{{ 'kanał Oskarro' | t:'Oskarro channel' }}</a>.</p>
 </div>

@@ -26,8 +26,14 @@ public class ProfileController {
     }
 
     @PutMapping("/me")
-    ProfileView update(@RequestBody Map<String, String> body) {
-        return profileService.updateBio(body.get("bio"));
+    ProfileView update(@RequestBody Map<String, Object> body) {
+        return profileService.update(body == null ? Map.of() : body);
+    }
+
+    @PostMapping("/password")
+    void changePassword(@RequestBody Map<String, String> body) {
+        Map<String, String> note = body == null ? Map.of() : body;
+        profileService.changePassword(note.get("current"), note.get("next"));
     }
 
     @GetMapping("/{username}")

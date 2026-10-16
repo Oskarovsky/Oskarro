@@ -1,36 +1,50 @@
 <div class="page" *ngIf="community">
-  <p class="kicker">Gatunek</p>
-  <h1 class="display">{{ genreLabel }}</h1>
-  <p class="lede">Żeby znaleźć numer, wpisz frazę u góry i naciśnij OK.</p>
+  <p class="kicker">{{ 'Muzyka na imprezę' | t:'Party music' }}</p>
+  <h1 class="display">{{ genreLabel | t }}</h1>
+  <p class="lede">{{ genreAbout }}</p>
 
   <div class="votes">
-    <button class="like" type="button" [class.on]="sort === 'score'" (click)="setSort('score')">Najlepsza ocena</button>
-    <button class="like" type="button" [class.on]="sort === 'new'" (click)="setSort('new')">Najnowsze</button>
+    <button class="like" type="button" [class.on]="sort === 'new'" (click)="setSort('new')">{{ 'Najnowsze' | t:'Newest' }}</button>
+    <button class="like" type="button" [class.on]="sort === 'score'" (click)="setSort('score')">{{ 'Najlepsza ocena' | t:'Best score' }}</button>
+  </div>
+  <div class="votes">
+    <span class="meta vote-label">{{ 'Wyświetlenia' | t:'Views' }}</span>
+    <button class="like" type="button" [class.on]="sort === 'views-month'" (click)="setSort('views-month')">{{ 'W tym miesiącu' | t:'This month' }}</button>
+    <button class="like" type="button" [class.on]="sort === 'views-year'" (click)="setSort('views-year')">{{ 'W tym roku' | t:'This year' }}</button>
+    <button class="like" type="button" [class.on]="sort === 'views-all'" (click)="setSort('views-all')">{{ 'Od zawsze' | t:'All time' }}</button>
   </div>
 
-  <p *ngIf="tracks.length === 0">Nikt jeszcze nie dodał utworu w tym gatunku.</p>
+  <p *ngIf="tracks.length === 0">{{ 'Nikt jeszcze nie dodał utworu w tym gatunku.' | t:'Nobody has added a track in this genre yet.' }}</p>
 
   <div class="latest-grid" *ngIf="tracks.length">
-    <a class="track-row" *ngFor="let track of tracks" [routerLink]="['/track', track.id]">
-      <span class="thumb-slot">
-        <img *ngIf="track.hasCover" class="thumb" [src]="coverSrc(track)" alt="">
-        <span class="pill" *ngIf="!track.hasCover">{{ genreLabel }}</span>
-      </span>
-      <span>
-        <h2>{{ track.title }}<span class="version" *ngIf="track | versionLabel as version"> ({{ version }})</span></h2>
-        <span class="meta">{{ track.artist }}<span *ngIf="track.sharedBy"> · {{ track.sharedBy }}</span><span *ngIf="track.authorRank"> · {{ track.authorRank }}</span></span>
-      </span>
-      <app-score [value]="track.score"></app-score>
-    </a>
+    <ng-container *ngFor="let track of pageTracks; let i = index">
+      <a class="track-row" [routerLink]="['/track', track.id]">
+        <span class="thumb-col">
+          <span class="thumb-slot">
+            <app-cover [hasCover]="track.hasCover" [src]="coverSrc(track)" [genre]="track.genre"></app-cover>
+          </span>
+          <app-score [value]="track.score"></app-score>
+        </span>
+        <span>
+          <h2>{{ track.title }}<span class="version" *ngIf="track | versionLabel as version"> ({{ version }})</span></h2>
+          <span class="meta">{{ track.artist }}<app-track-facts [track]="track"></app-track-facts></span>
+          <span class="meta added-by" *ngIf="track.sharedBy">{{ 'dodał' | t:'added by' }} <app-person [name]="track.sharedBy" [rank]="track.authorRank" [to]="['/profile', track.sharedBy]"></app-person></span>
+        </span>
+      </a>
+      <app-ad-slot *ngIf="i === 3" slot="lista" format="banner"></app-ad-slot>
+    </ng-container>
+    <app-ad-slot *ngIf="pageTracks.length < 4" slot="lista" format="banner"></app-ad-slot>
   </div>
+
+  <app-pager *ngIf="tracks.length" [page]="currentPage" [count]="pageCount" (pageChange)="showPage($event)"></app-pager>
 
 </div>
 
 <div class="page" *ngIf="!community">
-  <p class="lede" *ngIf="!isLoggedIn"><a routerLink="/login">Zaloguj się</a>, żeby odtworzyć utwory.</p>
+  <p class="lede" *ngIf="!isLoggedIn"><a routerLink="/login">{{ 'Zaloguj się' | t:'Sign in' }}</a>{{ lang.en ? ' to play the tracks.' : ', żeby odtworzyć utwory.' }}</p>
   <div class="latest-grid">
     <article class="track-row" *ngFor="let track of tracks">
-      <span class="pill">{{ track.genre || 'Utwór' }}</span>
+      <span class="pill">{{ track.genre || ('Utwór' | t) }}</span>
       <span>
         <h2>{{ track.title }}<span class="version" *ngIf="track | versionLabel as version"> ({{ version }})</span></h2>
         <span class="meta">{{ track.artist }}</span>

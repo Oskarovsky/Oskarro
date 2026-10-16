@@ -1,5 +1,6 @@
 package com.oskarro.oskarito.playlist;
 
+import com.oskarro.oskarito.track.Track;
 import com.oskarro.oskarito.track.TrackRepository;
 import com.oskarro.oskarito.user.User;
 import com.oskarro.oskarito.user.UserRepository;
@@ -11,8 +12,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 @Transactional
@@ -20,13 +24,16 @@ public class PlaylistServiceImpl implements PlaylistService {
 
     private final PlaylistRepository playlistRepository;
     private final TrackRepository trackRepository;
+    private final PlaylistEntryRepository entryRepository;
     private final UserRepository userRepository;
 
     public PlaylistServiceImpl(PlaylistRepository playlistRepository,
                                TrackRepository trackRepository,
+                               PlaylistEntryRepository entryRepository,
                                UserRepository userRepository) {
         this.playlistRepository = playlistRepository;
         this.trackRepository = trackRepository;
+        this.entryRepository = entryRepository;
         this.userRepository = userRepository;
     }
 
@@ -71,7 +78,51 @@ public class PlaylistServiceImpl implements PlaylistService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Składankę może usunąć tylko jej autor");
         }
         trackRepository.findTracksByPlaylistId(id).forEach(trackRepository::delete);
+        entryRepository.deleteByPlaylist_Id(id);
         playlistRepository.deleteById(id);
+    }
+
+    @Override
+    public List<Track> tracks(Integer playlistId) {
+        require(playlistId);
+        List<Track> tracks = new ArrayList<>(trackRepository.findTracksByPlaylistId(playlistId));
+        Set<Integer> seen = new HashSet<>();
+        for (Track track : tracks) {
+            seen.add(track.getId());
+        }
+        for (PlaylistEntry entry : entryRepository.findByPlaylist_IdOrderByIdAsc(playlistId)) {
+            Track track = entry.getTrack();
+            if (track != null && track.getId() != null && seen.add(track.getId())) {
+                tracks.add(track);
+            }
+        }
+        return tracks;
+    }
+
+    @Override
+    public String pin(Integer playlistId, Integer trackId) {
+        Playlist playlist = require(playlistId);
+        User owner = playlist.getUser();
+        User user = currentUser();
+        if (owner == null || !owner.getId().equals(user.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Do składanki zapisuje tylko jej autor");
+        }
+        if (trackId == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Brakuje utworu");
+        }
+        Track track = trackRepository.findById(trackId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Nie ma takiego utworu"));
+        if (track.getUrl() == null || track.getUrl().isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ten utwór nie ma pliku");
+        }
+        boolean alreadyOwned = track.getPlaylist() != null && playlistId.equals(track.getPlaylist().getId());
+        if (!alreadyOwned && !entryRepository.existsByPlaylist_IdAndTrack_Id(playlistId, trackId)) {
+            PlaylistEntry entry = new PlaylistEntry();
+            entry.setPlaylist(playlist);
+            entry.setTrack(track);
+            entryRepository.save(entry);
+        }
+        return playlist.getName();
     }
 
     private Playlist require(Integer id) {
@@ -81,7 +132,8 @@ public class PlaylistServiceImpl implements PlaylistService {
 
     private PlaylistView toView(Playlist playlist) {
         String owner = playlist.getUser() == null ? "" : playlist.getUser().getUsername();
-        int tracks = trackRepository.findTracksByPlaylistId(playlist.getId()).size();
+        int tracks = trackRepository.findTracksByPlaylistId(playlist.getId()).size()
+                + (int) entryRepository.countByPlaylist_Id(playlist.getId());
         return new PlaylistView(playlist.getId(), playlist.getName(), playlist.getDescription(), owner, tracks);
     }
 

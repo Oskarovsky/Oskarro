@@ -47,6 +47,16 @@ export function audioHostOf(input: string): AudioHost {
   return hostujeId(input) ? 'hostuje' : 'soundfiles';
 }
 
+export function canonicalAudioUrl(input: string): string | null {
+  const ref = audioRef(input);
+  if (!ref) {
+    return null;
+  }
+  return ref.host === 'hostuje'
+    ? 'https://hostuje.net/file.php?id=' + ref.id
+    : 'https://soundfiles.eu/' + ref.id + '/file';
+}
+
 function unwrap(input: string): string {
   if (!input) {
     return '';

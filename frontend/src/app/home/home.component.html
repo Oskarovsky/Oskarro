@@ -1,48 +1,59 @@
 <div class="page">
+  <app-activity-chart></app-activity-chart>
   <section class="hero">
-    <p class="kicker">Muzyka od ludzi</p>
-    <h1>Szukaj utworu albo dodaj swój.</h1>
-    <p class="lede">Wpisz tytuł, wykonawcę albo remix u góry i naciśnij OK. Nowy utwór dodajesz z menu.</p>
-    <div class="hero-actions">
-      <a class="btn-ghost" routerLink="/tracklist/club">Przeglądaj Club</a>
-    </div>
+    <p class="kicker">Oskarro.com</p>
+    <h1>{{ 'Tu jest parkiet.' | t:'This is the dance floor.' }}</h1>
+    <p class="lede">{{ 'Club, trance, big room, electro i disco polo od ludzi, którzy na nim stoją. Włączasz numer, zostawiasz ocenę i dodajesz swój.' | t:'Club, trance, big room, electro and disco polo from the people who stand on it. Play a track, leave a score and add your own.' }}</p>
   </section>
 
   <section class="genre-grid">
-    <a class="genre-card" routerLink="/tracklist/club">
-      <strong>Club</strong>
-      <span>Sety i numery na parkiet.</span>
-    </a>
-    <a class="genre-card" routerLink="/tracklist/dance">
-      <strong>Dance</strong>
-      <span>Single, które niosą salę.</span>
-    </a>
-    <a class="genre-card" routerLink="/tracklist/house">
-      <strong>House</strong>
-      <span>Dłuższe brzmienia i groove.</span>
-    </a>
-    <a class="genre-card" routerLink="/tracklist/retro">
-      <strong>Retro</strong>
-      <span>To, co wraca na parkiet.</span>
+    <a class="genre-card" *ngFor="let genre of genres" [routerLink]="['/tracklist', genre.slug]" [queryParams]="{}">
+      <strong>{{ genre.label }}</strong>
+      <span>{{ blurb(genre) }}</span>
     </a>
   </section>
 
+  <div class="ad-row">
+    <app-ad-slot slot="strona" format="banner"></app-ad-slot>
+    <app-ad-slot slot="strona-pole" format="box"></app-ad-slot>
+  </div>
+
   <section>
     <div class="section-head">
-      <h2>Ostatnio dodane</h2>
+      <h2>{{ 'Ostatnio dodane' | t:'Recently added' }}</h2>
     </div>
     <div class="latest-grid" *ngIf="results.length">
       <a class="track-row" *ngFor="let track of results" [routerLink]="['/track', track.id]">
-        <span class="thumb-slot">
-          <img *ngIf="track.hasCover" class="thumb" [src]="cover(track)" alt="">
-          <span class="pill" *ngIf="!track.hasCover">{{ genreName(track.genre) }}</span>
+        <span class="thumb-col">
+          <span class="thumb-slot">
+          <app-cover [hasCover]="track.hasCover" [src]="cover(track)" [genre]="track.genre"></app-cover>
+          </span>
+          <app-score [value]="track.score"></app-score>
         </span>
         <span>
           <h2>{{ track.title }}<span class="version" *ngIf="track | versionLabel as version"> ({{ version }})</span></h2>
-          <span class="meta">{{ genreName(track.genre) }} · {{ track.artist }}</span>
+          <span class="meta">{{ genreName(track.genre) }} · {{ track.artist }}<app-track-facts [track]="track"></app-track-facts></span>
         </span>
-        <app-score [value]="track.score"></app-score>
       </a>
+    </div>
+  </section>
+
+  <section class="home-stats" *ngIf="stats" [attr.aria-label]="'Statystyki Oskarro' | t:'Oskarro stats'">
+    <div>
+      <strong>{{ stats.visitorsToday }}</strong>
+      <span>{{ phrase(stats.visitorsToday, 'visitors') }}</span>
+    </div>
+    <div>
+      <strong>{{ stats.users }}</strong>
+      <span>{{ phrase(stats.users, 'users') }}</span>
+    </div>
+    <div>
+      <strong>{{ stats.tracks }}</strong>
+      <span>{{ phrase(stats.tracks, 'tracks') }}</span>
+    </div>
+    <div>
+      <strong>{{ stats.plays }}</strong>
+      <span>{{ phrase(stats.plays, 'plays') }}</span>
     </div>
   </section>
 </div>

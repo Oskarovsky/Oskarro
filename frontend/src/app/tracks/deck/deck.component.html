@@ -1,0 +1,29 @@
+<div class="wave-player is-down" *ngIf="playback.failed" role="status">
+  <span class="wave-play" aria-hidden="true">
+    <svg viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z" opacity="0.35"/><path d="M3.4 5.2l1.6-1.4L20.6 20.2l-1.6 1.4z"/></svg>
+  </span>
+  <div class="wave-dead" aria-hidden="true">
+    <span *ngFor="let bar of deadBars" [style.height.%]="bar"></span>
+  </div>
+  <div class="wave-meta">
+    <span class="wave-time">{{ 'Niedostępne' | t:'Unavailable' }}</span>
+    <button class="btn-ghost" type="button" (click)="playback.retry()">{{ 'Spróbuj ponownie' | t:'Try again' }}</button>
+  </div>
+</div>
+<div class="wave-player" *ngIf="!playback.failed">
+  <button class="wave-play" type="button" (click)="playback.toggle()" [attr.aria-label]="playback.playing ? ('Pauza' | t:'Pause') : ('Odtwórz' | t:'Play')">
+    <svg *ngIf="!playback.playing" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>
+    <svg *ngIf="playback.playing" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5h4.2v14H6zM13.8 5H18v14h-4.2z"/></svg>
+  </button>
+  <div class="wave-stage"
+       (pointerdown)="onPointerDown($event)"
+       (pointermove)="onPointerMove($event)"
+       (pointerup)="onPointerUp()"
+       (pointercancel)="onPointerUp()">
+    <canvas #canvas [attr.aria-label]="'Pozycja utworu' | t:'Track position'"></canvas>
+  </div>
+  <div class="wave-meta">
+    <span class="wave-time">{{ playback.clock(playback.current) }} / {{ playback.clock(playback.duration) }}</span>
+    <input class="wave-volume" type="range" min="0" max="1" step="0.05" value="1" [attr.aria-label]="'Głośność' | t:'Volume'" (input)="setVolume($event)">
+  </div>
+</div>

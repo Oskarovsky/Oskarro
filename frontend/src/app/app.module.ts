@@ -45,13 +45,26 @@ import { VideoDetailsComponent } from './videos/video-details/video-details.comp
 import { VideoEditComponent } from './videos/video-edit/video-edit.component';
 import { PlaylistAllComponent } from './playlists/playlist-all/playlist-all.component';
 import { HomeComponent } from './home/home.component';
+import { ActivityChartComponent } from './home/activity-chart.component';
 import { FooterComponent } from './footer/footer.component';
 import { TrackPlayerComponent } from './tracks/kraken-player/kraken-player.component';
 import { TrackFormComponent } from './tracks/track-form/track-form.component';
 import { RankingComponent } from './ranking/ranking.component';
 import { SearchComponent } from './search/search.component';
 import { VersionLabelPipe } from './tracks/version-label.pipe';
+import { RankMarkPipe } from './tracks/rank-mark.pipe';
+import { PersonComponent } from './tracks/person.component';
+import { CoverArtComponent } from './tracks/cover-art.component';
 import { ScoreBadgeComponent } from './tracks/score-badge/score-badge.component';
+import { AdSlotComponent } from './ads/ad-slot.component';
+import { DeckComponent } from './tracks/deck/deck.component';
+import { NowBarComponent } from './tracks/now-bar.component';
+import { RadioComponent } from './tracks/radio/radio.component';
+import { PagerComponent } from './tracks/pager.component';
+import { TrackFactsComponent } from './tracks/track-facts.component';
+import { TPipe } from './t.pipe';
+import { PasswordResetComponent } from './auth/password-reset.component';
+import { ActivateAccountComponent } from './auth/activate.component';
 
 
 @NgModule({
@@ -83,12 +96,25 @@ import { ScoreBadgeComponent } from './tracks/score-badge/score-badge.component'
     VideoEditComponent,
     PlaylistAllComponent,
     HomeComponent,
+    ActivityChartComponent,
     FooterComponent,
     TrackPlayerComponent,
     RankingComponent,
     SearchComponent,
     VersionLabelPipe,
-    ScoreBadgeComponent
+    RankMarkPipe,
+    PersonComponent,
+    CoverArtComponent,
+    ScoreBadgeComponent,
+    AdSlotComponent,
+    DeckComponent,
+    NowBarComponent,
+    RadioComponent,
+    PagerComponent,
+    TrackFactsComponent,
+    TPipe,
+    PasswordResetComponent,
+    ActivateAccountComponent
   ],
   imports: [
     BrowserModule,

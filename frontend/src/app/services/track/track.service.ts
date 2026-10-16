@@ -21,7 +21,12 @@ export class TrackService {
     return this.http.get(TRACK_API + '/id/' + id);
   }
 
-  getTracksByGenre(genre: string, sort = 'score') {
+  fileFacts(id: number) {
+    return this.http.get<{bytes: number, bitrate: number, sampleRate: number, channels: number, bitDepth: number, bpm: number, format: string}>(
+      TRACK_API + '/' + id + '/file');
+  }
+
+  getTracksByGenre(genre: string, sort = 'new') {
     return this.http.get(TRACK_API + '/genre/' + genre, {params: {sort}});
   }
 

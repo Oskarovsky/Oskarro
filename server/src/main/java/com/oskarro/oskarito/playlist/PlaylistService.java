@@ -1,5 +1,7 @@
 package com.oskarro.oskarito.playlist;
 
+import com.oskarro.oskarito.track.Track;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -16,6 +18,10 @@ public interface PlaylistService {
     List<PlaylistView> listByUsername(String username);
 
     void deleteOwned(Integer id);
+
+    List<Track> tracks(Integer playlistId);
+
+    String pin(Integer playlistId, Integer trackId);
 
     Optional<com.oskarro.oskarito.playlist.Playlist> findPlaylistById(Integer id);
 

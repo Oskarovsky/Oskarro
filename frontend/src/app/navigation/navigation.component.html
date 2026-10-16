@@ -1,30 +1,43 @@
 <header class="topbar">
+  <div class="nav-lead">
   <a class="brand" routerLink="/" (click)="menuOpen = false">
-    <img class="logo" src="assets/logo-mark.png" alt="">
-    Oskarro
+    <span class="brand-mark"><img class="logo" src="assets/logo-mark.png" alt=""></span>
+    <span class="brand-name">Oskarro<span class="brand-tld">.com</span></span>
   </a>
-  <form class="nav-find" (submit)="$event.preventDefault(); onSearch($event)">
-    <input [(ngModel)]="search.text" name="q" type="search" placeholder="Szukaj utworu" autocomplete="off">
-    <button class="btn-accent" type="submit">OK</button>
-  </form>
-  <button class="nav-toggle" type="button" (click)="menuOpen = !menuOpen">Menu</button>
+  </div>
   <nav class="topnav" [class.open]="menuOpen">
-    <a routerLink="/tracklist/club" routerLinkActive="is-on" (click)="menuOpen = false">Club</a>
-    <a routerLink="/tracklist/dance" routerLinkActive="is-on" (click)="menuOpen = false">Dance</a>
-    <a routerLink="/tracklist/house" routerLinkActive="is-on" (click)="menuOpen = false">House</a>
-    <a routerLink="/tracklist/retro" routerLinkActive="is-on" (click)="menuOpen = false">Retro</a>
-    <a routerLink="/video" routerLinkActive="is-on" (click)="menuOpen = false">Wideo</a>
-    <a routerLink="/playlist/all" routerLinkActive="is-on" (click)="menuOpen = false">Playlisty</a>
+    <details class="nav-drop" [class.is-on]="onMusic" #musicMenu>
+      <summary>{{ 'Muzyka' | t:'Music' }}</summary>
+      <div class="menu-pop">
+        <a *ngFor="let genre of genres" [routerLink]="['/tracklist', genre.slug]" [queryParams]="{}" routerLinkActive="is-on" (click)="closeMusic(musicMenu)">{{ genre.label }}</a>
+      </div>
+    </details>
+    <a routerLink="/video" routerLinkActive="is-on" (click)="menuOpen = false">{{ 'Wideo' | t:'Video' }}</a>
+    <a routerLink="/playlist/all" routerLinkActive="is-on" (click)="menuOpen = false">{{ 'Playlisty' | t:'Playlists' }}</a>
     <a routerLink="/ranking" routerLinkActive="is-on" (click)="menuOpen = false">Ranking</a>
-    <span class="nav-space"></span>
-    <span class="account">
-      <a *ngIf="showAdminBoard" routerLink="/admin" (click)="menuOpen = false">Admin</a>
-      <a class="btn-accent" routerLink="/track/add" (click)="menuOpen = false">Dodaj utwór</a>
-      <a *ngIf="!isLoggedIn" routerLink="/login" (click)="menuOpen = false">Zaloguj się</a>
-      <a *ngIf="!isLoggedIn" routerLink="/register" (click)="menuOpen = false">Dołącz</a>
-      <a *ngIf="isLoggedIn" routerLink="/profile" (click)="menuOpen = false">{{ username }}</a>
-      <a *ngIf="isLoggedIn && username" routerLink="/playlist/all/{{username}}" (click)="menuOpen = false">Moje składanki</a>
-      <button *ngIf="isLoggedIn" class="btn-ghost" type="button" (click)="logout()">Wyloguj się</button>
-    </span>
+    <a routerLink="/radio" routerLinkActive="is-on" (click)="menuOpen = false">Radio</a>
+    <button class="nav-plain" type="button" [class.is-on]="searchOpen || onSearchPage" (click)="toggleSearch()">{{ 'Szukaj' | t:'Search' }}</button>
   </nav>
+  <form class="search-drawer" [class.open]="searchOpen" (submit)="$event.preventDefault(); onSearch($event)">
+    <input #find [(ngModel)]="search.text" name="q" type="search" [placeholder]="'Szukaj utworu' | t:'Search for a track'" autocomplete="off" [attr.aria-label]="'Szukaj utworu' | t:'Search for a track'">
+    <button class="btn-accent" type="submit">{{ 'Szukaj' | t:'Search' }}</button>
+  </form>
+  <div class="account">
+    <div class="lang-switch" role="group" [attr.aria-label]="'Język' | t:'Language'">
+      <button type="button" [class.on]="lang.code === 'pl'" (click)="lang.use('pl')" [attr.aria-pressed]="lang.code === 'pl'">PL</button>
+      <button type="button" [class.on]="lang.code === 'en'" (click)="lang.use('en')" [attr.aria-pressed]="lang.code === 'en'">EN</button>
+    </div>
+    <details class="nav-drop user-menu" *ngIf="isLoggedIn" #userMenu>
+      <summary><app-person [name]="username"></app-person></summary>
+      <div class="menu-pop">
+        <a routerLink="/profile" (click)="closeUser(userMenu)">{{ 'Profil' | t:'Profile' }}</a>
+        <a routerLink="/playlist/all/{{username}}" (click)="closeUser(userMenu)">{{ 'Moje składanki' | t:'My playlists' }}</a>
+        <a routerLink="/track/add" (click)="closeUser(userMenu)">{{ 'Dodaj utwór' | t:'Add a track' }}</a>
+        <a *ngIf="showAdminBoard" routerLink="/admin" (click)="closeUser(userMenu)">Admin</a>
+      </div>
+    </details>
+    <button *ngIf="isLoggedIn" class="btn-ghost" type="button" (click)="logout()">{{ 'Wyloguj się' | t:'Log out' }}</button>
+    <a *ngIf="!isLoggedIn" routerLink="/login" (click)="menuOpen = false">{{ 'Zaloguj się' | t:'Sign in' }}</a>
+  </div>
+  <button class="nav-toggle" type="button" (click)="menuOpen = !menuOpen">Menu</button>
 </header>

@@ -12,4 +12,7 @@ export interface Track {
   position: number;
   playlist: Playlist;
   video: Video;
+  createdAt?: string;
+  score?: number;
+  hasCover?: boolean;
 }

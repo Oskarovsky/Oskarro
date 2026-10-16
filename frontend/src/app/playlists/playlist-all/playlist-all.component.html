@@ -1,21 +1,21 @@
 <div class="page">
-  <p class="kicker">Składanki</p>
+  <p class="kicker">{{ 'Składanki' | t:'Playlists' }}</p>
   <div class="section-head">
-    <h1 class="display">Playlisty</h1>
-    <a class="btn-accent" routerLink="/playlist/add" *ngIf="loggedIn">Nowa składanka</a>
+    <h1 class="display">{{ 'Playlisty' | t:'Playlists' }}</h1>
+    <a class="btn-accent" routerLink="/playlist/add" *ngIf="loggedIn">{{ 'Nowa składanka' | t:'New playlist' }}</a>
   </div>
-  <p class="lede">Zestawy złożone przez ludzi z Oskarro. Każda składanka ma autora, nazwę i opis.</p>
+  <p class="lede">{{ 'Składanki na imprezę złożone przez ludzi z Oskarro. Każda ma autora, nazwę i opis.' | t:'Party playlists put together by people on Oskarro. Each one has an author, a name and a description.' }}</p>
 
   <label class="find">
-    <input [(ngModel)]="searchText" type="search" placeholder="Szukaj składanki">
+    <input [(ngModel)]="searchText" type="search" [placeholder]="'Szukaj składanki' | t:'Search playlists'">
   </label>
 
   <div class="stack" *ngIf="visible.length">
     <a class="playlist-card" *ngFor="let playlist of visible" [routerLink]="['/playlist', playlist.id, 'details']">
       <strong>{{ playlist.name }}</strong>
-      <span>{{ playlist.description || 'Bez opisu' }}</span>
-      <em>{{ playlist.owner || 'Oskarro' }} · {{ playlist.tracks || 0 }} {{ playlist.tracks === 1 ? 'utwór' : 'utworów' }}</em>
+      <span>{{ playlist.description || ('Bez opisu' | t:'No description') }}</span>
+      <em>{{ playlist.owner || 'Oskarro' }} · {{ playlist.tracks || 0 }} {{ trackWord(playlist.tracks) }}</em>
     </a>
   </div>
-  <p class="lede" *ngIf="loaded && !visible.length">Nie ma składanki o takiej nazwie.</p>
+  <p class="lede" *ngIf="loaded && !visible.length">{{ 'Nie ma składanki o takiej nazwie.' | t:'No playlist has that name.' }}</p>
 </div>

@@ -1,10 +1,12 @@
 <div class="page">
-  <a class="back" routerLink="/video">← Sety</a>
-  <p class="kicker">Set Oskarro</p>
+  <a class="back" routerLink="/video">← {{ 'Sety' | t:'Sets' }}</a>
+  <p class="kicker">{{ 'Set Oskarro' | t:'Oskarro set' }}</p>
   <h1 class="display">{{ title }}</h1>
-  <p class="lede" *ngIf="published">{{ published }}</p>
+  <p class="lede" *ngIf="views || published">
+    <span *ngIf="views">{{ views }}</span><span *ngIf="views && published"> · </span><span *ngIf="published">{{ 'Dodane' | t:'Added' }} {{ published }}</span>
+  </p>
   <div class="stage" *ngIf="embed">
     <iframe [src]="embed" [title]="title" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
   </div>
-  <p><a [href]="watch" target="_blank" rel="noopener">Otwórz na YouTube</a></p>
+  <p><a [href]="watch" target="_blank" rel="noopener">{{ 'Otwórz na YouTube' | t:'Open on YouTube' }}</a></p>
 </div>
