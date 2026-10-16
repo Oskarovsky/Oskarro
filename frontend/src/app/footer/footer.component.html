@@ -1,63 +1,25 @@
-<link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
-
-<footer>
-  <div class="container">
-    <div class="row text-center">
-      <div class="col-md-6 col-sm-6 col-xs-12">
-        <ul class="menu list-inline">
-          <li>
-            <a href="/">Strona główna</a>
-          </li>
-
-          <li>
-            <a routerLink="/video/category/MIX">Video</a>
-          </li>
-
-          <li>
-            <a routerLink="/">Top ranking</a>
-          </li>
-
-          <li>
-            <a routerLink="/">Informacje</a>
-          </li>
-
-          <li>
-            <a routerLink="/">Kontakt</a>
-          </li>
-        </ul>
-      </div>
-
-      <div class="col-md-6 col-sm-6 col-xs-12">
-        <ul class="list-inline">
-          <li>
-            <a href="#"><i class="fa fa-facebook fa-2x"></i></a>
-          </li>
-
-          <li>
-            <a href="#"><i class="fa fa-github fa-2x"></i></a>
-          </li>
-
-          <li>
-            <a href="#"><i class="fa fa-linkedin fa-2x"></i></a>
-          </li>
-
-          <li>
-            <a href="#"><i class="fa fa-youtube fa-2x"></i></a>
-          </li>
-
-          <li>
-            <a href="#"><i class="fa fa-soundcloud fa-2x"></i></a>
-          </li>
-
-        </ul>
-      </div>
+<footer class="site-footer">
+  <div class="inner">
+    <div class="footer-top">
+      <span class="brand footer-brand"><span class="brand-mark"><img class="logo" src="assets/logo-mark.png" alt=""></span><span class="brand-name">Oskarro<span class="brand-tld">.com</span></span></span>
+      <nav>
+      <a routerLink="/tracklist/club" [queryParams]="{}">Club</a>
+      <a routerLink="/tracklist/dance" [queryParams]="{}">Dance</a>
+      <a routerLink="/tracklist/house" [queryParams]="{}">House</a>
+      <a routerLink="/tracklist/retro" [queryParams]="{}">Retro</a>
+      <a routerLink="/tracklist/vixa" [queryParams]="{}">Vixa</a>
+      <a routerLink="/tracklist/bass-house" [queryParams]="{}">Bass House</a>
+      <a routerLink="/tracklist/techno" [queryParams]="{}">Techno</a>
+      <a routerLink="/tracklist/big-room" [queryParams]="{}">Big Room</a>
+      <a routerLink="/tracklist/trance" [queryParams]="{}">Trance</a>
+      <a routerLink="/tracklist/electro" [queryParams]="{}">Electro</a>
+      <a routerLink="/tracklist/disco-polo" [queryParams]="{}">Disco Polo</a>
+      <a routerLink="/video">{{ 'Wideo' | t:'Video' }}</a>
+      <a routerLink="/playlist/all">{{ 'Playlisty' | t:'Playlists' }}</a>
+      <a routerLink="/ranking">Ranking</a>
+        <a routerLink="/radio">Radio</a>
+      </nav>
     </div>
+    <p class="footer-contact">{{ 'Kontakt z administratorem' | t:'Contact the administrator' }}: <a href="mailto:oskar.slyk@gmail.com">oskar.slyk@gmail.com</a></p>
   </div>
 </footer>
-
-<div class="copyright">
-  <div class="container" style="align-content: center; text-align: center">
-      <p>Copyright © 2020 All rights reserved --- Oskarro.com</p>
-  </div>
-</div>
-<!-- End -->

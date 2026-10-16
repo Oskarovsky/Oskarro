@@ -1,88 +1,61 @@
-<div class="container">
+<div class="page">
 
-  <h3>Playlista: {{playlist.name}}</h3>
+  <a class="back" [routerLink]="['/playlist/all', playlist?.owner]" *ngIf="playlist?.owner">← {{ 'Składanki' | t:'Playlists' }}</a>
+  <p class="kicker">{{ 'Twoja składanka' | t:'Your playlist' }}</p>
+  <h1 class="display">{{ playlist?.name }}</h1>
+  <p class="lede" *ngIf="playlist?.description">{{ playlist.description }}</p>
+  <p class="lede" *ngIf="tracks.length === 0">{{ 'Dodaj pierwszy utwór. Wybierz hostuje.net albo soundfiles.eu i wklej link do pliku.' | t:'Add the first track. Choose hostuje.net or soundfiles.eu and paste the file link.' }}</p>
 
-  <div class="col-md-9">
-    <div class="row">
-      <div class="col-md-12">
-        <p *ngIf="this.tracks.length === 0">Nie ma żadnych utworów w tej składance</p>
+  <div class="stack" *ngIf="tracks.length">
+    <article class="playlist-track" *ngFor="let track of tracks; index as i">
+      <div class="form-grid">
+        <label>{{ 'Wykonawca' | t:'Artist' }}
+          <input type="text" [(ngModel)]="track.artist" (change)="updateTrack(track)" maxlength="80">
+        </label>
+        <label>{{ 'Tytuł' | t:'Title' }}
+          <input type="text" [(ngModel)]="track.title" (change)="updateTrack(track)" maxlength="80">
+        </label>
+        <label>{{ 'Wersja' | t:'Version' }}
+          <input type="text" [(ngModel)]="track.version" (change)="updateTrack(track)" maxlength="80">
+        </label>
+        <label class="wide">{{ 'Link do pliku' | t:'File link' }}
+          <input type="text" [(ngModel)]="track.url" (change)="updateTrack(track)"
+                 placeholder="https://hostuje.net/file.php?id=... albo https://soundfiles.eu/.../file">
+        </label>
       </div>
+      <div class="row-actions">
+        <button class="btn-ghost" type="button" (click)="deleteTrack(track.id)">{{ 'Usuń' | t:'Remove' }}</button>
+      </div>
+      <app-track-player *ngIf="showPlayer(track.url)" [url]="track.url"></app-track-player>
+    </article>
+  </div>
+
+  <form class="composer" (submit)="$event.preventDefault(); addTrackToPlaylist()">
+    <h2>{{ 'Dodaj utwór do składanki' | t:'Add a track to the playlist' }}</h2>
+    <div class="form-grid">
+      <label>{{ 'Wykonawca' | t:'Artist' }}
+        <input [(ngModel)]="draft.artist" name="artist" type="text" maxlength="80" required>
+      </label>
+      <label>{{ 'Tytuł' | t:'Title' }}
+        <input [(ngModel)]="draft.title" name="title" type="text" maxlength="80" required>
+      </label>
+      <label>{{ 'Wersja' | t:'Version' }}
+        <input [(ngModel)]="draft.version" name="version" type="text" maxlength="80" placeholder="np. Extended Mix">
+      </label>
+      <label>{{ 'Gdzie jest plik' | t:'Where the file is' }}
+        <select [(ngModel)]="draft.source" name="source">
+          <option value="hostuje">hostuje.net</option>
+          <option value="soundfiles">soundfiles.eu</option>
+        </select>
+      </label>
+      <label class="wide">{{ 'Link do pliku' | t:'File link' }}
+        <input [(ngModel)]="draft.url" name="url" type="text"
+               [placeholder]="draft.source === 'hostuje' ? 'https://hostuje.net/file.php?id=...' : 'https://soundfiles.eu/QN9mExDZG6dW/file'"
+               required>
+      </label>
     </div>
-  </div>
-
-
-  <!-- Track list -->
-  <table class="table table-striped">
-    <thead>
-    <tr>
-      <th scope="col">#</th>
-      <th scope="col">Artist</th>
-      <th scope="col">Title</th>
-      <th scope="col">Version</th>
-      <th scope="col"></th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr *ngFor="let track of tracks; index as i">
-      <th scope="row">{{ i + 1 }}</th>
-      <td><input type="text"
-             [(ngModel)]="track.artist"
-             (change)="updateTrack(track)"
-             class="input-label-lg"
-             maxlength="18" style="width: 100%"
-             value="{{track.artist}}"/></td>
-      <td><input type="text"
-             [(ngModel)]="track.title"
-             (change)="updateTrack(track)"
-             class="input-label-lg"
-             maxlength="18" style="width: 100%"
-             value="{{track.title}}"/></td>
-      <td><input type="text"
-             [(ngModel)]="track.version"
-             (change)="updateTrack(track)"
-             class="input-label-lg"
-             maxlength="18" style="width: 100%"
-             value="{{track.version}}"/></td>
-      <td>
-        <a (click)="deleteTrack(track.id)" class="pull-right text-danger">
-          <i class="material-icons" style="float:right;">delete</i>
-        </a>
-      </td>
-    </tr>
-    </tbody>
-  </table>
-
-  <!-- ADDING TRACK TO PLAYLIST PANEL -->
-  <div>
-    <input #newArtist
-           type="text"
-           class="input-label-lg"
-           maxlength="18" style="width: 25%"
-           value=""/>
-    <input #newTitle
-           type="text"
-           class="input-label-lg"
-           maxlength="18" style="width: 25%"
-           value=""/>
-    <input #newVersion
-           type="text"
-           class="input-label-lg"
-           maxlength="18" style="width: 30%"
-           value=""/>
-    <button mat-raised-button
-            (click)="addTrackToPlaylist(newArtist.value, newTitle.value, newVersion.value)"
-            type="button"
-            color="primary"
-            style="margin-left: 10px;">Dodaj utwór
-    </button>
-  </div>
-
-
-  <button mat-raised-button
-          type="button"
-          class="btn btn-warning pull-right"
-          routerLink="../details"
-          style="margin-left: 10px;">Zapisz playlistę
-  </button>
+    <button class="btn-accent" type="submit">{{ 'Dodaj utwór' | t:'Add a track' }}</button>
+    <a class="btn-ghost" routerLink="../details">{{ 'Gotowe' | t:'Done' }}</a>
+  </form>
 </div>
 

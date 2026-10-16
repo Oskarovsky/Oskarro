@@ -1,13 +1,59 @@
-<div class="container">
-  <header class="jumbotron">
-    <p *ngIf="isLoggedIn">Cześć {{ currentUser.username }} !</p>
-    <p *ngIf="!isLoggedIn">Jesteś nowy? <a routerLink="/register">Dołącz do naszej ekipy</a></p>
-    <div id="fb-root"></div>
-    <script async defer crossorigin="anonymous" src="https://connect.facebook.net/pl_PL/sdk.js#xfbml=1&version=v6.0&appId=3206283756069780&autoLogAppEvents=1"></script>
-  </header>
+<div class="page">
+  <app-activity-chart></app-activity-chart>
+  <section class="hero">
+    <p class="kicker">Oskarro.com</p>
+    <h1>{{ 'Tu jest parkiet.' | t:'This is the dance floor.' }}</h1>
+    <p class="lede">{{ 'Club, trance, big room, electro i disco polo od ludzi, którzy na nim stoją. Włączasz numer, zostawiasz ocenę i dodajesz swój.' | t:'Club, trance, big room, electro and disco polo from the people who stand on it. Play a track, leave a score and add your own.' }}</p>
+  </section>
 
-  <div class="fb-login-button" data-size="large" data-button-type="continue_with"
-       data-layout="default" data-auto-logout-link="true" data-use-continue-as="true" data-width="">
+  <section class="genre-grid">
+    <a class="genre-card" *ngFor="let genre of genres" [routerLink]="['/tracklist', genre.slug]" [queryParams]="{}">
+      <strong>{{ genre.label }}</strong>
+      <span>{{ blurb(genre) }}</span>
+    </a>
+  </section>
+
+  <div class="ad-row">
+    <app-ad-slot slot="strona" format="banner"></app-ad-slot>
+    <app-ad-slot slot="strona-pole" format="box"></app-ad-slot>
   </div>
 
+  <section>
+    <div class="section-head">
+      <h2>{{ 'Ostatnio dodane' | t:'Recently added' }}</h2>
+    </div>
+    <div class="latest-grid" *ngIf="results.length">
+      <a class="track-row" *ngFor="let track of results" [routerLink]="['/track', track.id]">
+        <span class="thumb-col">
+          <span class="thumb-slot">
+          <app-cover [hasCover]="track.hasCover" [src]="cover(track)" [genre]="track.genre"></app-cover>
+          </span>
+          <app-score [value]="track.score"></app-score>
+        </span>
+        <span>
+          <h2>{{ track.title }}<span class="version" *ngIf="track | versionLabel as version"> ({{ version }})</span></h2>
+          <span class="meta">{{ genreName(track.genre) }} · {{ track.artist }}<app-track-facts [track]="track"></app-track-facts></span>
+        </span>
+      </a>
+    </div>
+  </section>
+
+  <section class="home-stats" *ngIf="stats" [attr.aria-label]="'Statystyki Oskarro' | t:'Oskarro stats'">
+    <div>
+      <strong>{{ stats.visitorsToday }}</strong>
+      <span>{{ phrase(stats.visitorsToday, 'visitors') }}</span>
+    </div>
+    <div>
+      <strong>{{ stats.users }}</strong>
+      <span>{{ phrase(stats.users, 'users') }}</span>
+    </div>
+    <div>
+      <strong>{{ stats.tracks }}</strong>
+      <span>{{ phrase(stats.tracks, 'tracks') }}</span>
+    </div>
+    <div>
+      <strong>{{ stats.plays }}</strong>
+      <span>{{ phrase(stats.plays, 'plays') }}</span>
+    </div>
+  </section>
 </div>

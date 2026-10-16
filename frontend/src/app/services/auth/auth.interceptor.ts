@@ -17,7 +17,10 @@ export const zoneHttpInterceptor: HttpInterceptorFn = (req, next) => {
           uiRefresh.refresh();
         }
       },
-      error: error => subscriber.error(error),
+      error: error => {
+        subscriber.error(error);
+        uiRefresh.refresh();
+      },
       complete: () => subscriber.complete()
     });
     return () => subscription.unsubscribe();

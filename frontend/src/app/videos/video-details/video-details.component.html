@@ -2,6 +2,7 @@
 
   <div style="text-align:center">
     <h3>{{video.name}}</h3>
+    <p *ngIf="!isLoggedIn"><a routerLink="/login">Zaloguj się</a>, żeby odtworzyć utwory.</p>
     <iframe width="640" height="360" [src]=video.safeUrl></iframe>
   </div>
   <br/>
@@ -25,12 +26,17 @@
     </tr>
     </thead>
     <tbody>
-    <tr *ngFor="let track of tracks; index as i">
+    <ng-container *ngFor="let track of tracks; index as i">
+    <tr>
       <th scope="row">{{ i + 1 }}</th>
-      <td>{{ track.title }}</td>
       <td>{{ track.artist }}</td>
+      <td>{{ track.title }}</td>
       <td>{{ track.version }}</td>
     </tr>
+    <tr *ngIf="showPlayer(track.url)">
+      <td colspan="4"><app-track-player [url]="track.url"></app-track-player></td>
+    </tr>
+    </ng-container>
     </tbody>
   </table>
 

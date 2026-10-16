@@ -23,6 +23,9 @@ public class Playlist {
     @NotNull
     private String name;
 
+    @Column(length = 280)
+    private String description;
+
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;

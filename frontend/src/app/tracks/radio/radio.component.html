@@ -1,0 +1,46 @@
+<div class="page radio-page">
+  <div class="radio-top">
+    <div>
+      <p class="kicker">Radio</p>
+      <h1>{{ 'Włącz i słuchaj.' | t:'Press play and listen.' }}</h1>
+      <p class="lede" *ngIf="!themes.size && playback.autoplayNext">{{ 'Następny numer jest losowy i startuje sam, gdy ten się skończy.' | t:'The next track is random and starts on its own when this one ends.' }}</p>
+      <p class="lede" *ngIf="!themes.size && !playback.autoplayNext">{{ 'Po tym numerze odtwarzanie staje. Losowy włączysz przyciskiem. Ustawienie jest w profilu.' | t:'Playback stops after this track. Use the button for a random one. The setting is in your profile.' }}</p>
+      <p class="lede" *ngIf="themes.size && playback.autoplayNext">{{ 'Słuchasz wybranych gatunków. Następny numer jest z nich losowany.' | t:'You are listening to the genres you picked. The next track is chosen from them at random.' }}</p>
+      <p class="lede" *ngIf="themes.size && !playback.autoplayNext">{{ 'Słuchasz wybranych gatunków. Losowy włączysz przyciskiem.' | t:'You are listening to the genres you picked. Use the button for a random track.' }}</p>
+    </div>
+    <button class="btn-ghost" type="button" (click)="togglePin()" [attr.aria-pressed]="playback.pinned">
+      {{ playback.pinned ? ('Odepnij' | t:'Unpin') : ('Przypnij na dole' | t:'Pin to the bottom') }}
+    </button>
+  </div>
+
+  <div class="radio-themes" role="group" [attr.aria-label]="'Tematyka radia' | t:'Radio themes'">
+    <span class="meta vote-label">{{ 'Tematyka' | t:'Themes' }}</span>
+    <button class="like" type="button" [class.on]="!themes.size" (click)="clearThemes()" [attr.aria-pressed]="!themes.size">{{ 'Wszystko' | t:'Everything' }}</button>
+    <button class="like" type="button" *ngFor="let genre of genres" [class.on]="themes.has(genre.id)" (click)="toggleTheme(genre.id)" [attr.aria-pressed]="themes.has(genre.id)">{{ genre.label }}</button>
+  </div>
+
+  <p class="meta" *ngIf="loading">{{ 'Włączam radio…' | t:'Starting the radio…' }}</p>
+  <p class="meta" *ngIf="empty && !themes.size">{{ 'Nie ma teraz utworów z odtwarzaniem.' | t:'There are no playable tracks right now.' }}</p>
+  <p class="meta" *ngIf="empty && themes.size">{{ 'W tych gatunkach nie ma teraz utworów.' | t:'There are no tracks in these genres right now.' }}</p>
+
+  <section class="radio-stage" *ngIf="playback.fromRadio && playback.track && !playback.pinned">
+    <div class="radio-now">
+      <app-cover class="cover" [hasCover]="playback.track.hasCover" [src]="cover(playback.track)" [genre]="playback.track.genre"></app-cover>
+      <div>
+        <h2>{{ playback.track.title }}<span class="version" *ngIf="playback.track | versionLabel as version"> ({{ version }})</span></h2>
+        <p class="artist">{{ playback.track.artist }}</p>
+      </div>
+    </div>
+    <app-deck *ngIf="playback.allows(playback.track.id)"></app-deck>
+    <p class="gate" *ngIf="!playback.allows(playback.track.id)"><a routerLink="/login">{{ 'Zaloguj się' | t:'Sign in' }}</a>{{ lang.en ? ' to start the radio.' : ', żeby włączyć radio.' }}</p>
+    <div class="radio-actions" *ngIf="playback.allows(playback.track.id)">
+      <button class="btn-accent" *ngIf="loggedIn" type="button" (click)="playback.next()" [disabled]="!playback.hasNext">{{ 'Losowy' | t:'Random' }}</button>
+      <a class="btn-accent" *ngIf="!loggedIn" routerLink="/login">{{ 'Losowy' | t:'Random' }}</a>
+    </div>
+    <p class="meta" *ngIf="playback.allows(playback.track.id) && (!loggedIn || playback.holdNext)"><a routerLink="/login">{{ 'Zaloguj się' | t:'Sign in' }}</a>{{ lang.en ? ' to play a random track.' : ', żeby puścić losowy utwór.' }}</p>
+  </section>
+
+  <p class="radio-note" *ngIf="playback.pinned && playback.fromRadio && playback.track">
+    {{ 'Odtwarzanie jest na dolnym pasku. Zostaje po zmianie strony. Krzyżyk na pasku je wyłącza.' | t:'Playback is on the bottom bar. It stays when you change the page. The cross on the bar turns it off.' }}
+  </p>
+</div>

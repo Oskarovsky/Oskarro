@@ -1,0 +1,82 @@
+<div class="page" *ngIf="board">
+  <p class="kicker">Ranking</p>
+  <h1 class="display">{{ 'Kto niesie parkiet.' | t:'Who carries the dance floor.' }}</h1>
+  <p class="lede">{{ board.formula | t }}</p>
+
+  <p class="rank-status" *ngIf="board.me">{{ statusLine() }}</p>
+
+  <section>
+    <div class="section-head">
+      <h2>{{ 'Hity tygodnia' | t:'Hits of the week' }}</h2>
+    </div>
+    <p class="lede">{{ 'Numery dodane w ostatnich 7 dniach, od najwyższej oceny.' | t:'Tracks added in the last 7 days, from the highest score.' }}</p>
+    <div class="latest-grid" *ngIf="hits.length">
+      <a class="track-row" *ngFor="let track of hits" [routerLink]="['/track', track.id]">
+        <span class="thumb-col">
+          <span class="thumb-slot">
+            <app-cover [hasCover]="track.hasCover" [src]="cover(track)" [genre]="track.genre"></app-cover>
+          </span>
+          <app-score [value]="track.score"></app-score>
+        </span>
+        <span>
+          <h2>{{ track.title }}<span class="version" *ngIf="track | versionLabel as version"> ({{ version }})</span></h2>
+          <span class="meta">{{ track.artist }}<app-track-facts [track]="track"></app-track-facts></span>
+        </span>
+      </a>
+    </div>
+    <p class="meta" *ngIf="hitsReady && !hits.length">{{ 'W tym tygodniu nie doszedł żaden numer.' | t:'No track was added this week.' }}</p>
+  </section>
+
+  <div class="boards">
+    <section class="board">
+      <h2>{{ 'Najwięcej utworów' | t:'Most tracks' }}</h2>
+      <p class="meta" *ngIf="!board.mostTracks.length">{{ 'Jeszcze nikt nie dodał utworu.' | t:'Nobody has added a track yet.' }}</p>
+      <ol>
+        <li *ngFor="let row of board.mostTracks" [class.me]="mine(row.username)">
+          <span>{{ row.place }}</span>
+          <app-person [name]="row.username" [rank]="row.rank" [to]="['/profile', row.username]"></app-person>
+          <strong>{{ row.tracks }}</strong>
+        </li>
+      </ol>
+    </section>
+
+    <section class="board">
+      <h2>{{ 'Najaktywniejsi' | t:'Most active' }}</h2>
+      <p class="meta" *ngIf="!board.mostActive.length">{{ 'Aktywność pojawi się wraz z utworami i komentarzami.' | t:'Activity will show up with tracks and comments.' }}</p>
+      <ol>
+        <li *ngFor="let row of board.mostActive" [class.me]="mine(row.username)">
+          <span>{{ row.place }}</span>
+          <app-person [name]="row.username" [rank]="row.rank" [to]="['/profile', row.username]"></app-person>
+          <strong>{{ row.score }}</strong>
+        </li>
+      </ol>
+    </section>
+
+    <section class="board">
+      <h2>{{ 'W tym miesiącu' | t:'This month' }}</h2>
+      <p class="meta" *ngIf="!board.thisMonth.length">{{ 'W tym miesiącu nikt jeszcze nie dodał utworu.' | t:'Nobody has added a track this month yet.' }}</p>
+      <ol>
+        <li *ngFor="let row of board.thisMonth" [class.me]="mine(row.username)">
+          <span>{{ row.place }}</span>
+          <app-person [name]="row.username" [rank]="row.rank" [to]="['/profile', row.username]"></app-person>
+          <strong>{{ row.monthTracks }}</strong>
+        </li>
+      </ol>
+    </section>
+  </div>
+
+  <section>
+    <div class="section-head">
+      <h2>{{ 'Rangi' | t:'Ranks' }}</h2>
+    </div>
+    <div class="ladder">
+      <article class="panel" *ngFor="let step of board.ranks" [class.here]="board.me && board.me.rank === step.title">
+        <div>
+          <strong><span class="rank-mark">{{ step.title | rankMark }}</span> {{ step.title | t }}</strong>
+          <span class="meta">{{ lang.en ? 'from ' + step.minScore + ' pts' : 'od ' + step.minScore + ' pkt' }}</span>
+        </div>
+        <p>{{ step.how | t }}</p>
+      </article>
+    </div>
+  </section>
+</div>

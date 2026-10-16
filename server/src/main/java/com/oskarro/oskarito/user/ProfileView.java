@@ -1,0 +1,28 @@
+package com.oskarro.oskarito.user;
+
+import java.util.List;
+
+public record ProfileView(
+        String username,
+        String email,
+        String bio,
+        String firstName,
+        String lastName,
+        String website,
+        String favoriteGenres,
+        String rank,
+        String activityRank,
+        boolean granted,
+        int score,
+        int tracks,
+        int likes,
+        int dislikes,
+        int commentsOnTracks,
+        int commentsWritten,
+        int activity,
+        int downloadSlots,
+        boolean canGrant,
+        boolean autoplayNext,
+        List<ProfileTrack> shared
+) {
+}

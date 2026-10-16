@@ -5,6 +5,7 @@ import { Track } from "../../tracks/track/model/track";
 import { FormGroup, FormControl } from '@angular/forms';
 import {HttpClient} from "@angular/common/http";
 import {TrackService} from "../../services/track/track.service";
+import {hostujePlayer} from '../../services/hostuje';
 
 @Component({
   selector: 'app-toplist-edit',
@@ -39,7 +40,18 @@ export class ToplistEditComponent implements OnInit {
   }
 
   addTrackToRanking(): void {
-    this.trackService.addTrackToRanking(this.model);
+    if (!this.model.artist || !this.model.title) {
+      alert('Podaj wykonawcę i tytuł.');
+      return;
+    }
+    if (!hostujePlayer(this.model.url)) {
+      alert('Podaj link do pliku na hostuje.net.');
+      return;
+    }
+    this.trackService.addTrackToRanking(this.model).subscribe(
+      () => alert('Utwór dodany.'),
+      () => alert('Nie udało się dodać utworu.')
+    );
   }
 
 

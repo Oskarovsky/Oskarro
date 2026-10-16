@@ -1,11 +1,132 @@
+<div class="page" *ngIf="track.id">
+  <a class="back" [routerLink]="['/tracklist', genrePath]">← {{ genreLabel }}</a>
+  <div class="track-layout">
+    <div class="cover-col">
+      <div class="cover-plate">
+        <app-cover class="cover" [hasCover]="track.hasCover" [src]="coverSrc()" [genre]="track.genre"></app-cover>
+        <div class="cover-bar" [class.guest]="!isLoggedIn">
+          <button *ngIf="isLoggedIn" class="vote-mark" [class.on]="mine === 1" type="button" (click)="vote(1)" [attr.aria-label]="'Lubię to' | t:'Like'" [attr.title]="'Lubię to' | t:'Like'">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 4h2v16h-2zM4 11h16v2H4z"/></svg>
+          </button>
+          <app-score [value]="score"></app-score>
+          <button *ngIf="isLoggedIn" class="vote-mark down" [class.on]="mine === -1" type="button" (click)="vote(-1)" [attr.aria-label]="'Nie podoba mi się' | t:'Dislike'" [attr.title]="'Nie podoba mi się' | t:'Dislike'">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11h16v2H4z"/></svg>
+          </button>
+          <p class="meta vote-hint" *ngIf="!isLoggedIn"><a routerLink="/login">{{ 'Zaloguj się' | t:'Sign in' }}</a>{{ lang.en ? ' to vote.' : ', żeby zagłosować.' }}</p>
+        </div>
+      </div>
+    </div>
+    <section class="track-hero">
+      <p class="kicker">{{ genreLabel }}</p>
+      <h1>{{ track.title }}<span class="version" *ngIf="track | versionLabel as version"> ({{ version }})</span></h1>
+      <p class="artist">{{ track.artist }}</p>
+      <p class="meta">
+        <span *ngIf="track.sharedBy">
+          {{ 'dodał' | t:'added by' }}
+          <app-person [name]="track.sharedBy" [rank]="track.authorRank" [to]="['/profile', track.sharedBy]"></app-person>
+        </span>
+      </p>
+    </section>
+    <div class="track-play">
+      <app-deck *ngIf="showDeck"></app-deck>
+      <p class="meta" *ngIf="besideRadio && radioPinned">{{ 'Radio jest na dolnym pasku. Ten utwór zostaje na stronie.' | t:'The radio is on the bottom bar. This track stays on the page.' }}</p>
+      <button class="btn-accent" type="button" *ngIf="besideRadio && !radioPinned" (click)="playHere()">{{ 'Odtwórz' | t:'Play' }}</button>
+      <p class="gate" *ngIf="playable && !ownsPlayback && !isLoggedIn && !besideRadio"><a routerLink="/login">{{ 'Zaloguj się' | t:'Sign in' }}</a>{{ lang.en ? ' to play the next track.' : ', żeby puścić kolejny utwór.' }}</p>
+      <p class="meta" *ngIf="ownsPlayback && playback.holdNext"><a routerLink="/login">{{ 'Zaloguj się' | t:'Sign in' }}</a>{{ lang.en ? ' to play the next one.' : ', żeby puścić kolejny.' }}</p>
 
-<div class="container">
-<mat-card>
-  <mat-card-title>Muzikum</mat-card-title>
-  <mat-card-content>
-    <h3 mat-line>{{track.title}}</h3>
-    <h2 mat-line>{{track.version}}</h2>
-    <h2 mat-line>{{track.artist}}</h2>
-  </mat-card-content>
-</mat-card>
+      <p class="track-download" *ngIf="isLoggedIn && track.downloadUrl">
+        <a class="btn-accent" [href]="track.downloadUrl" target="_blank" rel="noopener">Download</a>
+      </p>
+      <p class="meta" *ngIf="isLoggedIn && playable && !track.downloadUrl && !track.downloadSlots">
+        {{ 'Oceń albo skomentuj utwór. Jedna taka aktywność otwiera pobieranie 10 najnowszych utworów.' | t:'Rate or comment on a track. One action like that unlocks downloads for the 10 newest tracks.' }}
+      </p>
+      <p class="meta" *ngIf="isLoggedIn && playable && !track.downloadUrl && track.downloadSlots">
+        <ng-container *ngIf="!lang.en">Ten utwór jest poza pulą. Masz otwarte {{ track.downloadSlots }} najnowszych. Kolejna ocena albo komentarz otwiera następne 10.</ng-container>
+        <ng-container *ngIf="lang.en">This track is outside your pool. You have the {{ track.downloadSlots }} newest open. Another rating or comment opens the next 10.</ng-container>
+      </p>
+      <p class="meta" *ngIf="!isLoggedIn && playable && ownsPlayback"><a routerLink="/login">{{ 'Zaloguj się' | t:'Sign in' }}</a>{{ lang.en ? ' to download the file. The button appears after a rating or a comment.' : ', żeby pobrać plik. Przycisk pojawia się po ocenie albo komentarzu.' }}</p>
+      <div class="track-actions">
+        <button class="btn-ghost" type="button" (click)="share()">{{ shared ? ('Link skopiowany' | t:'Link copied') : ('Udostępnij' | t:'Share') }}</button>
+        <span class="save-wrap" *ngIf="isLoggedIn">
+          <button class="btn-ghost" type="button" (click)="toggleSave()">{{ 'Zapisz do składanki' | t:'Save to a playlist' }}</button>
+          <span class="save-pop" *ngIf="saveOpen">
+            <button type="button" *ngFor="let list of playlists" (click)="pin(list)">{{ list.name }}</button>
+            <a routerLink="/playlist/add" *ngIf="!playlists.length">{{ 'Załóż pierwszą składankę' | t:'Create your first playlist' }}</a>
+          </span>
+        </span>
+        <a class="btn-ghost" *ngIf="!isLoggedIn" routerLink="/login">{{ 'Zapisz po zalogowaniu' | t:'Save after you sign in' }}</a>
+      </div>
+      <p class="meta track-note" *ngIf="saved">{{ lang.en ? 'Saved in “' + saved + '”.' : 'Zapisane w „' + saved + '”.' }}</p>
+      <p class="meta track-note" *ngIf="shareUrl">{{ lang.en ? 'Copy the link: ' + shareUrl : 'Skopiuj link: ' + shareUrl }}</p>
+
+      <p class="meta" *ngIf="track.editable">
+        <a [routerLink]="['/track', track.id, 'edit']">{{ 'Popraw utwór' | t:'Edit track' }}</a>
+        <ng-container *ngIf="!lang.en"> — autor może to zrobić do {{ track.editableUntil | date:'dd.MM.yyyy HH:mm' }}.</ng-container>
+        <ng-container *ngIf="lang.en"> — the author can do this until {{ track.editableUntil | date:'dd.MM.yyyy HH:mm' }}.</ng-container>
+      </p>
+      <app-ad-slot slot="utwor" format="banner"></app-ad-slot>
+    </div>
+  </div>
+
+  <section class="track-board" *ngIf="track.id" [attr.aria-label]="'Informacje o utworze' | t:'Track details'">
+    <div *ngIf="track.createdAt">
+      <strong>{{ track.createdAt | date:'dd.MM.yyyy HH:mm':'Europe/Warsaw' }}</strong>
+      <span>{{ 'Dodany' | t:'Added' }}</span>
+    </div>
+    <div>
+      <strong>{{ track.viewsAll || 0 }}</strong>
+      <span>{{ words(track.viewsAll, 'views') }}</span>
+    </div>
+    <div>
+      <strong>{{ track.commentCount || 0 }}</strong>
+      <span>{{ words(track.commentCount, 'comments') }}</span>
+    </div>
+    <div *ngIf="quality">
+      <strong>{{ quality }}</strong>
+      <span>{{ 'Jakość' | t:'Quality' }}</span>
+    </div>
+    <div *ngIf="fileSize">
+      <strong>{{ fileSize }}</strong>
+      <span>{{ 'Rozmiar' | t:'Size' }}</span>
+    </div>
+    <div *ngIf="file?.bpm">
+      <strong>{{ 'około' | t:'about' }} {{ file.bpm }} BPM</strong>
+      <span>{{ 'Tempo' | t:'Tempo' }}</span>
+    </div>
+  </section>
+  <p class="meta" *ngIf="fileState === 'loading' && playable">{{ 'Sprawdzam jakość, rozmiar i tempo.' | t:'Checking quality, size and tempo.' }}</p>
+
+  <section class="similar" *ngIf="similar.length">
+    <div class="section-head"><h2>{{ 'Podobne' | t:'Similar' }}</h2></div>
+    <div class="latest-grid">
+      <a class="track-row" *ngFor="let item of similar" [routerLink]="['/track', item.id]">
+        <span class="thumb-col">
+          <span class="thumb-slot">
+            <app-cover [hasCover]="item.hasCover" [src]="item.hasCover ? coverOf(item) : ''" [genre]="item.genre"></app-cover>
+          </span>
+          <app-score [value]="item.score"></app-score>
+        </span>
+        <span>
+          <h2>{{ item.title }}<span class="version" *ngIf="item | versionLabel as version"> ({{ version }})</span></h2>
+          <span class="meta">{{ item.artist }}<app-track-facts [track]="item"></app-track-facts></span>
+        </span>
+      </a>
+    </div>
+  </section>
+
+  <section class="comments">
+    <h2>{{ 'Komentarze' | t:'Comments' }}</h2>
+    <p class="meta" *ngIf="comments.length === 0">{{ 'Jeszcze nikt nie zostawił zdania. Pierwszy komentarz zostaje na stronie.' | t:'Nobody has left a note yet. The first comment stays on the page.' }}</p>
+    <article class="comment" *ngFor="let comment of comments">
+      <strong><app-person [name]="comment.author" [to]="['/profile', comment.author]"></app-person></strong>
+      <time>{{ comment.createdAt | date:'dd.MM.yyyy HH:mm' }}</time>
+      <div>{{ comment.text }}</div>
+    </article>
+
+    <form class="composer" *ngIf="isLoggedIn" (submit)="$event.preventDefault(); addComment()">
+      <textarea [(ngModel)]="draft" name="comment" rows="3" maxlength="1000" [placeholder]="'Co sądzisz o tym numerze?' | t:'What do you think of this track?'"></textarea>
+      <button class="btn-accent" type="submit" style="margin-top: 12px;">{{ 'Skomentuj' | t:'Comment' }}</button>
+    </form>
+    <p class="gate" *ngIf="!isLoggedIn"><a routerLink="/login">{{ 'Zaloguj się' | t:'Sign in' }}</a>{{ lang.en ? ' to comment.' : ', żeby skomentować.' }}</p>
+  </section>
 </div>

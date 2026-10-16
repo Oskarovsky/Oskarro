@@ -39,11 +39,15 @@ export class PlaylistService {
     return this.http.get<Track[]>(PLAYLIST_API + '/' + playlistId + '/tracks');
   }
 
-  addPlaylist(playlist: Playlist): Observable<Playlist> {
-    return this.http.post<Playlist>(PLAYLIST_API  + '/add', playlist);
+  addPlaylist(draft: {name: string, description: string}): Observable<Playlist> {
+    return this.http.post<Playlist>(PLAYLIST_API + '/add', draft);
   }
 
   deletePlaylist(id: number): Observable<any> {
     return this.http.delete<Playlist>(PLAYLIST_API + '/' + id);
+  }
+
+  pin(playlistId: number, trackId: number): Observable<{name: string}> {
+    return this.http.post<{name: string}>(PLAYLIST_API + '/' + playlistId + '/pin/' + trackId, {});
   }
 }
