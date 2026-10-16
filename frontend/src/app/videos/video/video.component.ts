@@ -1,12 +1,13 @@
-import {Component, OnInit, ViewChild} from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {RefreshAfterHttpDirective} from '../../services/ui-refresh';
 import {VideoService} from '../../services/video/video.service';
-import {Video} from './model/video';
-import {Track} from '../../tracks/track/model/track';
-import { DomSanitizer } from '@angular/platform-browser';
-import {Subscription} from 'rxjs';
-import {ActivatedRoute} from '@angular/router';
-import {NavigationComponent} from '../../navigation/navigation.component';
+
+export interface ChannelVideo {
+  id: string;
+  title: string;
+  duration: string;
+  published: string;
+}
 
 @Component({
   selector: 'app-video',
@@ -17,57 +18,19 @@ import {NavigationComponent} from '../../navigation/navigation.component';
 })
 export class VideoComponent implements OnInit {
 
-  videos: Video[];
-  tracks: Track[];
-  searchText: string;
-  safeVideoUrl: any;
-  sub: Subscription;
-  videoCategory: string;
-  isLoggedIn = false;
+  videos: ChannelVideo[] = [];
+  failed = false;
 
-  constructor(private videoService: VideoService,
-              private sanitizer: DomSanitizer,
-              private route: ActivatedRoute) {}
+  constructor(private videoService: VideoService) {}
 
   ngOnInit() {
-    this.getVideosByCategory();
-  }
-
-  public getAllVideo() {
-    this.videoService.getAllVideos().subscribe(
-      response => {
-        this.videos = response;
-        this.secureAllUrl(this.videos);
-      },
-      error => {
-        alert('An error with fetching videos has occurred');
-      }
-    );
-  }
-
-  getVideosByCategory() {
-    this.sub = this.route.params.subscribe(params => {
-      const category = params.category;
-      this.videoCategory = category;
-      if (category) {
-        this.videoService.getVideosByCategory(category).subscribe(
-          response => {
-            this.videos = response;
-            this.secureAllUrl(this.videos);
-          },
-          error => {
-            alert('An error with fetching videos has occurred');
-          }
-        );
-      }
+    this.videoService.channel().subscribe({
+      next: videos => this.videos = videos || [],
+      error: () => this.failed = true
     });
   }
 
-
-  secureAllUrl(allVideos: Video[]) {
-    for (const video of allVideos) {
-      video.safeUrl = this.sanitizer.bypassSecurityTrustResourceUrl(`https://www.youtube.com/embed/${video.url}`);
-    }
+  thumb(id: string) {
+    return `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
   }
-
 }

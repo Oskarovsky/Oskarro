@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
 import { TokenStorageService } from '../services/auth/token-storage.service';
+import { TrackSearch } from '../services/track-search';
 
 @Component({
   selector: 'app-navigation',
@@ -15,9 +17,12 @@ export class NavigationComponent implements OnInit {
   showAdminBoard = false;
   showModeratorBoard = false;
   username: string;
+  menuOpen = false;
 
   constructor(private http: HttpClient,
-              private tokenStorageService: TokenStorageService) {}
+              private tokenStorageService: TokenStorageService,
+              private router: Router,
+              public search: TrackSearch) {}
 
   title = 'Oskarro.com';
 
@@ -38,6 +43,15 @@ export class NavigationComponent implements OnInit {
   logout() {
     this.tokenStorageService.signOut();
     window.location.reload();
+  }
+
+  onSearch(event: Event) {
+    const form = event.target as HTMLFormElement;
+    const input = form?.querySelector('input');
+    const q = (input?.value ?? this.search.text).trim();
+    this.search.text = q;
+    this.menuOpen = false;
+    this.router.navigate(['/szukaj'], {queryParams: q ? {q} : {}});
   }
 
 }

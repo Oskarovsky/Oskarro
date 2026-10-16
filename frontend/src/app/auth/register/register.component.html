@@ -1,17 +1,11 @@
+<div class="auth-wrap">
 <div class="card bg-light">
   <article class="card-body mx-auto" style="max-width: 400px;">
 
     <form *ngIf="!isSuccessful" name="form" (ngSubmit)="f.form.valid && onSubmit()" #f="ngForm" novalidate>
 
-      <h4 class="card-title mt-3 text-center">Dołącz do naszej ekipy!</h4>
-      <p class="text-center">Słuchaj najlepszej muzyki zupełnie za darmo.</p>
-      <p>
-        <a href="" class="btn btn-block btn-twitter"> <i class="fa fa-twitter"></i> Zaloguj się za pomocą YouTube</a>
-        <a href="" class="btn btn-block btn-facebook"> <i class="fa fa-facebook"></i> Zaloguj się za pomocą Facebook</a>
-      </p>
-      <p class="divider-text">
-        <span class="bg-light">LUB</span>
-      </p>
+      <h4 class="card-title mt-3 text-center">Załóż konto</h4>
+      <p class="text-center">Potem możesz dodawać utwory, słuchać ich i zostawiać komentarze.</p>
 
       <div class="form-group input-group">
         <div class="input-group-prepend">
@@ -81,7 +75,8 @@
       Zarejestrowałeś się w portalu oskarro.com !
     </div>
   </article>
-</div> <!-- card.// -->
+</div>
+</div>
 
 
 

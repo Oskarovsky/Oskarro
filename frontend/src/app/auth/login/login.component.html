@@ -1,11 +1,7 @@
-<div class="mat-drawer-container">
-
-  <div style="text-align: center">
-    <div class="card card-container" style="display: inline-block;">
-      <img
-        id="profile-img"
-        src="//ssl.gstatic.com/accounts/ui/avatar_2x.png"
-        class="profile-img-card"/>
+<div class="auth-wrap">
+  <div class="auth-card">
+      <h1 class="display" style="font-size: 2.4rem; margin: 12px 8px 0;">Zaloguj się</h1>
+      <p class="lede" style="margin: 8px;">Wracasz do odsłuchu, komentarzy i własnych utworów.</p>
       <form
         *ngIf="!isLoggedIn"
         name="form"
@@ -67,7 +63,4 @@
         Zalogowałeś się jako {{ roles }}.
       </div>
     </div>
-  </div>
-
-
 </div>

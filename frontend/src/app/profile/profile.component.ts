@@ -1,9 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import {RefreshAfterHttpDirective} from '../services/ui-refresh';
 import { TokenStorageService } from '../services/auth/token-storage.service';
-import { Observable } from 'rxjs';
 import {UploadFileService} from '../services/storage/upload-file.service';
 import { HttpEventType, HttpResponse, HttpClient } from '@angular/common/http';
+import {ActivatedRoute} from '@angular/router';
+import {environment} from '../../environments/environment';
+import {TrackService} from '../services/track/track.service';
 
 @Component({
   selector: 'app-profile',
@@ -14,68 +16,123 @@ import { HttpEventType, HttpResponse, HttpClient } from '@angular/common/http';
 })
 export class ProfileComponent implements OnInit {
 
-  currentUser: any;
-  selectedFile;
-  currentFile: File;
+  profile: any;
+  self = false;
+  bio = '';
+  grantTitle = '';
+  grantUser = '';
   message = '';
-  userAvatar: any;
   imageToShow: any;
-  isImageLoading: any;
-
-  fileInfos: Observable<any>;
+  selectedFile: File = null;
+  missing = false;
+  loading = false;
 
   constructor(private token: TokenStorageService,
-              private uploadService: UploadFileService) { }
+              private uploadService: UploadFileService,
+              private http: HttpClient,
+              private route: ActivatedRoute,
+              private trackService: TrackService) { }
 
   ngOnInit() {
-    this.currentUser = this.token.getUser();
-    this.fileInfos = this.uploadService.getFile(this.currentUser.username);
-    this.getImageFromService();
+    this.route.params.subscribe(params => this.load(params.username));
   }
 
-  selectFile(event) {
-    this.selectedFile = event.target.files;
+  cover(track) {
+    return this.trackService.coverUrl(track.id);
   }
 
-  createImageFromBlob(image: Blob) {
-    const reader = new FileReader();
-    reader.addEventListener('load', () => {
-      this.imageToShow = reader.result;
-    }, false);
-
-    if (image) {
-      reader.readAsDataURL(image);
-    }
-  }
-
-  getImageFromService() {
-    this.isImageLoading = true;
-    this.uploadService.getFile(this.currentUser.username).subscribe(data => {
-      this.createImageFromBlob(data);
-    }, error => {
-      this.isImageLoading = false;
-      console.log(error);
+  saveBio() {
+    this.http.put<any>(environment.serverUrl + '/profile/me', {bio: this.bio}).subscribe({
+      next: profile => {
+        this.profile = profile;
+        this.message = 'Zapisane.';
+      },
+      error: () => this.message = 'Nie udało się zapisać opisu.'
     });
   }
 
-  upload() {
-    this.currentFile = this.selectedFile.item(0);
-    this.uploadService.upload(this.currentFile, this.currentUser.username).subscribe(
-      event => {
-        if (event.type === HttpEventType.UploadProgress) {
-        } else if (event instanceof HttpResponse) {
-          this.message = event.body.message;
-        }
-      },
-      err => {
-        this.message = 'Could not upload the file!';
-        this.currentFile = undefined;
+  grant() {
+    const username = (this.grantUser || this.profile?.username || '').trim();
+    if (!username) {
+      return;
+    }
+    this.http.put<any>(environment.serverUrl + '/profile/' + encodeURIComponent(username) + '/rank', {title: this.grantTitle})
+      .subscribe({
+        next: profile => {
+          this.grantUser = '';
+          if (profile.username === this.profile?.username) {
+            this.profile = profile;
+            this.grantTitle = profile.granted ? profile.rank : '';
+          }
+          this.message = profile.granted ? 'Ranga przyznana.' : 'Ranga wróciła do aktywności.';
+        },
+        error: () => this.message = 'Nie udało się zmienić rangi.'
       });
-
-    this.selectedFile = undefined;
   }
 
+  selectFile(event) {
+    this.selectedFile = event.target.files && event.target.files[0];
+  }
 
+  upload() {
+    if (!this.selectedFile || !this.profile) {
+      return;
+    }
+    this.uploadService.upload(this.selectedFile, this.profile.username).subscribe({
+      next: event => {
+        if (event.type === HttpEventType.Response || event instanceof HttpResponse) {
+          this.message = 'Zdjęcie zapisane.';
+          this.getImageFromService();
+        }
+      },
+      error: () => this.message = 'Nie udało się wgrać zdjęcia.'
+    });
+    this.selectedFile = null;
+  }
 
+  private load(username: string) {
+    this.profile = null;
+    this.missing = false;
+    this.loading = true;
+    this.imageToShow = null;
+    this.message = '';
+    const logged = this.token.getUser();
+    this.self = !!this.token.getToken() && (!username || username === logged?.username);
+    const url = username
+      ? environment.serverUrl + '/profile/' + encodeURIComponent(username)
+      : environment.serverUrl + '/profile/me';
+    if (!username && !this.token.getToken()) {
+      this.loading = false;
+      return;
+    }
+    this.http.get(url).subscribe({
+      next: (profile: any) => {
+        this.loading = false;
+        this.profile = profile;
+        this.bio = profile.bio || '';
+        this.grantTitle = profile.granted ? profile.rank : '';
+        this.self = !!logged && logged.username === profile.username;
+        this.getImageFromService();
+      },
+      error: () => {
+        this.loading = false;
+        this.missing = true;
+      }
+    });
+  }
+
+  private getImageFromService() {
+    if (!this.profile) {
+      return;
+    }
+    this.uploadService.getFile(this.profile.username).subscribe({
+      next: data => {
+        const reader = new FileReader();
+        reader.addEventListener('load', () => this.imageToShow = reader.result);
+        reader.readAsDataURL(data);
+      },
+      error: () => this.imageToShow = null
+    });
+  }
 
 }

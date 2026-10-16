@@ -48,6 +48,12 @@ public class User {
         return password;
     }
 
+    @Column(length = 280)
+    private String bio;
+
+    @Column(length = 32)
+    private String rankOverride;
+
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "user_roles",
             joinColumns = @JoinColumn(name = "user_id"),

@@ -1,0 +1,23 @@
+<div class="wave-player" *ngIf="audioUrl">
+  <button class="wave-play" type="button" (click)="toggle()" [attr.aria-label]="playing ? 'Pauza' : 'Odtwórz'">
+    <svg *ngIf="!playing" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>
+    <svg *ngIf="playing" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5h4.2v14H6zM13.8 5H18v14h-4.2z"/></svg>
+  </button>
+  <div class="wave-stage"
+       (pointerdown)="onPointerDown($event)"
+       (pointermove)="onPointerMove($event)"
+       (pointerup)="onPointerUp()"
+       (pointercancel)="onPointerUp()">
+    <canvas #canvas aria-label="Pozycja utworu"></canvas>
+  </div>
+  <div class="wave-meta">
+    <span class="wave-time">{{ clock(current) }} / {{ clock(duration) }}</span>
+    <input class="wave-volume" type="range" min="0" max="1" step="0.05" value="1" aria-label="Głośność" (input)="setVolume($event)">
+  </div>
+  <audio #audio controlsList="nodownload" preload="metadata" [src]="audioUrl"
+         (loadedmetadata)="onMeta()" (timeupdate)="onTime()" (ended)="onEnded()"
+         (play)="onPlay()" (pause)="onPause()" (error)="onAudioError()"></audio>
+</div>
+<p class="meta" *ngIf="failed">Nie udało się uruchomić odtwarzacza.
+  <button class="btn-ghost" type="button" (click)="retry()">Spróbuj ponownie</button>
+</p>

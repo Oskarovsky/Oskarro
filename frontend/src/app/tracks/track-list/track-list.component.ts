@@ -2,8 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import {RefreshAfterHttpDirective} from '../../services/ui-refresh';
 import { TrackService} from "../../services/track/track.service";
 import {Subscription} from "rxjs";
-import {ProviderService} from "../../services/provider/provider.service";
 import {ActivatedRoute} from "@angular/router";
+import {TokenStorageService} from "../../services/auth/token-storage.service";
+
+const GENRE_LABELS: Record<string, string> = {club: 'Club', dance: 'Dance', house: 'House', retro: 'Retro'};
 
 @Component({
   selector: 'app-track-list',
@@ -14,39 +16,53 @@ import {ActivatedRoute} from "@angular/router";
 })
 export class TrackListComponent implements OnInit {
 
-  tracks: Array<any>;
+  tracks: Array<any> = [];
 
   genres: Array<any>;
 
   sub: Subscription;
 
+  isLoggedIn = false;
+
+  community = false;
+
+  genre = '';
+
+  genreLabel = 'Utwory';
+
+  sort: 'score' | 'new' = 'score';
+
   constructor(private trackService: TrackService,
-              private providerService: ProviderService,
-              private route: ActivatedRoute) {
+              private route: ActivatedRoute,
+              private tokenStorage: TokenStorageService) {
   }
 
   ngOnInit() {
+    this.isLoggedIn = !!this.tokenStorage.getToken();
     this.sub = this.route.params.subscribe(params => {
-      const id = params.id;
       const genre = params.genre;
-      const providerName = params.providerName;
-      if (id && !genre) {
-        this.trackService.getTracksByProviderId(id).subscribe((track: any) => {
-          this.tracks = track;
-        });
-      } else if (id && genre) {
-        this.trackService.getTracksFromProviderByGenre(id, genre).subscribe((track: any) => {
-          this.tracks = track;
-        })
-      } else if (!id && genre) {
-        this.trackService.getTracksByGenre(genre).subscribe((track: any) => {
-          this.tracks = track;
-        })
-      } else if (providerName && !id && !genre) {
-        this.trackService.getTracksByProviderName(providerName).subscribe((track: any) => {
-          this.tracks = track;
-        })
+      this.community = !!genre;
+      this.genre = genre || '';
+      this.genreLabel = GENRE_LABELS[genre] || (genre ? genre : 'Utwory');
+      this.tracks = [];
+      if (genre) {
+        this.loadGenre();
       }
     })
+  }
+
+  setSort(sort: 'score' | 'new') {
+    this.sort = sort;
+    this.loadGenre();
+  }
+
+  coverSrc(track) {
+    return this.trackService.coverUrl(track.id);
+  }
+
+  private loadGenre() {
+    this.trackService.getTracksByGenre(this.genre, this.sort).subscribe((track: any) => {
+      this.tracks = track || [];
+    });
   }
 }

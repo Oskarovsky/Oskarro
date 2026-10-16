@@ -18,11 +18,20 @@ public class VideoController {
     private final com.oskarro.oskarito.video.VideoService videoService;
     private final VideoRepository videoRepository;
     private final TrackService trackService;
+    private final ChannelCatalog channelCatalog;
 
-    public VideoController(com.oskarro.oskarito.video.VideoService videoService, VideoRepository videoRepository, TrackService trackService) {
+    public VideoController(com.oskarro.oskarito.video.VideoService videoService, VideoRepository videoRepository,
+                           TrackService trackService, ChannelCatalog channelCatalog) {
         this.videoService = videoService;
         this.videoRepository = videoRepository;
         this.trackService = trackService;
+        this.channelCatalog = channelCatalog;
+    }
+
+    @GetMapping(value = "/channel")
+    @CrossOrigin(origins = "*", allowedHeaders = "*")
+    List<ChannelVideo> channel() {
+        return channelCatalog.videos();
     }
 
     @GetMapping(value = "/findAll")

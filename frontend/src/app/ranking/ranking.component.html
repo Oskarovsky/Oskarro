@@ -1,0 +1,66 @@
+<div class="page" *ngIf="board">
+  <p class="kicker">Ranking</p>
+  <h1 class="display">Kto niesie parkiet.</h1>
+  <p class="lede">{{ board.formula }}</p>
+
+  <p class="progress" *ngIf="board.me && board.me.nextRank">
+    Jesteś na randze {{ board.me.rank }}, masz {{ board.me.score }} pkt.
+    Do rangi {{ board.me.nextRank }} brakuje {{ board.me.pointsToNext }}.
+  </p>
+  <p class="progress" *ngIf="board.me && !board.me.nextRank">
+    Jesteś na randze {{ board.me.rank }}, masz {{ board.me.score }} pkt. To najwyższy poziom.
+  </p>
+
+  <div class="boards">
+    <section class="board">
+      <h2>Najwięcej utworów</h2>
+      <p class="meta" *ngIf="!board.mostTracks.length">Jeszcze nikt nie dodał utworu.</p>
+      <ol>
+        <li *ngFor="let row of board.mostTracks" [class.me]="mine(row.username)">
+          <span>{{ row.place }}</span>
+          <a [routerLink]="['/profile', row.username]">{{ row.username }}<small>{{ row.rank }}</small></a>
+          <strong>{{ row.tracks }}</strong>
+        </li>
+      </ol>
+    </section>
+
+    <section class="board">
+      <h2>Najaktywniejsi</h2>
+      <p class="meta" *ngIf="!board.mostActive.length">Aktywność pojawi się wraz z utworami i komentarzami.</p>
+      <ol>
+        <li *ngFor="let row of board.mostActive" [class.me]="mine(row.username)">
+          <span>{{ row.place }}</span>
+          <a [routerLink]="['/profile', row.username]">{{ row.username }}<small>{{ row.rank }}</small></a>
+          <strong>{{ row.score }}</strong>
+        </li>
+      </ol>
+    </section>
+
+    <section class="board">
+      <h2>W tym miesiącu</h2>
+      <p class="meta" *ngIf="!board.thisMonth.length">W tym miesiącu nikt jeszcze nie dodał utworu.</p>
+      <ol>
+        <li *ngFor="let row of board.thisMonth" [class.me]="mine(row.username)">
+          <span>{{ row.place }}</span>
+          <a [routerLink]="['/profile', row.username]">{{ row.username }}<small>{{ row.rank }}</small></a>
+          <strong>{{ row.monthTracks }}</strong>
+        </li>
+      </ol>
+    </section>
+  </div>
+
+  <section>
+    <div class="section-head">
+      <h2>Rangi</h2>
+    </div>
+    <div class="ladder">
+      <article class="panel" *ngFor="let step of board.ranks" [class.here]="board.me && board.me.rank === step.title">
+        <div>
+          <strong>{{ step.title }}</strong>
+          <span class="meta">od {{ step.minScore }} pkt</span>
+        </div>
+        <p>{{ step.how }}</p>
+      </article>
+    </div>
+  </section>
+</div>

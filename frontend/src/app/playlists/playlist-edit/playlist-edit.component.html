@@ -1,6 +1,10 @@
-<div class="container">
+<div class="page">
 
-  <h3>Playlista: {{playlist.name}}</h3>
+  <a class="back" [routerLink]="['/playlist/all', playlist?.owner]" *ngIf="playlist?.owner">← Składanki</a>
+  <p class="kicker">Twoja składanka</p>
+  <h1 class="display">{{ playlist?.name }}</h1>
+  <p class="lede" *ngIf="playlist?.description">{{ playlist.description }}</p>
+  <p class="lede" *ngIf="tracks.length === 0">Dodaj pierwszy utwór. W składance liczy się wykonawca, tytuł, wersja i link do pliku na hostuje.net.</p>
 
   <div class="col-md-9">
     <div class="row">
@@ -16,73 +20,70 @@
     <thead>
     <tr>
       <th scope="col">#</th>
-      <th scope="col">Artist</th>
-      <th scope="col">Title</th>
-      <th scope="col">Version</th>
+      <th scope="col">Wykonawca</th>
+      <th scope="col">Tytuł</th>
+      <th scope="col">Wersja</th>
+      <th scope="col">Plik</th>
       <th scope="col"></th>
     </tr>
     </thead>
     <tbody>
-    <tr *ngFor="let track of tracks; index as i">
+    <ng-container *ngFor="let track of tracks; index as i">
+    <tr>
       <th scope="row">{{ i + 1 }}</th>
       <td><input type="text"
              [(ngModel)]="track.artist"
              (change)="updateTrack(track)"
              class="input-label-lg"
-             maxlength="18" style="width: 100%"
-             value="{{track.artist}}"/></td>
+             maxlength="80" style="width: 100%"/></td>
       <td><input type="text"
              [(ngModel)]="track.title"
              (change)="updateTrack(track)"
              class="input-label-lg"
-             maxlength="18" style="width: 100%"
-             value="{{track.title}}"/></td>
+             maxlength="80" style="width: 100%"/></td>
       <td><input type="text"
              [(ngModel)]="track.version"
              (change)="updateTrack(track)"
              class="input-label-lg"
-             maxlength="18" style="width: 100%"
-             value="{{track.version}}"/></td>
+             maxlength="80" style="width: 100%"/></td>
+      <td>
+        <input type="text"
+               [(ngModel)]="track.url"
+               (change)="updateTrack(track)"
+               placeholder="https://hostuje.net/file.php?id=..."
+               style="width: 100%"/>
+      </td>
       <td>
         <a (click)="deleteTrack(track.id)" class="pull-right text-danger">
           <i class="material-icons" style="float:right;">delete</i>
         </a>
       </td>
     </tr>
+    <tr *ngIf="showPlayer(track.url)">
+      <td colspan="6"><app-track-player [url]="track.url"></app-track-player></td>
+    </tr>
+    </ng-container>
     </tbody>
   </table>
 
-  <!-- ADDING TRACK TO PLAYLIST PANEL -->
-  <div>
-    <input #newArtist
-           type="text"
-           class="input-label-lg"
-           maxlength="18" style="width: 25%"
-           value=""/>
-    <input #newTitle
-           type="text"
-           class="input-label-lg"
-           maxlength="18" style="width: 25%"
-           value=""/>
-    <input #newVersion
-           type="text"
-           class="input-label-lg"
-           maxlength="18" style="width: 30%"
-           value=""/>
-    <button mat-raised-button
-            (click)="addTrackToPlaylist(newArtist.value, newTitle.value, newVersion.value)"
-            type="button"
-            color="primary"
-            style="margin-left: 10px;">Dodaj utwór
-    </button>
-  </div>
-
-
-  <button mat-raised-button
-          type="button"
-          class="btn btn-warning pull-right"
-          routerLink="../details"
-          style="margin-left: 10px;">Zapisz playlistę
-  </button>
+  <form class="composer" (submit)="$event.preventDefault(); addTrackToPlaylist()">
+    <h2>Dodaj utwór do składanki</h2>
+    <div class="form-grid">
+      <label>Wykonawca
+        <input [(ngModel)]="draft.artist" name="artist" type="text" maxlength="80" required>
+      </label>
+      <label>Tytuł
+        <input [(ngModel)]="draft.title" name="title" type="text" maxlength="80" required>
+      </label>
+      <label>Wersja
+        <input [(ngModel)]="draft.version" name="version" type="text" maxlength="80" placeholder="np. Extended Mix">
+      </label>
+      <label class="wide">Plik na hostuje.net
+        <input [(ngModel)]="draft.url" name="url" type="url" placeholder="https://hostuje.net/file.php?id=..." required>
+      </label>
+    </div>
+    <button class="btn-accent" type="submit">Dodaj utwór</button>
+    <a class="btn-ghost" routerLink="../details">Gotowe</a>
+  </form>
 </div>
 

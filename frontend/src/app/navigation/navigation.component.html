@@ -1,58 +1,30 @@
-<mat-toolbar color="primary">
-  <img src="../../assets/img/logo_oskarro.png" height="40" width="40" style="margin-right: 20px">
-  <span>{{title}}</span>
-  <span class="example-spacer"></span>
-  <mat-icon class="example-icon" aria-hidden="false" aria-label="Example user verified icon">headset</mat-icon>
-  <button mat-button routerLink="/admin" *ngIf="showAdminBoard">Admin</button>
-  <button mat-button routerLink="/mod" *ngIf="showModeratorBoard">Moderator</button>
-  <button mat-button routerLink="/user" *ngIf="isLoggedIn">User</button>
-
-  <button mat-button routerLink="/register" *ngIf="!isLoggedIn">Zarejestruj się</button>
-  <button mat-button routerLink="/login" *ngIf="!isLoggedIn">Zaloguj się</button>
-
-  <button mat-button routerLink="/profile" *ngIf="isLoggedIn">{{ username }}</button>
-  <button mat-button (click)="logout()" *ngIf="isLoggedIn">Wyloguj się</button>
-</mat-toolbar>
-
-<button mat-button routerLink="/" style="margin-bottom: 20px">Strona główna</button>
-
-<button mat-button [matMenuTriggerFor]="genreMenu">Gatunki</button>
-<mat-menu #genreMenu="matMenu" yPosition="below">
-  <button mat-menu-item routerLink="/tracklist/club">Club</button>
-  <button mat-menu-item routerLink="/tracklist/dance">Dance</button>
-  <button mat-menu-item routerLink="/tracklist/house">House</button>
-  <button mat-menu-item routerLink="/tracklist/retro">Retro</button>
-</mat-menu>
-
-<button mat-button [matMenuTriggerFor]="providerMenu">Serwisy</button>
-<mat-menu #providerMenu="matMenu" xPosition="after">
-  <button mat-menu-item routerLink="/provider/1/details">Nuteczki</button>
-  <button mat-menu-item routerLink="/provider/2/details">Radioparty</button>
-  <button mat-menu-item routerLink="/provider/4/details">Billboard</button>
-  <button mat-menu-item routerLink="/provider/8/details">Apple</button>
-</mat-menu>
-
-<button mat-button [matMenuTriggerFor]="topMenu">Top ranking</button>
-<mat-menu #topMenu="matMenu" xPosition="after">
-  <button mat-menu-item>Club</button>
-  <button mat-menu-item>Retro</button>
-</mat-menu>
-
-<button mat-button [matMenuTriggerFor]="videoMenu">Video</button>
-<mat-menu #videoMenu="matMenu" xPosition="after">
-  <button mat-menu-item routerLink="/video/category/MIX">Mixy</button>
-  <button mat-menu-item routerLink="/video/category/LUNA_MIX">Luna Mix</button>
-  <button mat-menu-item routerLink="/video/category/PSYCHO_PATH">Psychopath</button>
-  <button mat-menu-item routerLink="/video/category/RETRO">Retro</button>
-</mat-menu>
-
-<button mat-button [matMenuTriggerFor]="playlistMenu">Playlist</button>
-<mat-menu #playlistMenu="matMenu" xPosition="after">
-  <button mat-menu-item routerLink="/playlist/all">Playlisty użytkowników</button>
-  <button mat-menu-item *ngIf="isLoggedIn" routerLink="/playlist/all/{{username}}">Moje składanki</button>
-</mat-menu>
-
-
-
-
-
+<header class="topbar">
+  <a class="brand" routerLink="/" (click)="menuOpen = false">
+    <img class="logo" src="assets/logo-mark.png" alt="">
+    Oskarro
+  </a>
+  <form class="nav-find" (submit)="$event.preventDefault(); onSearch($event)">
+    <input [(ngModel)]="search.text" name="q" type="search" placeholder="Szukaj utworu" autocomplete="off">
+    <button class="btn-accent" type="submit">OK</button>
+  </form>
+  <button class="nav-toggle" type="button" (click)="menuOpen = !menuOpen">Menu</button>
+  <nav class="topnav" [class.open]="menuOpen">
+    <a routerLink="/tracklist/club" routerLinkActive="is-on" (click)="menuOpen = false">Club</a>
+    <a routerLink="/tracklist/dance" routerLinkActive="is-on" (click)="menuOpen = false">Dance</a>
+    <a routerLink="/tracklist/house" routerLinkActive="is-on" (click)="menuOpen = false">House</a>
+    <a routerLink="/tracklist/retro" routerLinkActive="is-on" (click)="menuOpen = false">Retro</a>
+    <a routerLink="/video" routerLinkActive="is-on" (click)="menuOpen = false">Wideo</a>
+    <a routerLink="/playlist/all" routerLinkActive="is-on" (click)="menuOpen = false">Playlisty</a>
+    <a routerLink="/ranking" routerLinkActive="is-on" (click)="menuOpen = false">Ranking</a>
+    <span class="nav-space"></span>
+    <span class="account">
+      <a *ngIf="showAdminBoard" routerLink="/admin" (click)="menuOpen = false">Admin</a>
+      <a class="btn-accent" routerLink="/track/add" (click)="menuOpen = false">Dodaj utwór</a>
+      <a *ngIf="!isLoggedIn" routerLink="/login" (click)="menuOpen = false">Zaloguj się</a>
+      <a *ngIf="!isLoggedIn" routerLink="/register" (click)="menuOpen = false">Dołącz</a>
+      <a *ngIf="isLoggedIn" routerLink="/profile" (click)="menuOpen = false">{{ username }}</a>
+      <a *ngIf="isLoggedIn && username" routerLink="/playlist/all/{{username}}" (click)="menuOpen = false">Moje składanki</a>
+      <button *ngIf="isLoggedIn" class="btn-ghost" type="button" (click)="logout()">Wyloguj się</button>
+    </span>
+  </nav>
+</header>

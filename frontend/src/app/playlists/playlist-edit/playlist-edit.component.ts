@@ -6,6 +6,8 @@ import {PlaylistService} from '../../services/playlist/playlist.service';
 import {TrackService} from '../../services/track/track.service';
 import {Subscription} from 'rxjs';
 import {ActivatedRoute, Route} from '@angular/router';
+import {hostujePlayer} from '../../services/hostuje';
+import {TokenStorageService} from '../../services/auth/token-storage.service';
 
 @Component({
   selector: 'app-playlist-edit',
@@ -24,11 +26,17 @@ export class PlaylistEditComponent implements OnInit {
 
   playlist_id;
 
+  draft = {artist: '', title: '', version: '', url: ''};
+
+  isLoggedIn = false;
+
   constructor(private playlistService: PlaylistService,
               private trackService: TrackService,
-              private route: ActivatedRoute) { }
+              private route: ActivatedRoute,
+              private tokenStorage: TokenStorageService) { }
 
   ngOnInit() {
+    this.isLoggedIn = !!this.tokenStorage.getToken();
     this.getPlaylistById();
     this.getAllTracksFromPlaylist();
   }
@@ -111,7 +119,23 @@ export class PlaylistEditComponent implements OnInit {
     }
   }
 
-  addTrackToPlaylist(title: string, artist: string, version: string) {
+  showPlayer(url: string) {
+    return this.isLoggedIn && !!hostujePlayer(url);
+  }
+
+  addTrackToPlaylist() {
+    const artist = this.draft.artist.trim();
+    const title = this.draft.title.trim();
+    const version = this.draft.version.trim();
+    const url = this.draft.url.trim();
+    if (!artist || !title) {
+      alert('Podaj wykonawcę i tytuł.');
+      return;
+    }
+    if (!hostujePlayer(url)) {
+      alert('Podaj link do pliku na hostuje.net.');
+      return;
+    }
     const newTrack: Track = {
       id: null,
       title,
@@ -119,7 +143,7 @@ export class PlaylistEditComponent implements OnInit {
       points: null,
       genre: '',
       version,
-      url: '',
+      url,
       position: null,
       playlist: this.playlist,
       video: null
@@ -127,10 +151,11 @@ export class PlaylistEditComponent implements OnInit {
 
     this.trackService.saveTrackToPlaylist(newTrack).subscribe(
       response => {
-        this.tracks.push(newTrack);
+        this.tracks.push(response && response.id ? response : newTrack);
+        this.draft = {artist: '', title: '', version: '', url: ''};
       },
       error => {
-        alert('An error with adding track to playlist has occurred');
+        alert('Nie udało się dodać utworu.');
       }
     );
   }

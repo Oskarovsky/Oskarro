@@ -1,39 +1,24 @@
-<div class="container">
-
-  <!-- Playlist menu -->
-  <div class="row" style="margin-top: 12px;">
-    <input type="text"
-           [(ngModel)]="searchText"
-           class="mat-form-field"
-           style="width: 50%;"
-           placeholder="Wyszukaj playlistę..." />
-    <button mat-raised-button
-            type="button"
-            color="primary"
-            routerLink="/playlist/add"
-            style="margin-left: 10px;">Add playlist
-    </button>
+<div class="page">
+  <p class="kicker">Twoje zestawy</p>
+  <div class="section-head">
+    <h1 class="display">{{ mine ? 'Moje składanki' : 'Składanki ' + owner }}</h1>
+    <a class="btn-accent" routerLink="/playlist/add" *ngIf="mine">Nowa składanka</a>
   </div>
+  <p class="lede" *ngIf="mine">Każda składanka jest Twoja. Nadaj jej nazwę, napisz po co jest, a potem dodaj utwory.</p>
+  <p class="lede" *ngIf="!mine">Składanki użytkownika {{ owner }}.</p>
 
-  <!-- Playlist content -->
-  <div class="row" style="margin-top: 28px;" *ngIf="isLoggedIn">
-    <div class="col-md-3">
-      <br>
-      <div class="list-group list-group-flush">
-        <div *ngFor="let playlist of playlists | playlistFilter:searchText">
-          <a class="list-group-item list-group-item-action">
-            {{ playlist.name }}
-            <i class="material-icons" (click)="deletePlaylist(playlist.id)" style="float:right;">delete</i>
-            <i class="material-icons" style="float:right; margin-right: 2px;" routerLink="../../playlist/{{playlist.id}}/edit">edit</i>
-            <i class="material-icons" style="float:right; margin-right: 2px;" routerLink="../../playlist/{{playlist.id}}/details">slideshow</i>
-          </a>
-        </div>
+  <div class="stack" *ngIf="playlists.length">
+    <article class="playlist-card" *ngFor="let playlist of playlists">
+      <a [routerLink]="['/playlist', playlist.id, 'details']">
+        <strong>{{ playlist.name }}</strong>
+        <span>{{ playlist.description || 'Bez opisu' }}</span>
+        <em>{{ playlist.tracks || 0 }} {{ playlist.tracks === 1 ? 'utwór' : 'utworów' }}</em>
+      </a>
+      <div class="row-actions" *ngIf="mine">
+        <a class="btn-ghost" [routerLink]="['/playlist', playlist.id, 'edit']">Edytuj</a>
+        <button class="btn-ghost" type="button" (click)="deletePlaylist(playlist.id)">Usuń</button>
       </div>
-    </div>
+    </article>
   </div>
-
-  <div class="alert alert-warning" role="alert" *ngIf="!isLoggedIn">
-    <a routerLink="/login">Zaloguj się</a>, jeśli chcesz zobaczyć Twoje playlisty!
-  </div>
-
+  <p class="lede" *ngIf="loaded && !playlists.length">Tu jeszcze nie ma składanek. <a routerLink="/playlist/add" *ngIf="mine">Załóż pierwszą.</a></p>
 </div>
