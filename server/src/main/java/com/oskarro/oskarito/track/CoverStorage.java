@@ -43,4 +43,12 @@ public class CoverStorage {
     public boolean exists(Integer trackId) {
         return trackId != null && Files.isRegularFile(directory.resolve(trackId + ".jpg"));
     }
+
+    public void delete(Integer trackId) {
+        try {
+            Files.deleteIfExists(directory.resolve(trackId + ".jpg"));
+        } catch (IOException ex) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Nie udało się usunąć okładki");
+        }
+    }
 }

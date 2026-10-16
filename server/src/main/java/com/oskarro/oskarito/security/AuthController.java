@@ -105,33 +105,10 @@ public class AuthController {
                 .activated(false)
                 .build();
 
-        Set<String> stringRoles = signupRequest.getRole();
-        Set<Role> roles = new HashSet<>();
-
-        if (stringRoles == null) {
-            Role userRole = roleRepository.findByName(RoleName.ROLE_USER)
-                    .orElseThrow(() -> new RuntimeException("Error: Role is not found"));
-            roles.add(userRole);
-        } else {
-            stringRoles.forEach(role -> {
-                switch (role) {
-                    case "admin":
-                        Role adminRole = roleRepository.findByName(RoleName.ROLE_ADMIN)
-                                .orElseThrow(() -> new RuntimeException("Fail! -> Cause: User Role not find."));
-                        roles.add(adminRole);
-                        break;
-                    case "mod":
-                        Role modRole = roleRepository.findByName(RoleName.ROLE_MODERATOR)
-                                .orElseThrow(() -> new RuntimeException("Fail! -> Cause: User Role not find."));
-                        roles.add(modRole);
-                        break;
-                    default:
-                        Role userRole = roleRepository.findByName(RoleName.ROLE_USER)
-                                .orElseThrow(() -> new RuntimeException("Fail! -> Cause: User Role not find."));
-                        roles.add(userRole);
-                }
-            });
-        }
+        // Role is never taken from the request: self-registered accounts are always plain users.
+        Role userRole = roleRepository.findByName(RoleName.ROLE_USER)
+                .orElseThrow(() -> new RuntimeException("Error: Role is not found"));
+        Set<Role> roles = new HashSet<>(Set.of(userRole));
         user.setRoles(roles);
         userRepository.save(user);
         boolean delivered = accountActivationService.issueAndSend(user);

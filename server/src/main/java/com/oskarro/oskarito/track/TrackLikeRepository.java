@@ -1,5 +1,6 @@
 package com.oskarro.oskarito.track;
 
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
@@ -26,4 +27,8 @@ public interface TrackLikeRepository extends CrudRepository<TrackLike, Integer> 
 
     @Query("select l.track.author.id, count(l) from TrackLike l where l.track.author is not null and l.vote = -1 group by l.track.author.id")
     List<Object[]> dislikesGroupedByAuthor();
+
+    @Modifying
+    @Query("delete from TrackLike l where l.track.id = :trackId")
+    void deleteByTrackId(@Param("trackId") Integer trackId);
 }

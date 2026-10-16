@@ -1,82 +1,48 @@
 package com.oskarro.oskarito.storage;
 
-import com.oskarro.oskarito.user.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.CacheControl;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
-import jakarta.servlet.ServletContext;
-import jakarta.transaction.Transactional;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
-@Controller
+@RestController
 @RequestMapping(value = "/api/storage")
-@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 public class FilesController {
 
-    @Autowired
-    ServletContext servletContext;
+    private static final Set<String> SAFE_TYPES = Set.of("image/jpeg", "image/png", "image/gif", "image/webp");
 
-    com.oskarro.oskarito.storage.FilesStorageService filesStorageService;
-    ImageRepository imageRepository;
-    UserRepository userRepository;
+    private final FilesStorageService filesStorageService;
 
-    public FilesController(com.oskarro.oskarito.storage.FilesStorageService filesStorageService, ImageRepository imageRepository, UserRepository userRepository) {
+    public FilesController(FilesStorageService filesStorageService) {
         this.filesStorageService = filesStorageService;
-        this.imageRepository = imageRepository;
-        this.userRepository = userRepository;
     }
 
+    /** Sets the avatar of the logged-in user; any "username" sent by older clients is ignored. */
     @PostMapping(value = "/upload")
-    public ResponseEntity<ResponseMessage> uploadFile(@RequestParam("file") MultipartFile file,
-                                                      @RequestParam("username") String username) {
-        String message = "";
-        try {
-            filesStorageService.save(file, username);
-            message = "Dodano zdjęcie: " + file.getOriginalFilename() + ". Odśwież stronę.";
-            return ResponseEntity.status(HttpStatus.OK).body(new ResponseMessage(message));
-        } catch (Exception e) {
-            message = "Nie można załadować pliku: " + file.getOriginalFilename() + "!";
-            return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(new ResponseMessage(message));
-        }
-    }
-
-    @GetMapping(value = "/files")
-    public ResponseEntity<List<FileInfo>> getListFiles() {
-        List<FileInfo> fileInfos = filesStorageService.loadAll().map(path -> {
-            String filename = path.getFileName().toString();
-            String url = MvcUriComponentsBuilder
-                    .fromMethodName(com.oskarro.oskarito.storage.FilesController.class, "getFile", path.getFileName().toString()).build().toString();
-            return new FileInfo(filename, url);
-        }).collect(Collectors.toList());
-
-        return ResponseEntity.status(HttpStatus.OK).body(fileInfos);
-    }
-
-    @GetMapping("/files/{filename:.+}")
-    @ResponseBody
-    public ResponseEntity<Resource> getFile(@PathVariable String filename) {
-        Resource file = filesStorageService.load(filename, "sss");
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"").body(file);
+    public ResponseMessage uploadFile(@RequestParam("file") MultipartFile file) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        filesStorageService.saveAvatar(file, authentication.getName());
+        return new ResponseMessage("Dodano zdjęcie. Odśwież stronę.");
     }
 
     @GetMapping(value = "/{username}/avatar")
-    @ResponseBody
-    @Transactional
-    public ResponseEntity<Resource> getImage(@PathVariable String username) {
-        Image image = imageRepository.findByUserUsername(username)
-                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(HttpStatus.NOT_FOUND, "Image not found for user: " + username));
-        Resource file = filesStorageService.load(image.getName(), username);
-        return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(file);
+    public ResponseEntity<byte[]> getImage(@PathVariable String username) {
+        Image image = filesStorageService.loadAvatar(username);
+        // Never echo arbitrary stored types (e.g. SVG could carry scripts on our origin).
+        MediaType type = SAFE_TYPES.contains(image.getType())
+                ? MediaType.parseMediaType(image.getType())
+                : MediaType.IMAGE_JPEG;
+        return ResponseEntity.ok()
+                .contentType(type)
+                .cacheControl(CacheControl.maxAge(10, TimeUnit.MINUTES).cachePublic())
+                .header("X-Content-Type-Options", "nosniff")
+                .body(image.getPic());
     }
-
 }

@@ -16,7 +16,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-final class CoverImages {
+public final class CoverImages {
 
     static final int MAX_BYTES_IN = 2 * 1024 * 1024;
     static final int MAX_EDGE = 480;
@@ -26,7 +26,7 @@ final class CoverImages {
     private CoverImages() {
     }
 
-    static byte[] miniaturize(byte[] raw) {
+    public static byte[] miniaturize(byte[] raw) {
         if (raw == null || raw.length == 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Wybierz obrazek");
         }

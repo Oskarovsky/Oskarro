@@ -92,7 +92,15 @@ public class TrackController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "There are a problem with binding");
         }
         requirePlayableLink(track);
-        return trackService.saveTrack(track);
+        // Only content fields are copied, so the request cannot overwrite an existing track (id) or forge author/points.
+        Track trackAdded = Track.builder()
+                .artist(track.getArtist())
+                .title(track.getTitle())
+                .version(track.getVersion())
+                .url(track.getUrl())
+                .genre(track.getGenre())
+                .build();
+        return trackService.saveTrack(trackAdded);
     }
 
     @GetMapping(value = "/genre/{genre}")
@@ -265,7 +273,7 @@ public class TrackController {
     @DeleteMapping(value = "/{id}")
     @CrossOrigin(origins = "*", allowedHeaders = "*")
     public void delete(@PathVariable Integer id) {
-        this.trackRepository.deleteById(id);
+        trackSocialService.delete(id);
     }
 
 }

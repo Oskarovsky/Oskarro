@@ -14,10 +14,9 @@ export class UploadFileService {
   constructor(private http: HttpClient) {
   }
 
-  upload(file: File, username: string): Observable<HttpEvent<any>> {
+  upload(file: File): Observable<HttpEvent<any>> {
     const formData: FormData = new FormData();
     formData.append('file', file);
-    formData.append('username', username);
     const req = new HttpRequest('POST', STORAGE_API + '/upload', formData, {
       reportProgress: true,
       responseType: 'json'

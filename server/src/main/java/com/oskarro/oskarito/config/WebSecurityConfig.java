@@ -4,6 +4,7 @@ import com.oskarro.oskarito.security.jwt.JwtAuthenticationEntryPoint;
 import com.oskarro.oskarito.security.jwt.JwtAuthenticationTokenFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -63,7 +64,13 @@ public class WebSecurityConfig {
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(unauthorizedHandler))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/**").permitAll()
+                        // Curated content: only staff may add videos, ranking entries or raw tracks.
+                        .requestMatchers(HttpMethod.POST, "/api/video/add", "/api/tracks/add", "/api/tracks/addToRanking")
+                            .hasAnyRole("ADMIN", "MODERATOR")
+                        .requestMatchers(HttpMethod.DELETE, "/api/video/**").hasAnyRole("ADMIN", "MODERATOR")
+                        // Ownership of these is checked in the services; here we only require a login.
+                        .requestMatchers(HttpMethod.POST, "/api/storage/upload").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/tracks/**", "/api/playlist/**").authenticated()
                         .anyRequest().permitAll());
 
         http.addFilterBefore(authenticationJwtTokenFilter, UsernamePasswordAuthenticationFilter.class);

@@ -117,14 +117,13 @@ export class PlaylistEditComponent implements OnInit {
   }
 
   deleteTrack(id: number) {
-    if (confirm(this.lang.t('Czy na pewno chcesz usunąć ten utwór?', 'Remove this track?'))) {
-      this.trackService.deleteTrackFromPlaylist(id).subscribe(
-        response => {
-          this.tracks.splice(Number(id), 1);
-          window.location.reload();
+    if (confirm(this.lang.t('Usunąć ten utwór ze składanki?', 'Remove this track from the playlist?'))) {
+      this.playlistService.unpin(this.playlist.id, id).subscribe(
+        () => {
+          this.tracks = this.tracks.filter(track => track.id !== id);
         },
-        error => {
-          alert('An error has occurred while deleting tracks from playlist');
+        () => {
+          alert(this.lang.t('Nie udało się usunąć utworu ze składanki', 'Could not remove the track from the playlist'));
         }
       );
     }

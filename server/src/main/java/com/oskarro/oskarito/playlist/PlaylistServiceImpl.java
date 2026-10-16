@@ -125,6 +125,28 @@ public class PlaylistServiceImpl implements PlaylistService {
         return playlist.getName();
     }
 
+    @Override
+    public void unpin(Integer playlistId, Integer trackId) {
+        Playlist playlist = require(playlistId);
+        User owner = playlist.getUser();
+        User user = currentUser();
+        if (owner == null || !owner.getId().equals(user.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Ze składanki usuwa tylko jej autor");
+        }
+        if (entryRepository.existsByPlaylist_IdAndTrack_Id(playlistId, trackId)) {
+            entryRepository.deleteByPlaylist_IdAndTrack_Id(playlistId, trackId);
+            return;
+        }
+        // Legacy tracks belong to the playlist directly; detach them instead of deleting the track.
+        Track track = trackRepository.findById(trackId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Nie ma takiego utworu"));
+        if (track.getPlaylist() == null || !playlistId.equals(track.getPlaylist().getId())) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Tego utworu nie ma w składance");
+        }
+        track.setPlaylist(null);
+        trackRepository.save(track);
+    }
+
     private Playlist require(Integer id) {
         return playlistRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Nie ma takiej składanki"));

@@ -1,5 +1,6 @@
 package com.oskarro.oskarito.track;
 
+import com.oskarro.oskarito.playlist.PlaylistEntryRepository;
 import com.oskarro.oskarito.user.ProfileService;
 import com.oskarro.oskarito.user.User;
 import com.oskarro.oskarito.user.UserRepository;
@@ -48,6 +49,8 @@ public class TrackSocialService {
     private final ProfileService profileService;
     private final CoverStorage coverStorage;
     private final TrackViewRepository viewRepository;
+    private final PlaylistEntryRepository entryRepository;
+    private final TrackFileRepository fileRepository;
     private static final ZoneId WARSAW = ZoneId.of("Europe/Warsaw");
 
     public TrackSocialService(TrackRepository trackRepository,
@@ -56,7 +59,9 @@ public class TrackSocialService {
                               UserRepository userRepository,
                               ProfileService profileService,
                               CoverStorage coverStorage,
-                              TrackViewRepository viewRepository) {
+                              TrackViewRepository viewRepository,
+                              PlaylistEntryRepository entryRepository,
+                              TrackFileRepository fileRepository) {
         this.trackRepository = trackRepository;
         this.commentRepository = commentRepository;
         this.likeRepository = likeRepository;
@@ -64,6 +69,8 @@ public class TrackSocialService {
         this.profileService = profileService;
         this.coverStorage = coverStorage;
         this.viewRepository = viewRepository;
+        this.entryRepository = entryRepository;
+        this.fileRepository = fileRepository;
     }
 
     public List<Track> listByGenre(String genre, String sort) {
@@ -413,6 +420,29 @@ public class TrackSocialService {
         } catch (IllegalArgumentException ex) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unknown genre");
         }
+    }
+
+    public void delete(Integer trackId) {
+        Track track = requireTrack(trackId);
+        User user = currentUser();
+        boolean author = track.getAuthor() != null && track.getAuthor().getId().equals(user.getId());
+        if (!author && !isStaff()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Utwór może usunąć tylko autor albo moderator");
+        }
+        likeRepository.deleteByTrackId(trackId);
+        commentRepository.deleteByTrackId(trackId);
+        viewRepository.deleteByTrackId(trackId);
+        entryRepository.deleteByTrack_Id(trackId);
+        fileRepository.deleteById(trackId);
+        trackRepository.delete(track);
+        coverStorage.delete(trackId);
+    }
+
+    private boolean isStaff() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return authentication != null && authentication.getAuthorities().stream()
+                .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority())
+                        || "ROLE_MODERATOR".equals(authority.getAuthority()));
     }
 
     private User currentUser() {

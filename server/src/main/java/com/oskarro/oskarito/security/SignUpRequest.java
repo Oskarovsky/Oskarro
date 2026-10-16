@@ -8,7 +8,6 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
-import java.util.Set;
 
 @Getter
 @Setter
@@ -24,7 +23,6 @@ public class SignUpRequest {
     @Email(message = "Niepoprawny email")
     private String email;
 
-    private Set<String> role;
 
     @NotBlank(message = "Wymagane hasło")
     @Size(min = 6, max = 40, message = "Hasło musi zawierać minimum 6 znaków")

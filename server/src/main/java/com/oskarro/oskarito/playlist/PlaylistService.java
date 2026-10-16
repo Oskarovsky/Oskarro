@@ -33,4 +33,6 @@ public interface PlaylistService {
 
     List<com.oskarro.oskarito.playlist.Playlist> findAllPlaylistByUsername(String username);
 
+
+    void unpin(Integer playlistId, Integer trackId);
 }

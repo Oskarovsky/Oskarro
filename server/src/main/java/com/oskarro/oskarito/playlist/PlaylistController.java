@@ -44,6 +44,12 @@ public class PlaylistController {
         return Map.of("name", playlistService.pin(id, trackId));
     }
 
+    @DeleteMapping(value = "/{id}/pin/{trackId}")
+    @CrossOrigin(origins = "*", allowedHeaders = "*")
+    public void unpin(@PathVariable Integer id, @PathVariable Integer trackId) {
+        playlistService.unpin(id, trackId);
+    }
+
     @PostMapping(value = "/add")
     @CrossOrigin(origins = "*", allowedHeaders = "*")
     public PlaylistView addPlaylist(@RequestBody PlaylistDraft draft) {

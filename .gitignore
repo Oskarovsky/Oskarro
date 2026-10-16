@@ -33,3 +33,11 @@ build/
 ### Node ###
 node_modules/
 frontend/dist/
+
+### Secrets ###
+.env
+*.env
+*.p12
+*.key
+*.pem
+uploads/

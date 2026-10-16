@@ -13,4 +13,8 @@ public interface PlaylistEntryRepository extends CrudRepository<PlaylistEntry, I
     long countByPlaylist_Id(Integer playlistId);
 
     void deleteByPlaylist_Id(Integer playlistId);
+
+    void deleteByPlaylist_IdAndTrack_Id(Integer playlistId, Integer trackId);
+
+    void deleteByTrack_Id(Integer trackId);
 }

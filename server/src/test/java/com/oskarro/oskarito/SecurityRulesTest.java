@@ -1,0 +1,257 @@
+package com.oskarro.oskarito;
+
+import tools.jackson.databind.ObjectMapper;
+import com.oskarro.oskarito.config.DataSeeder;
+import com.oskarro.oskarito.playlist.Playlist;
+import com.oskarro.oskarito.playlist.PlaylistEntry;
+import com.oskarro.oskarito.playlist.PlaylistEntryRepository;
+import com.oskarro.oskarito.playlist.PlaylistRepository;
+import com.oskarro.oskarito.storage.ImageRepository;
+import com.oskarro.oskarito.track.Track;
+import com.oskarro.oskarito.track.TrackComment;
+import com.oskarro.oskarito.track.TrackCommentRepository;
+import com.oskarro.oskarito.track.TrackLike;
+import com.oskarro.oskarito.track.TrackLikeRepository;
+import com.oskarro.oskarito.track.TrackRepository;
+import com.oskarro.oskarito.user.Role;
+import com.oskarro.oskarito.user.RoleName;
+import com.oskarro.oskarito.user.RoleRepository;
+import com.oskarro.oskarito.user.User;
+import com.oskarro.oskarito.user.UserRepository;
+import com.oskarro.oskarito.video.Video;
+import com.oskarro.oskarito.video.VideoRepository;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
+
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.Instant;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+/** Regression tests for the access-control holes found in the October 2026 review. */
+@SpringBootTest
+@AutoConfigureMockMvc
+@ActiveProfiles("test")
+class SecurityRulesTest {
+
+    private static final String PASSWORD = "secret-pass";
+    private static final AtomicInteger SEQ = new AtomicInteger();
+
+    @MockitoBean
+    DataSeeder dataSeeder;
+
+    @Autowired MockMvc mvc;
+    @Autowired ObjectMapper json;
+    @Autowired PasswordEncoder encoder;
+    @Autowired UserRepository users;
+    @Autowired RoleRepository roles;
+    @Autowired TrackRepository tracks;
+    @Autowired TrackLikeRepository likes;
+    @Autowired TrackCommentRepository comments;
+    @Autowired PlaylistRepository playlists;
+    @Autowired PlaylistEntryRepository entries;
+    @Autowired VideoRepository videos;
+    @Autowired ImageRepository images;
+
+    @BeforeEach
+    void roles() {
+        for (RoleName name : RoleName.values()) {
+            if (roles.findByName(name).isEmpty()) {
+                Role role = new Role();
+                role.setName(name);
+                roles.save(role);
+            }
+        }
+    }
+
+    @Test
+    void signupIgnoresRequestedAdminRole() throws Exception {
+        String name = "intruder" + SEQ.incrementAndGet();
+        mvc.perform(post("/api/auth/signup").contentType(MediaType.APPLICATION_JSON)
+                        .content(json.writeValueAsString(Map.of(
+                                "username", name, "email", name + "@example.com",
+                                "password", PASSWORD, "role", List.of("admin", "mod")))))
+                .andExpect(status().isOk());
+        User user = users.findByUsername(name).orElseThrow();
+        user.setActivated(true);
+        users.save(user);
+
+        String body = mvc.perform(post("/api/auth/signin").contentType(MediaType.APPLICATION_JSON)
+                        .content(json.writeValueAsString(Map.of("username", name, "password", PASSWORD))))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        assertThat(json.readTree(body).get("roles").toString()).isEqualTo("[\"ROLE_USER\"]");
+    }
+
+    @Test
+    void trackDeletionNeedsAuthorOrStaff() throws Exception {
+        User author = user(RoleName.ROLE_USER);
+        User stranger = user(RoleName.ROLE_USER);
+        Track track = track(author);
+        TrackLike like = new TrackLike();
+        like.setTrack(track);
+        like.setUser(stranger);
+        like.setVote(1);
+        likes.save(like);
+        TrackComment comment = new TrackComment();
+        comment.setTrack(track);
+        comment.setAuthor(stranger);
+        comment.setText("nice");
+        comments.save(comment);
+
+        mvc.perform(delete("/api/tracks/" + track.getId())).andExpect(status().isUnauthorized());
+        mvc.perform(delete("/api/tracks/" + track.getId()).header("Authorization", bearer(stranger)))
+                .andExpect(status().isForbidden());
+        assertThat(tracks.findById(track.getId())).isPresent();
+
+        mvc.perform(delete("/api/tracks/" + track.getId()).header("Authorization", bearer(author)))
+                .andExpect(status().isOk());
+        assertThat(tracks.findById(track.getId())).isEmpty();
+        assertThat(likes.findByTrackIdAndUserId(track.getId(), stranger.getId())).isEmpty();
+    }
+
+    @Test
+    void moderatorCanDeleteAnyTrack() throws Exception {
+        Track track = track(user(RoleName.ROLE_USER));
+        mvc.perform(delete("/api/tracks/" + track.getId()).header("Authorization", bearer(user(RoleName.ROLE_MODERATOR))))
+                .andExpect(status().isOk());
+        assertThat(tracks.findById(track.getId())).isEmpty();
+    }
+
+    @Test
+    void videosAreStaffOnly() throws Exception {
+        Video video = videos.save(Video.builder().name("Mix").url("abc").category("MIX").build());
+        String draft = json.writeValueAsString(Map.of("name", "Spam", "url", "x", "category", "MIX"));
+
+        mvc.perform(post("/api/video/add").contentType(MediaType.APPLICATION_JSON).content(draft))
+                .andExpect(status().isUnauthorized());
+        mvc.perform(post("/api/video/add").contentType(MediaType.APPLICATION_JSON).content(draft)
+                        .header("Authorization", bearer(user(RoleName.ROLE_USER))))
+                .andExpect(status().isForbidden());
+        mvc.perform(delete("/api/video/" + video.getId()).header("Authorization", bearer(user(RoleName.ROLE_USER))))
+                .andExpect(status().isForbidden());
+        assertThat(videos.findById(video.getId())).isPresent();
+
+        mvc.perform(delete("/api/video/" + video.getId()).header("Authorization", bearer(user(RoleName.ROLE_ADMIN))))
+                .andExpect(status().isOk());
+        assertThat(videos.findById(video.getId())).isEmpty();
+    }
+
+    @Test
+    void rawTrackAddCannotOverwriteExistingTrack() throws Exception {
+        User author = user(RoleName.ROLE_USER);
+        Track existing = track(author);
+        String forged = json.writeValueAsString(Map.of(
+                "id", existing.getId(), "artist", "Hacked", "title", "Hacked",
+                "url", "https://hostuje.net/file.php?id=" + "b".repeat(32), "points", 9999, "genre", "CLUB"));
+
+        mvc.perform(post("/api/tracks/add").contentType(MediaType.APPLICATION_JSON).content(forged)
+                        .header("Authorization", bearer(user(RoleName.ROLE_USER))))
+                .andExpect(status().isForbidden());
+        mvc.perform(post("/api/tracks/add").contentType(MediaType.APPLICATION_JSON).content(forged)
+                        .header("Authorization", bearer(user(RoleName.ROLE_ADMIN))))
+                .andExpect(status().isOk());
+
+        Track reloaded = tracks.findById(existing.getId()).orElseThrow();
+        assertThat(reloaded.getTitle()).isEqualTo("Original");
+        assertThat(reloaded.getAuthor().getId()).isEqualTo(author.getId());
+    }
+
+    @Test
+    void avatarUploadIsForSelfAndNeverTouchesDisk() throws Exception {
+        Path sentinel = Path.of("uploads", "covers", "sentinel.jpg");
+        Files.createDirectories(sentinel.getParent());
+        Files.write(sentinel, new byte[]{1});
+        MockMultipartFile file = new MockMultipartFile("file", "../../evil.png", "image/png", png());
+
+        mvc.perform(multipart("/api/storage/upload").file(file).param("username", "covers"))
+                .andExpect(status().isUnauthorized());
+
+        User me = user(RoleName.ROLE_USER);
+        User victim = user(RoleName.ROLE_USER);
+        mvc.perform(multipart("/api/storage/upload").file(file).param("username", victim.getUsername())
+                        .header("Authorization", bearer(me)))
+                .andExpect(status().isOk());
+
+        assertThat(images.existsByUserId(me.getId())).isTrue();
+        assertThat(images.existsByUserId(victim.getId())).isFalse();
+        assertThat(sentinel).exists();
+        assertThat(Path.of("evil.png")).doesNotExist();
+        Files.deleteIfExists(sentinel);
+    }
+
+    @Test
+    void unpinRemovesOnlyTheEntryAndOnlyForTheOwner() throws Exception {
+        User owner = user(RoleName.ROLE_USER);
+        Track someoneElses = track(user(RoleName.ROLE_USER));
+        Playlist playlist = playlists.save(Playlist.builder().name("Mine").user(owner).build());
+        PlaylistEntry entry = new PlaylistEntry();
+        entry.setPlaylist(playlist);
+        entry.setTrack(someoneElses);
+        entries.save(entry);
+
+        String path = "/api/playlist/" + playlist.getId() + "/pin/" + someoneElses.getId();
+        mvc.perform(delete(path).header("Authorization", bearer(user(RoleName.ROLE_USER))))
+                .andExpect(status().isForbidden());
+        mvc.perform(delete(path).header("Authorization", bearer(owner))).andExpect(status().isOk());
+
+        assertThat(entries.existsByPlaylist_IdAndTrack_Id(playlist.getId(), someoneElses.getId())).isFalse();
+        assertThat(tracks.findById(someoneElses.getId())).isPresent();
+    }
+
+    private User user(RoleName role) {
+        String name = "user" + SEQ.incrementAndGet();
+        return users.save(User.builder()
+                .username(name)
+                .email(name + "@example.com")
+                .password(encoder.encode(PASSWORD))
+                .activated(true)
+                .roles(new HashSet<>(Set.of(roles.findByName(role).orElseThrow())))
+                .build());
+    }
+
+    private Track track(User author) {
+        return tracks.save(Track.builder()
+                .artist("Artist").title("Original").version("")
+                .url("https://hostuje.net/file.php?id=" + "a".repeat(32))
+                .genre("CLUB").points(0).createdAt(Instant.now()).author(author)
+                .build());
+    }
+
+    private String bearer(User user) throws Exception {
+        String body = mvc.perform(post("/api/auth/signin").contentType(MediaType.APPLICATION_JSON)
+                        .content(json.writeValueAsString(Map.of("username", user.getUsername(), "password", PASSWORD))))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        return "Bearer " + json.readTree(body).get("accessToken").asText();
+    }
+
+    private static byte[] png() throws Exception {
+        BufferedImage image = new BufferedImage(64, 64, BufferedImage.TYPE_INT_RGB);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        ImageIO.write(image, "png", out);
+        return out.toByteArray();
+    }
+}

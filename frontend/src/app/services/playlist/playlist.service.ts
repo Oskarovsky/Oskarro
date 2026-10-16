@@ -50,4 +50,8 @@ export class PlaylistService {
   pin(playlistId: number, trackId: number): Observable<{name: string}> {
     return this.http.post<{name: string}>(PLAYLIST_API + '/' + playlistId + '/pin/' + trackId, {});
   }
+
+  unpin(playlistId: number, trackId: number): Observable<void> {
+    return this.http.delete<void>(PLAYLIST_API + '/' + playlistId + '/pin/' + trackId);
+  }
 }

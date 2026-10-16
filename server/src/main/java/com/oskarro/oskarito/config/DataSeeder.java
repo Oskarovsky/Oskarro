@@ -8,7 +8,6 @@ import com.oskarro.oskarito.provider.ProviderRepository;
 import com.oskarro.oskarito.provider.contractor.AppleService;
 import com.oskarro.oskarito.provider.contractor.BillboardService;
 import com.oskarro.oskarito.provider.contractor.RadiopartyService;
-import com.oskarro.oskarito.storage.FilesStorageService;
 import com.oskarro.oskarito.track.Genre;
 import com.oskarro.oskarito.track.Track;
 import com.oskarro.oskarito.track.TrackRepository;
@@ -29,12 +28,12 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.UUID;
 
 @Slf4j
 @Component
 public class DataSeeder implements ApplicationRunner {
 
-    private final FilesStorageService storageService;
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final ProviderRepository providerRepository;
@@ -47,8 +46,7 @@ public class DataSeeder implements ApplicationRunner {
     private final BillboardService billboardService;
     private final AppleService appleService;
 
-    public DataSeeder(FilesStorageService storageService,
-                      UserRepository userRepository,
+    public DataSeeder(UserRepository userRepository,
                       RoleRepository roleRepository,
                       ProviderRepository providerRepository,
                       PlaylistRepository playlistRepository,
@@ -59,7 +57,6 @@ public class DataSeeder implements ApplicationRunner {
                       RadiopartyService radiopartyService,
                       BillboardService billboardService,
                       AppleService appleService) {
-        this.storageService = storageService;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.providerRepository = providerRepository;
@@ -75,11 +72,12 @@ public class DataSeeder implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) {
-        storageService.init();
         if (userRepository.count() > 0) {
             return;
         }
 
+        // Seed accounts get random passwords; use "forgot password" to take them over.
+        String seedPassword = UUID.randomUUID().toString();
         Role roleAdmin = roleRepository.save(role(RoleName.ROLE_ADMIN));
         roleRepository.save(role(RoleName.ROLE_MODERATOR));
         Role roleUser = roleRepository.save(role(RoleName.ROLE_USER));
@@ -87,13 +85,13 @@ public class DataSeeder implements ApplicationRunner {
         User userAdmin = userRepository.save(User.builder()
                 .username("Oskarro")
                 .email("oskar.slyk@gmail.com")
-                .password(passwordEncoder.encode("123456"))
+                .password(passwordEncoder.encode(seedPassword))
                 .roles(new HashSet<>(List.of(roleAdmin)))
                 .build());
         User userJacek = userRepository.save(User.builder()
                 .username("Jacek")
                 .email("jacek@pw.pl")
-                .password(passwordEncoder.encode("123456"))
+                .password(passwordEncoder.encode(seedPassword))
                 .roles(new HashSet<>(List.of(roleUser)))
                 .build());
 

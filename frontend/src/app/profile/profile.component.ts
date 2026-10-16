@@ -181,7 +181,7 @@ export class ProfileComponent implements OnInit {
     if (!this.selectedFile || !this.profile) {
       return;
     }
-    this.uploadService.upload(this.selectedFile, this.profile.username).subscribe({
+    this.uploadService.upload(this.selectedFile).subscribe({
       next: event => {
         if (event.type === HttpEventType.Response || event instanceof HttpResponse) {
           this.message = 'Zdjęcie zapisane.';

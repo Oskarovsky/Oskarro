@@ -1,5 +1,6 @@
 package com.oskarro.oskarito.track;
 
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
@@ -20,4 +21,8 @@ public interface TrackCommentRepository extends CrudRepository<TrackComment, Int
 
     @Query("select c.track.id, count(c) from TrackComment c where c.track.id in :ids group by c.track.id")
     List<Object[]> countsForTracks(@Param("ids") Collection<Integer> ids);
+
+    @Modifying
+    @Query("delete from TrackComment c where c.track.id = :trackId")
+    void deleteByTrackId(@Param("trackId") Integer trackId);
 }
