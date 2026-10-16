@@ -1,8 +1,10 @@
 package com.oskarro.oskarito.track;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.oskarro.oskarito.playlist.Playlist;
 import com.oskarro.oskarito.provider.Provider;
 import com.oskarro.oskarito.record.Record;
+import com.oskarro.oskarito.user.User;
 import com.oskarro.oskarito.video.Video;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,6 +12,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import jakarta.persistence.*;
+
+import java.time.Instant;
 
 @Entity
 @Data
@@ -34,6 +38,8 @@ public class Track {
 
     private String url;
 
+    private Instant createdAt;
+
     private Integer position;
 
     @ManyToOne
@@ -51,6 +57,53 @@ public class Track {
     @ManyToOne
     @JoinColumn(name = "video_id")
     private Video video;
+
+    @ManyToOne
+    @JoinColumn(name = "author_id")
+    @JsonIgnore
+    private User author;
+
+    @Transient
+    private String sharedBy;
+
+    @Transient
+    private String authorRank;
+
+    @Transient
+    private Integer likeCount;
+
+    @Transient
+    private Integer dislikeCount;
+
+    @Transient
+    private Integer score;
+
+    @Transient
+    private Integer viewsMonth;
+
+    @Transient
+    private Integer viewsYear;
+
+    @Transient
+    private Integer viewsAll;
+
+    @Transient
+    private Integer commentCount;
+
+    @Transient
+    private Boolean hasCover;
+
+    @Transient
+    private String downloadUrl;
+
+    @Transient
+    private Integer downloadSlots;
+
+    @Transient
+    private Boolean editable;
+
+    @Transient
+    private String editableUntil;
 
 }
 

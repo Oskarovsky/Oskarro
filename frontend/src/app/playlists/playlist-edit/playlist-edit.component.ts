@@ -6,6 +6,9 @@ import {PlaylistService} from '../../services/playlist/playlist.service';
 import {TrackService} from '../../services/track/track.service';
 import {Subscription} from 'rxjs';
 import {ActivatedRoute, Route} from '@angular/router';
+import {audioRef, canonicalAudioUrl} from '../../services/audio-hosts';
+import {TokenStorageService} from '../../services/auth/token-storage.service';
+import {LangService} from '../../lang.service';
 
 @Component({
   selector: 'app-playlist-edit',
@@ -24,11 +27,18 @@ export class PlaylistEditComponent implements OnInit {
 
   playlist_id;
 
+  draft = {artist: '', title: '', version: '', url: '', source: 'hostuje'};
+
+  isLoggedIn = false;
+
   constructor(private playlistService: PlaylistService,
               private trackService: TrackService,
-              private route: ActivatedRoute) { }
+              private route: ActivatedRoute,
+              private tokenStorage: TokenStorageService,
+              private lang: LangService) { }
 
   ngOnInit() {
+    this.isLoggedIn = !!this.tokenStorage.getToken();
     this.getPlaylistById();
     this.getAllTracksFromPlaylist();
   }
@@ -61,6 +71,15 @@ export class PlaylistEditComponent implements OnInit {
   }
 
   public updateTrack(updatedTrack: Track) {
+    const url = (updatedTrack.url || '').trim();
+    if (url) {
+      const canonical = canonicalAudioUrl(url);
+      if (!canonical) {
+        alert(this.lang.t('Podaj link z hostuje.net albo soundfiles.eu.', 'Enter a link from hostuje.net or soundfiles.eu.'));
+        return;
+      }
+      updatedTrack.url = canonical;
+    }
     this.trackService.saveTrackToPlaylist(updatedTrack).subscribe(
       response => {
       },
@@ -98,7 +117,7 @@ export class PlaylistEditComponent implements OnInit {
   }
 
   deleteTrack(id: number) {
-    if (confirm('Czy na pewno chcesz usunąć ten utwór?')) {
+    if (confirm(this.lang.t('Czy na pewno chcesz usunąć ten utwór?', 'Remove this track?'))) {
       this.trackService.deleteTrackFromPlaylist(id).subscribe(
         response => {
           this.tracks.splice(Number(id), 1);
@@ -111,7 +130,27 @@ export class PlaylistEditComponent implements OnInit {
     }
   }
 
-  addTrackToPlaylist(title: string, artist: string, version: string) {
+  showPlayer(url: string) {
+    return this.isLoggedIn && !!audioRef(url);
+  }
+
+  addTrackToPlaylist() {
+    const artist = this.draft.artist.trim();
+    const title = this.draft.title.trim();
+    const version = this.draft.version.trim();
+    const raw = this.draft.url.trim();
+    const ref = audioRef(raw);
+    if (!artist || !title) {
+      alert(this.lang.t('Podaj wykonawcę i tytuł.', 'Enter the artist and the title.'));
+      return;
+    }
+    if (!ref || ref.host !== this.draft.source) {
+      alert(this.draft.source === 'hostuje'
+        ? this.lang.t('Podaj link z hostuje.net albo zmień źródło na soundfiles.eu.', 'Enter a hostuje.net link, or switch the source to soundfiles.eu.')
+        : this.lang.t('Podaj link z soundfiles.eu albo zmień źródło na hostuje.net.', 'Enter a soundfiles.eu link, or switch the source to hostuje.net.'));
+      return;
+    }
+    const url = canonicalAudioUrl(raw);
     const newTrack: Track = {
       id: null,
       title,
@@ -119,7 +158,7 @@ export class PlaylistEditComponent implements OnInit {
       points: null,
       genre: '',
       version,
-      url: '',
+      url,
       position: null,
       playlist: this.playlist,
       video: null
@@ -127,10 +166,11 @@ export class PlaylistEditComponent implements OnInit {
 
     this.trackService.saveTrackToPlaylist(newTrack).subscribe(
       response => {
-        this.tracks.push(newTrack);
+        this.tracks.push(response && response.id ? response : newTrack);
+        this.draft = {artist: '', title: '', version: '', url: '', source: this.draft.source};
       },
       error => {
-        alert('An error with adding track to playlist has occurred');
+        alert(this.lang.t('Nie udało się dodać utworu.', 'The track could not be added.'));
       }
     );
   }

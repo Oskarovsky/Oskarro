@@ -2,12 +2,9 @@ import {NgModule} from '@angular/core';
 import {RouterModule, Routes} from '@angular/router';
 import {TrackComponent} from './tracks/track/track.component';
 import {TrackListComponent} from './tracks/track-list/track-list.component';
-import {ProviderListComponent} from './providers/provider-list/provider-list.component';
-import {ProviderComponent} from './providers/provider/provider.component';
 import {NotFoundComponent} from './not-found/not-found.component';
 import {ToplistComponent} from './playlists/toplist/toplist.component';
 import {ToplistEditComponent} from './playlists/toplist-edit/toplist-edit.component';
-import {ProviderDetailsComponent} from './providers/provider-details/provider-details.component';
 import {PlaylistComponent} from './playlists/playlist/playlist.component';
 import {PlaylistAddComponent} from './playlists/playlist-add/playlist-add.component';
 import {PlaylistEditComponent} from './playlists/playlist-edit/playlist-edit.component';
@@ -18,23 +15,27 @@ import {BoardModeratorComponent} from './user/board-moderator/board-moderator.co
 import {BoardAdminComponent} from './user/board-admin/board-admin.component';
 import {BoardUserComponent} from './user/board-user/board-user.component';
 import {VideoComponent} from './videos/video/video.component';
+import {ChannelSetComponent} from './videos/channel-set/channel-set.component';
 import {VideoAddComponent} from './videos/video-add/video-add.component';
 import {VideoDetailsComponent} from './videos/video-details/video-details.component';
 import {VideoEditComponent} from './videos/video-edit/video-edit.component';
 import {PlaylistAllComponent} from './playlists/playlist-all/playlist-all.component';
 import {ProfileComponent} from './profile/profile.component';
 import {HomeComponent} from './home/home.component';
+import {TrackFormComponent} from './tracks/track-form/track-form.component';
+import {RankingComponent} from './ranking/ranking.component';
+import {SearchComponent} from './search/search.component';
+import {RadioComponent} from './tracks/radio/radio.component';
+import {PasswordResetComponent} from './auth/password-reset.component';
+import {ActivateAccountComponent} from './auth/activate.component';
 
 
 const routes: Routes = [
   { path: 'tracklist', component: TrackListComponent },
   { path: '', component: HomeComponent },
+  { path: 'track/add', component: TrackFormComponent },
+  { path: 'track/:id/edit', component: TrackFormComponent },
   { path: 'track/:id', component: TrackComponent },
-  { path: 'provider/:id/tracks', component: TrackListComponent },
-  { path: 'provider', component: ProviderListComponent },
-  { path: 'provider/:id/details', component: ProviderDetailsComponent },
-  { path: 'provider/:providerName/all-tracks', component: TrackListComponent },
-  { path: 'provider/:id/tracks/:genre', component: TrackListComponent },
   { path: 'tracklist/:genre', component: TrackListComponent },
   { path: 'toplist/:genre', component: ToplistComponent },
   { path: 'playlist/all', component: PlaylistAllComponent },
@@ -45,11 +46,20 @@ const routes: Routes = [
   { path: 'playlist/:id/details', component: PlaylistDetailsComponent },
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
+  { path: 'przypomnij', component: PasswordResetComponent, data: {mode: 'forgot'} },
+  { path: 'haslo', component: PasswordResetComponent, data: {mode: 'reset'} },
+  { path: 'aktywuj', component: ActivateAccountComponent },
+  { path: 'ranking', component: RankingComponent },
+  { path: 'radio', component: RadioComponent },
+  { path: 'szukaj', component: SearchComponent },
   { path: 'profile', component: ProfileComponent },
+  { path: 'profile/:username', component: ProfileComponent },
   { path: 'user', component: BoardUserComponent },
   { path: 'mod', component: BoardModeratorComponent },
   { path: 'admin', component: BoardAdminComponent },
-  { path: 'video/category/:category', component: VideoComponent },
+  { path: 'video', component: VideoComponent },
+  { path: 'video/set/:id', component: ChannelSetComponent },
+  { path: 'video/category/:category', redirectTo: '/video', pathMatch: 'full' },
   { path: 'video/:id/edit', component: VideoEditComponent },
   { path: 'video/:id/details', component: VideoDetailsComponent },
   { path: 'video/add', component: VideoAddComponent },

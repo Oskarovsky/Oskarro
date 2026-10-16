@@ -1,32 +1,28 @@
-<div class="container" style="margin-top: 20px">
-
-  <div class="row" style="margin-bottom: 20px">
-    <button mat-raised-button
-            type="button"
-            color="primary"
-            routerLink="/video/add"
-            style="margin-right: 15px;">Dodaj video
-    </button>
-    <input type="text"
-           [(ngModel)]="searchText"
-           class="mat-form-field"
-           style="width: 80%;"
-           placeholder="Wyszukaj video..." />
+<div class="page">
+  <p class="kicker">{{ 'Kanał Oskarro' | t:'Oskarro channel' }}</p>
+  <div class="section-head">
+    <h1 class="display">{{ 'Sety na imprezę' | t:'Party sets' }}</h1>
+    <a class="btn-ghost" href="https://www.youtube.com/@Oskarro0" target="_blank" rel="noopener">{{ 'Kanał na YouTube' | t:'YouTube channel' }}</a>
   </div>
+  <p class="lede">{{ 'Wszystkie sety z kanału Oskarro. Mixy na imprezę, do auta i na parkiet.' | t:'Every set from the Oskarro channel. Mixes for a party, the car and the dance floor.' }}</p>
 
-  <mat-accordion>
-    <mat-expansion-panel *ngFor="let video of videos | videoFilter:searchText" style="text-align: center">
-      <mat-expansion-panel-header>
-        <mat-panel-title>
-          {{ video.name }}
-        </mat-panel-title>
-      </mat-expansion-panel-header>
-      <ng-template matExpansionPanelContent>
-        <iframe width="640" height="360"
-                [src]=video.safeUrl>
-        </iframe> <br/>
-        <button *ngIf="isLoggedIn" mat-flat-button color="primary" routerLink="../../{{video.id}}/details">Pokaż tracklistę / Sprawdź szczegóły</button>
-      </ng-template>
-    </mat-expansion-panel>
-  </mat-accordion>
+  <app-ad-slot slot="wideo" format="banner"></app-ad-slot>
+
+  <div class="set-grid" *ngIf="videos.length">
+    <a class="set-card" *ngFor="let video of pageVideos" [routerLink]="['/video/set', video.id]">
+      <span class="thumb">
+        <img [src]="thumb(video.id)" [alt]="video.title" (error)="fallbackThumb($event)">
+        <em *ngIf="video.duration">{{ video.duration }}</em>
+      </span>
+      <span class="copy">
+        <strong>{{ video.title }}</strong>
+        <small class="set-meta" *ngIf="video.views || video.published">
+          <span *ngIf="video.views">{{ video.views }}</span>
+          <span *ngIf="video.published">{{ 'Dodane' | t:'Added' }} {{ video.published }}</span>
+        </small>
+      </span>
+    </a>
+  </div>
+  <app-pager *ngIf="videos.length" [page]="currentPage" [count]="pageCount" label="Strony setów" (pageChange)="showPage($event)"></app-pager>
+  <p class="lede" *ngIf="failed">{{ 'Sety chwilowo się nie ładują. Zajrzyj prosto na' | t:'The sets are not loading right now. Go straight to the' }} <a href="https://www.youtube.com/@Oskarro0" target="_blank" rel="noopener">{{ 'kanał Oskarro' | t:'Oskarro channel' }}</a>.</p>
 </div>

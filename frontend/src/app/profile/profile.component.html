@@ -1,100 +1,123 @@
-<div class="container" *ngIf="currentUser; else loggedOut">
-<!--
-    <strong>Token:</strong>
-    {{ currentUser.accessToken.substring(0, 20) }} ...
-    {{ currentUser.accessToken.substr(currentUser.accessToken.length - 20) }}
--->
-
-  <div class="container">
-    <div class="row">
-      <div class="col-12">
-        <div class="card">
-          <div class="card-body">
-            <div class="card-title mb-4">
-              <div class="d-flex justify-content-start">
-                <div class="image-container">
-                  <img [src]="imageToShow" width="150" height="150"
-                       alt="Place image title"
-                       *ngIf="imageToShow; else noImageFound">
-                  <ng-template #noImageFound>
-                    <img id="profile-imgs" width="100" height="100"
-                         src="//ssl.gstatic.com/accounts/ui/avatar_2x.png"
-                         class="profile-img-card"/>
-                  </ng-template>
-                  <div class="middle">
-                    <input type="button" class="btn btn-secondary" id="btnChangePicture" value="Change" />
-                    <input type="file" style="display: none;" id="profilePicture" name="file" />
-                  </div>
-                </div>
-                <div class="userData ml-3">
-                  <h2 class="d-block" style="font-size: 1.5rem; font-weight: bold"><a href="javascript:void(0);">{{currentUser.username}}</a></h2>
-                  <h6 class="d-block"><a href="javascript:void(0)">1,500</a> Playlist</h6>
-                  <h6 class="d-block"><a href="javascript:void(0)">300</a> Polubień</h6>
-                  <button mat-stroked-button color="primary" value="Zmień zdjęcie" onclick="showAvatarForm()">Zmień zdjęcie profilowe</button>
-                  <p id="avatarForm" style="display:none;" class="answer_list">
-                    <input type="file" class="mat-line" (change)="selectFile($event)" />
-                    <button class="btn btn-success" [disabled]="!selectedFile" (click)="upload()">
-                      Upload
-                    </button>
-                    <span class="alert alert-light" role="alert">{{ message }}</span>
-                  </p>
-                </div>
-                <div class="ml-auto">
-                  <input type="button" class="btn btn-primary d-none" id="btnDiscard" value="Discard Changes" />
-                </div>
-              </div>
-            </div>
-
-            <div class="row">
-              <div class="col-12">
-                <ul class="nav nav-tabs mb-4" id="myTab" role="tablist">
-                  <li class="nav-item">
-                    <a class="nav-link active" id="basicInfo-tab" data-toggle="tab" href="#basicInfo" role="tab" aria-controls="basicInfo" aria-selected="true">Podstawowe informacje</a>
-                  </li>
-                  <li class="nav-item">
-                    <a class="nav-link" id="connectedServices-tab" data-toggle="tab" href="#connectedServices" role="tab" aria-controls="connectedServices" aria-selected="false">Wyświetl szczegóły</a>
-                  </li>
-                </ul>
-                <div class="tab-content ml-1" id="myTabContent">
-                  <div class="tab-pane fade show active" id="basicInfo" role="tabpanel" aria-labelledby="basicInfo-tab">
-
-
-                    <div class="row">
-                      <div class="col-sm-3 col-md-2 col-5">
-                        <label style="font-weight:bold;">Nazwa użytkownika</label>
-                      </div>
-                      <div class="col-md-8 col-6">
-                        {{ currentUser.username }}
-                      </div>
-                    </div>
-                    <hr />
-
-                    <div class="row">
-                      <div class="col-sm-3 col-md-2 col-5">
-                        <label style="font-weight:bold;">Email</label>
-                      </div>
-                      <div class="col-md-8 col-6">
-                        {{ currentUser.email }}
-                      </div>
-                    </div>
-                    <hr />
-
-
-                  </div>
-                  <div class="tab-pane fade" id="connectedServices" role="tabpanel" aria-labelledby="ConnectedServices-tab">
-                    Facebook, Google, Twitter Account that are connected to this account
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+<div class="page" *ngIf="profile; else empty">
+  <p class="kicker">{{ 'Profil' | t:'Profile' }}</p>
+  <div class="profile-head">
+    <img class="avatar" [src]="imageToShow || ''" alt="" *ngIf="imageToShow">
+    <span class="avatar" *ngIf="!imageToShow"></span>
+    <div>
+      <h1 class="display"><app-person [name]="profile.username" [rank]="profile.rank"></app-person></h1>
+      <p class="meta" *ngIf="profile.firstName || profile.lastName">{{ profile.firstName }} {{ profile.lastName }}</p>
+      <p class="meta" *ngIf="profile.website"><a [href]="profile.website" target="_blank" rel="noopener">{{ profile.website }}</a></p>
+      <p class="meta" *ngIf="likedGenres().length">{{ 'Lubiane gatunki' | t:'Favourite genres' }}: {{ likedNames() }}</p>
+      <p class="meta" *ngIf="profile.granted">
+        <ng-container *ngIf="!lang.en">Przyznana przez admina. Z aktywności: {{ profile.activityRank }}, {{ profile.score }} pkt.</ng-container>
+        <ng-container *ngIf="lang.en">Set by an admin. From activity: {{ profile.activityRank | t }}, {{ profile.score }} pts.</ng-container>
+      </p>
+      <p class="meta" *ngIf="!profile.granted">
+        <ng-container *ngIf="!lang.en">{{ profile.score }} pkt. Utwór daje 5, komentarz 2, a polubienie przy Twoim utworze 1.</ng-container>
+        <ng-container *ngIf="lang.en">{{ profile.score }} pts. A track is worth 5, a comment 2, and a like on your track 1.</ng-container>
+      </p>
+      <p class="meta" *ngIf="self">
+        <ng-container *ngIf="!lang.en">Aktywność przy utworach: {{ profile.activity }}. Pobranie otwarte dla {{ profile.downloadSlots }} najnowszych.</ng-container>
+        <ng-container *ngIf="lang.en">Activity on tracks: {{ profile.activity }}. Downloads are open for the {{ profile.downloadSlots }} newest.</ng-container>
+      </p>
     </div>
   </div>
+
+  <section class="stats">
+    <div><strong>{{ profile.tracks }}</strong><span class="meta">{{ 'utworów' | t:'tracks' }}</span></div>
+    <div><strong>{{ profile.likes }}</strong><span class="meta">{{ 'polubień' | t:'likes' }}</span></div>
+    <div><strong>{{ profile.commentsOnTracks }}</strong><span class="meta">{{ 'komentarzy przy utworach' | t:'comments on tracks' }}</span></div>
+    <div><strong>{{ profile.commentsWritten }}</strong><span class="meta">{{ 'napisanych komentarzy' | t:'comments written' }}</span></div>
+  </section>
+
+  <section class="composer" *ngIf="self">
+    <h2>{{ 'Odtwarzanie' | t:'Playback' }}</h2>
+    <label class="autoplay-switch">
+      <input type="checkbox" [checked]="autoplayNext" (change)="saveAutoplay($event)" [attr.aria-label]="'Odtwarzaj kolejny automatycznie' | t:'Play the next one automatically'">
+      <span class="autoplay-track" aria-hidden="true"></span>
+      <span class="autoplay-copy">
+        <strong>{{ 'Odtwarzaj kolejny automatycznie' | t:'Play the next one automatically' }}</strong>
+        <span class="meta">{{ 'Gdy włączone, kolejny numer startuje sam.' | t:'When this is on, the next track starts on its own.' }}</span>
+      </span>
+    </label>
+  </section>
+
+  <section class="composer" *ngIf="self">
+    <h2>{{ 'O mnie' | t:'About me' }}</h2>
+    <p class="meta" *ngIf="profile.email">{{ profile.email }}</p>
+    <div class="form-grid">
+      <label>{{ 'Imię' | t:'First name' }}
+        <input [(ngModel)]="firstName" name="firstName" type="text" maxlength="40">
+      </label>
+      <label>{{ 'Nazwisko' | t:'Last name' }}
+        <input [(ngModel)]="lastName" name="lastName" type="text" maxlength="40">
+      </label>
+      <label class="wide">{{ 'Strona' | t:'Website' }}
+        <input [(ngModel)]="website" name="website" type="url" maxlength="120" placeholder="https://">
+      </label>
+    </div>
+    <p class="meta" style="margin-top: 14px;">{{ 'Lubiane gatunki' | t:'Favourite genres' }}</p>
+    <div class="votes">
+      <button class="like" type="button" *ngFor="let genre of genres" [class.on]="favorite.has(genre.id)" (click)="toggleGenre(genre.id)">{{ genre.label }}</button>
+    </div>
+    <textarea [(ngModel)]="bio" name="bio" rows="4" maxlength="280" [placeholder]="'Krótko o sobie, do 280 znaków.' | t:'A short note about you, up to 280 characters.'"></textarea>
+    <button class="btn-accent" type="button" style="margin-top: 12px;" (click)="saveBio()">{{ 'Zapisz profil' | t:'Save profile' }}</button>
+    <h2 style="margin-top: 28px;">{{ 'Hasło' | t:'Password' }}</h2>
+    <div class="form-grid">
+      <label>{{ 'Obecne hasło' | t:'Current password' }}
+        <input [(ngModel)]="currentPassword" name="currentPassword" type="password" autocomplete="current-password">
+      </label>
+      <label>{{ 'Nowe hasło' | t:'New password' }}
+        <input [(ngModel)]="nextPassword" name="nextPassword" type="password" autocomplete="new-password" minlength="6">
+      </label>
+      <label>{{ 'Powtórz hasło' | t:'Repeat the password' }}
+        <input [(ngModel)]="confirmPassword" name="confirmPassword" type="password" autocomplete="new-password">
+      </label>
+    </div>
+    <button class="btn-ghost" type="button" style="margin-top: 12px;" (click)="savePassword()">{{ 'Zmień hasło' | t:'Change password' }}</button>
+    <p class="meta" style="margin-top: 18px;">{{ 'Zdjęcie profilowe' | t:'Profile photo' }}</p>
+    <input type="file" accept="image/*" (change)="selectFile($event)">
+    <button class="btn-ghost" type="button" style="margin-top: 12px;" [disabled]="!selectedFile" (click)="upload()">{{ 'Wgraj zdjęcie' | t:'Upload photo' }}</button>
+    <p class="meta" *ngIf="message">{{ message | t }}</p>
+  </section>
+
+  <section class="panel" *ngIf="!self && profile.bio" style="padding: 18px; margin-bottom: 18px;">
+    <p>{{ profile.bio }}</p>
+  </section>
+
+  <section class="composer" *ngIf="profile.canGrant">
+    <h2>{{ 'Ranga od admina' | t:'Rank from an admin' }}</h2>
+    <p class="meta">{{ 'Zostaw pustą nazwę, żeby wrócić do rangi z aktywności.' | t:'Leave the name empty to go back to the rank from activity.' }}</p>
+    <div class="form-grid">
+      <input *ngIf="self" [(ngModel)]="grantUser" name="grantUser" type="text" [placeholder]="'Nazwa użytkownika' | t:'Username'" maxlength="32">
+      <input [(ngModel)]="grantTitle" name="grantTitle" type="text" [placeholder]="'np. Honorowy gość' | t:'e.g. Guest of honour'" maxlength="32">
+    </div>
+    <button class="btn-accent" type="button" style="margin-top: 12px;" (click)="grant()">{{ 'Zapisz rangę' | t:'Save rank' }}</button>
+    <p class="meta" *ngIf="message && !self">{{ message | t }}</p>
+  </section>
+
+  <section *ngIf="profile.shared?.length">
+    <div class="section-head"><h2>{{ 'Utwory' | t:'Tracks' }}</h2></div>
+    <div class="latest-grid">
+      <a class="track-row" *ngFor="let track of shownTracks" [routerLink]="['/track', track.id]">
+        <span class="thumb-col">
+          <span class="thumb-slot">
+          <app-cover [hasCover]="track.hasCover" [src]="cover(track)" [genre]="track.genre"></app-cover>
+          </span>
+          <app-score [value]="track.score"></app-score>
+        </span>
+        <span>
+          <h2>{{ track.title }}<span class="version" *ngIf="track | versionLabel as version"> ({{ version }})</span></h2>
+          <span class="meta">{{ track.artist }}<app-track-facts [track]="track"></app-track-facts></span>
+        </span>
+      </a>
+    </div>
+    <app-pager [page]="trackPage" [count]="trackPages" (pageChange)="showTracks($event)"></app-pager>
+  </section>
 </div>
 
-
-<ng-template #loggedOut>
-  Please login.
+<ng-template #empty>
+  <div class="page" *ngIf="loading"></div>
+  <div class="page" *ngIf="!loading && missing">{{ 'Nie ma takiego profilu.' | t:'There is no such profile.' }}</div>
+  <div class="page" *ngIf="!loading && !missing"><a routerLink="/login">{{ 'Zaloguj się' | t:'Sign in' }}</a>{{ lang.en ? ' to see your profile.' : ', żeby zobaczyć swój profil.' }}</div>
 </ng-template>

@@ -38,6 +38,9 @@ public class UserPrincipal implements UserDetails {
 
     final private Collection<? extends GrantedAuthority> authorities;
 
+    @Getter(AccessLevel.NONE)
+    final private boolean enabled;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return authorities;
@@ -65,7 +68,7 @@ public class UserPrincipal implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return enabled;
     }
 
 
@@ -77,12 +80,14 @@ public class UserPrincipal implements UserDetails {
                 ).collect(Collectors.toList());
         authorities.forEach(s -> System.out.println(s.getAuthority()));
 
+        boolean enabled = user.getActivated() == null || Boolean.TRUE.equals(user.getActivated());
         return new UserPrincipal(
                 user.getId(),
                 user.getUsername(),
                 user.getEmail(),
                 user.getPassword(),
-                authorities
+                authorities,
+                enabled
         );
     }
 }
