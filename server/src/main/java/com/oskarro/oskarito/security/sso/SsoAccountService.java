@@ -5,6 +5,7 @@ import com.oskarro.oskarito.user.RoleName;
 import com.oskarro.oskarito.user.RoleRepository;
 import com.oskarro.oskarito.user.User;
 import com.oskarro.oskarito.user.UserRepository;
+import org.hibernate.Hibernate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -69,6 +70,8 @@ public class SsoAccountService {
                 user.setActivated(true);
                 users.save(user);
             }
+            // The caller builds the JWT from the roles after this transaction has closed.
+            Hibernate.initialize(user.getRoles());
             return user;
         }
         Role userRole = roles.findByName(RoleName.ROLE_USER).orElseThrow();

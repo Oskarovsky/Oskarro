@@ -6,6 +6,7 @@ import com.oskarro.oskarito.user.Role;
 import com.oskarro.oskarito.user.RoleName;
 import com.oskarro.oskarito.user.RoleRepository;
 import com.oskarro.oskarito.user.User;
+import com.oskarro.oskarito.user.UserPrincipal;
 import com.oskarro.oskarito.user.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -84,6 +85,8 @@ class SsoTest {
         User signedIn = sso.accountFor("facebook", Map.of("email", "istnieje@example.com", "name", "Ktoś"));
         assertThat(signedIn.getId()).isEqualTo(existing.getId());
         assertThat(users.findById(existing.getId()).orElseThrow().getActivated()).isTrue();
+        // The success handler reads the roles outside the service's transaction.
+        assertThat(UserPrincipal.build(signedIn).getAuthorities()).isNotEmpty();
     }
 
     @Test
