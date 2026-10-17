@@ -5,13 +5,21 @@ import {LangService} from '../lang.service';
   selector: 'app-track-facts',
   standalone: false,
   template: `
-    <span *ngIf="viewsCount != null"> · {{ viewsPhrase }}</span>
-    <span *ngIf="commentTotal != null"> · {{ commentsPhrase }}</span>
-    <span *ngIf="track?.createdAt"> · {{ track.createdAt | date:'dd.MM.yyyy HH:mm':'Europe/Warsaw' }}</span>
+    <ng-container *ngIf="part === 'all'">
+      <span *ngIf="viewsCount != null"> · {{ viewsPhrase }}</span>
+      <span *ngIf="commentTotal != null"> · {{ commentsPhrase }}</span>
+      <span *ngIf="track?.createdAt"> · {{ track.createdAt | date:'dd.MM.yyyy HH:mm':'Europe/Warsaw' }}</span>
+    </ng-container>
+    <ng-container *ngIf="part === 'stats'">
+      <span class="fact">{{ viewsPhrase }}</span>
+      <span class="fact">{{ commentsPhrase }}</span>
+    </ng-container>
   `
 })
 export class TrackFactsComponent {
   @Input() track: any;
+  /** 'all' = one inline run (detail pages); 'stats' = views and comments only (list rows). */
+  @Input() part: 'all' | 'stats' = 'all';
 
   constructor(private lang: LangService) {}
 

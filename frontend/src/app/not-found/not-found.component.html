@@ -1,1 +1,9 @@
-<p>not-found works!</p>
+<div class="page not-found">
+  <p class="kicker">404</p>
+  <h1 class="display">{{ 'Tego numeru nie ma na parkiecie.' | t:'This track is not on the floor.' }}</h1>
+  <p class="lede">{{ 'Strona nie istnieje albo została przeniesiona. Wróć na start albo wybierz gatunek.' | t:'The page does not exist or has moved. Go back home or pick a genre.' }}</p>
+  <p class="actions">
+    <a class="btn-accent" routerLink="/">{{ 'Strona główna' | t:'Home' }}</a>
+    <a class="btn-ghost" routerLink="/szukaj">{{ 'Szukaj utworu' | t:'Search tracks' }}</a>
+  </p>
+</div>

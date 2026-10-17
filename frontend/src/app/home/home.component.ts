@@ -43,6 +43,19 @@ export class HomeComponent implements OnInit {
     return this.catalog.slice(0, 6);
   }
 
+  /** Top three by plays this month, falling back to score, so the card is never empty. */
+  get hot() {
+    return [...this.catalog]
+      .sort((a, b) => (Number(b.viewsMonth) || 0) - (Number(a.viewsMonth) || 0)
+        || (Number(b.score) || 0) - (Number(a.score) || 0)
+        || (b.id || 0) - (a.id || 0))
+      .slice(0, 3);
+  }
+
+  countFor(genreId: string) {
+    return this.catalog.filter(track => track.genre === genreId).length;
+  }
+
   genreName(genre: string) {
     return genreLabel(genre);
   }

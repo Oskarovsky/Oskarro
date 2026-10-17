@@ -34,9 +34,9 @@ export class TrackListComponent implements OnInit, OnDestroy {
 
   genreLabel = 'Utwory';
 
-  private aboutPl = 'Wpisz tytuł w polu na górze strony.';
+  private aboutPl = 'Utwory dodane przez społeczność Oskarro.';
 
-  private aboutEn = 'Type a title in the field at the top of the page.';
+  private aboutEn = 'Tracks shared by the Oskarro community.';
 
   sort: 'new' | 'score' | 'views-month' | 'views-year' | 'views-all' = 'new';
 
@@ -67,8 +67,8 @@ export class TrackListComponent implements OnInit, OnDestroy {
       this.genre = genre;
       const option = genreBySlug(genre);
       this.genreLabel = option?.label || (genre ? genre : 'Utwory');
-      this.aboutPl = option?.about || 'Wpisz tytuł w polu na górze strony.';
-      this.aboutEn = option?.aboutEn || 'Type a title in the field at the top of the page.';
+      this.aboutPl = option?.about || 'Utwory dodane przez społeczność Oskarro.';
+      this.aboutEn = option?.aboutEn || 'Tracks shared by the Oskarro community.';
       if (!genre) {
         return;
       }
@@ -125,6 +125,21 @@ export class TrackListComponent implements OnInit, OnDestroy {
   get pageTracks() {
     const start = (this.currentPage - 1) * this.pageSize;
     return this.tracks.slice(start, start + this.pageSize);
+  }
+
+  get monthViews() {
+    return this.tracks.reduce((sum, track) => sum + (Number(track.viewsMonth) || 0), 0);
+  }
+
+  get newThisWeek() {
+    const since = Date.now() - 7 * 24 * 3600 * 1000;
+    return this.tracks.filter(track => track.createdAt && Date.parse(track.createdAt) >= since).length;
+  }
+
+  get topTrack() {
+    const best = this.tracks.reduce((top, track) =>
+      (Number(track.viewsMonth) || 0) > (Number(top?.viewsMonth) || 0) ? track : top, null);
+    return best && Number(best.viewsMonth) > 0 ? best : null;
   }
 
   coverSrc(track) {

@@ -1,15 +1,16 @@
 package com.oskarro.oskarito.track;
 
+import java.time.Instant;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.query.Param;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
-public interface TrackLikeRepository extends CrudRepository<TrackLike, Integer> {
+public interface TrackLikeRepository extends JpaRepository<TrackLike, Integer> {
     Optional<TrackLike> findByTrackIdAndUserId(Integer trackId, Integer userId);
     long countByUserId(Integer userId);
 
@@ -31,4 +32,7 @@ public interface TrackLikeRepository extends CrudRepository<TrackLike, Integer> 
     @Modifying
     @Query("delete from TrackLike l where l.track.id = :trackId")
     void deleteByTrackId(@Param("trackId") Integer trackId);
+
+    @Query("select l.createdAt from TrackLike l where l.createdAt >= :from")
+    List<Instant> votedSince(@Param("from") Instant from);
 }

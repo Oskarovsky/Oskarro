@@ -103,6 +103,7 @@ public class AuthController {
                 .email(signupRequest.getEmail())
                 .password(encoder.encode(signupRequest.getPassword()))
                 .activated(false)
+                .createdAt(java.time.Instant.now())
                 .build();
 
         // Role is never taken from the request: self-registered accounts are always plain users.

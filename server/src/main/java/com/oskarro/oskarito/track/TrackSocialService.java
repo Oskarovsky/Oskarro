@@ -4,6 +4,7 @@ import com.oskarro.oskarito.playlist.PlaylistEntryRepository;
 import com.oskarro.oskarito.user.ProfileService;
 import com.oskarro.oskarito.user.User;
 import com.oskarro.oskarito.user.UserRepository;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -27,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -35,6 +37,8 @@ import java.util.regex.Pattern;
 public class TrackSocialService {
 
     private static final Duration EDIT_WINDOW = Duration.ofHours(24);
+    private static final Duration VIEW_WINDOW = Duration.ofMinutes(30);
+    private final Map<String, Instant> recentViews = new ConcurrentHashMap<>();
 
     private static final Pattern HOSTUJE_LINK = Pattern.compile(
             "(?i)(?:src=[\"']\\s*)?(?:https?://)?(?:www\\.)?hostuje\\.net/(?:file\\.php\\?id=|player_embed\\.js\\.php\\?id=)([a-f0-9]{32})|^([a-f0-9]{32})$");
@@ -95,13 +99,24 @@ public class TrackSocialService {
         return tracks;
     }
 
-    public void recordView(Integer trackId) {
+    /** Counts a play at most once per listener and track within {@link #VIEW_WINDOW}. */
+    public void recordView(Integer trackId, String clientIp) {
         if (trackId == null || trackRepository.findById(trackId).isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Nie ma takiego utworu");
         }
+        String listener = currentUserOptional().map(user -> "u" + user.getId()).orElse("ip" + clientIp);
+        Instant now = Instant.now();
+        Instant last = recentViews.get(listener + ":" + trackId);
+        if (last != null && last.plus(VIEW_WINDOW).isAfter(now)) {
+            return;
+        }
+        if (recentViews.size() > 50_000) {
+            recentViews.values().removeIf(seen -> seen.plus(VIEW_WINDOW).isBefore(now));
+        }
+        recentViews.put(listener + ":" + trackId, now);
         TrackView view = new TrackView();
         view.setTrackId(trackId);
-        view.setPlayedAt(Instant.now());
+        view.setPlayedAt(now);
         viewRepository.save(view);
     }
 
@@ -249,27 +264,36 @@ public class TrackSocialService {
         return new LikeState(pair[0], pair[1], pair[0] - pair[1], mine);
     }
 
+    /**
+     * One vote per user and track: +1 or -1. Clicking your own vote again takes it back.
+     * Switching sides needs an undo first, so every click moves the total by exactly one point.
+     */
     public LikeState vote(Integer trackId, int value) {
         if (value != 1 && value != -1) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ocena to polubienie albo odrzucenie");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ocena to +1 albo -1");
         }
         Track track = requireTrack(trackId);
         User user = currentUser();
         Optional<TrackLike> existing = likeRepository.findByTrackIdAndUserId(trackId, user.getId());
         if (existing.isPresent()) {
-            int current = existing.get().getVote() == null ? 1 : existing.get().getVote();
-            if (current == value) {
-                likeRepository.delete(existing.get());
-            } else {
-                existing.get().setVote(value);
-                likeRepository.save(existing.get());
+            int current = existing.get().getVote() == null || existing.get().getVote() >= 0 ? 1 : -1;
+            if (current != value) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT,
+                        "Już oceniłeś ten utwór. Kliknij swoją ocenę jeszcze raz, żeby ją cofnąć.");
             }
+            likeRepository.delete(existing.get());
         } else {
             TrackLike like = new TrackLike();
             like.setTrack(track);
             like.setUser(user);
             like.setVote(value);
-            likeRepository.save(like);
+            like.setCreatedAt(Instant.now());
+            try {
+                likeRepository.saveAndFlush(like);
+            } catch (DataIntegrityViolationException ex) {
+                // A second click raced the first one; the first vote stands.
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "Twój głos jest już zapisany");
+            }
         }
         LikeState state = likes(trackId);
         track.setPoints(state.score());

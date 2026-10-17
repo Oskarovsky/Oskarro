@@ -3,6 +3,7 @@ import {RefreshAfterHttpDirective} from '../../services/ui-refresh';
 import { AuthService } from '../../services/auth/auth.service';
 import { TokenStorageService } from '../../services/auth/token-storage.service';
 import { LangService } from '../../lang.service';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-login',
@@ -18,12 +19,15 @@ export class LoginComponent implements OnInit {
   isLoginFailed = false;
   errorMessage = '';
   roles: string[] = [];
+  sessionExpired = false;
 
   constructor(private authService: AuthService,
               private tokenStorage: TokenStorageService,
+              private route: ActivatedRoute,
               readonly lang: LangService) { }
 
   ngOnInit() {
+    this.sessionExpired = this.route.snapshot.queryParamMap.has('wygasla');
     if (this.tokenStorage.getToken()) {
       this.isLoggedIn = true;
       this.roles = this.tokenStorage.getUser().roles;
@@ -57,6 +61,12 @@ export class LoginComponent implements OnInit {
   }
 
   reloadPage() {
+    // Return to the page that sent the user here, but only within this site.
+    const back = this.route.snapshot.queryParamMap.get('powrot') || '';
+    if (back.startsWith('/') && !back.startsWith('//') && !back.includes('\\') && !back.startsWith('/login')) {
+      window.location.assign(back);
+      return;
+    }
     window.location.reload();
   }
 

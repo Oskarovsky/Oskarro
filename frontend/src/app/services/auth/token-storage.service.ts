@@ -20,7 +20,22 @@ export class TokenStorageService {
   }
 
   public getToken(): string {
-    return sessionStorage.getItem(TOKEN_KEY);
+    const token = sessionStorage.getItem(TOKEN_KEY);
+    if (token && this.expired(token)) {
+      this.signOut();
+      return null;
+    }
+    return token;
+  }
+
+  /** A JWT whose "exp" has passed would only earn 401s, so treat the user as signed out. */
+  private expired(token: string): boolean {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+      return typeof payload.exp === 'number' && payload.exp * 1000 <= Date.now();
+    } catch {
+      return true;
+    }
   }
 
   public saveUser(user) {

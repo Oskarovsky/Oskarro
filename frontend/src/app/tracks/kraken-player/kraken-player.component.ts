@@ -33,13 +33,44 @@ export class TrackPlayerComponent implements AfterViewChecked, OnDestroy {
   private mediaTries = 0;
   private retryTimer: number = null;
 
+  private visible = typeof IntersectionObserver === 'undefined';
+  private pendingUrl: string = null;
+  private sight: IntersectionObserver = null;
+
   constructor(private http: HttpClient,
               private tokenStorage: TokenStorageService,
-              private view: ChangeDetectorRef) {}
+              private view: ChangeDetectorRef,
+              host: ElementRef<HTMLElement>) {
+    if (this.visible) {
+      return;
+    }
+    // Long lists render many players; each one costs two API calls and an upstream fetch,
+    // so only players scrolled near the screen load anything.
+    this.sight = new IntersectionObserver(entries => {
+      if (!entries.some(entry => entry.isIntersecting)) {
+        return;
+      }
+      this.sight.disconnect();
+      this.visible = true;
+      if (this.pendingUrl) {
+        this.start(this.pendingUrl);
+        this.view.markForCheck();
+      }
+    }, {rootMargin: '400px 0px'});
+    queueMicrotask(() => this.sight?.observe(host.nativeElement));
+  }
 
   @Input()
   set url(value: string) {
     this.reset();
+    this.pendingUrl = value;
+    if (this.visible) {
+      this.start(value);
+    }
+  }
+
+  /** Resolves the audio source and waveform; deferred until the player is near the viewport. */
+  private start(value: string) {
     const ref = this.tokenStorage.getToken() ? audioRef(value) : null;
     if (!ref) {
       return;
@@ -71,6 +102,7 @@ export class TrackPlayerComponent implements AfterViewChecked, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.sight?.disconnect();
     window.clearTimeout(this.retryTimer);
     this.resize?.disconnect();
     this.audio?.nativeElement?.pause();

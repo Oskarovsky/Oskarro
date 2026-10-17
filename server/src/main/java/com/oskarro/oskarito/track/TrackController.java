@@ -1,5 +1,6 @@
 package com.oskarro.oskarito.track;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.CacheControl;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -136,8 +137,9 @@ public class TrackController {
 
     @PostMapping(value = "/{id}/view")
     @CrossOrigin(origins = "*", allowedHeaders = "*")
-    void view(@PathVariable Integer id) {
-        trackSocialService.recordView(id);
+    void view(@PathVariable Integer id, HttpServletRequest request) {
+        String realIp = request.getHeader("X-Real-IP");
+        trackSocialService.recordView(id, realIp == null || realIp.isBlank() ? request.getRemoteAddr() : realIp);
     }
 
     @GetMapping(value = "/{id}/likes")

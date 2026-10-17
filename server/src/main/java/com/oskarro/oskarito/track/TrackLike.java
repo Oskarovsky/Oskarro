@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.Instant;
+
 @Entity
 @Getter
 @Setter
@@ -27,4 +29,7 @@ public class TrackLike {
 
     /** 1 = like, -1 = dislike. Older rows may be null and count as a like. */
     private Integer vote;
+
+    /** When the vote was cast; null for votes from before 2026-10-17. */
+    private Instant createdAt;
 }

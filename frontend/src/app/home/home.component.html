@@ -1,16 +1,62 @@
 <div class="page">
-  <app-activity-chart></app-activity-chart>
-  <section class="hero">
-    <p class="kicker">Oskarro.com</p>
-    <h1>{{ 'Tu jest parkiet.' | t:'This is the dance floor.' }}</h1>
-    <p class="lede">{{ 'Club, trance, big room, electro i disco polo od ludzi, którzy na nim stoją. Włączasz numer, zostawiasz ocenę i dodajesz swój.' | t:'Club, trance, big room, electro and disco polo from the people who stand on it. Play a track, leave a score and add your own.' }}</p>
+  <section class="landing">
+    <div class="landing-copy">
+      <p class="kicker">{{ 'Społeczność muzyki klubowej' | t:'The club music community' }}</p>
+      <h1>{{ 'Numery, które rozkręcają parkiet.' | t:'Tracks that set the dance floor on fire.' }}</h1>
+      <p class="landing-lede">{{ 'Club, vixa, trance, big room i disco polo w jednym miejscu. Słuchasz za darmo, oceniasz +1 albo −1, a najlepsze numery wybiera społeczność — nie algorytm.' | t:'Club, vixa, trance, big room and disco polo in one place. Listen for free, vote +1 or −1, and the community — not an algorithm — picks the best tracks.' }}</p>
+      <div class="landing-actions">
+        <a class="btn-accent" routerLink="/radio">▶ {{ 'Włącz radio' | t:'Play the radio' }}</a>
+        <a class="btn-ghost" [routerLink]="isLoggedIn ? '/track/add' : '/register'">{{ isLoggedIn ? ('Dodaj swój numer' | t:'Share your track') : ('Dołącz za darmo' | t:'Join for free') }}</a>
+      </div>
+      <ul class="proof" *ngIf="stats">
+        <li><strong>{{ stats.tracks }}</strong> {{ phrase(stats.tracks, 'tracks') }}</li>
+        <li><strong>{{ stats.plays }}</strong> {{ phrase(stats.plays, 'plays') }}</li>
+        <li><strong>{{ stats.users }}</strong> {{ phrase(stats.users, 'users') }}</li>
+        <li class="live"><span class="pulse-dot" aria-hidden="true"></span><strong>{{ stats.visitorsToday }}</strong> {{ phrase(stats.visitorsToday, 'visitors') }}</li>
+      </ul>
+    </div>
+
+    <aside class="hot-card" *ngIf="hot.length" [attr.aria-label]="'Gorące teraz' | t:'Hot right now'">
+      <header>
+        <p class="kicker">{{ 'Gorące teraz' | t:'Hot right now' }}</p>
+        <span class="meta">{{ 'najczęściej grane w tym miesiącu' | t:'most played this month' }}</span>
+      </header>
+      <ol>
+        <li *ngFor="let track of hot; let i = index">
+          <a [routerLink]="['/track', track.id]">
+            <span class="rank">{{ i + 1 }}</span>
+            <span class="hot-cover"><app-cover [hasCover]="track.hasCover" [src]="cover(track)" [genre]="track.genre"></app-cover></span>
+            <span class="hot-text">
+              <strong>{{ track.title }}</strong>
+              <span class="meta">{{ track.artist }}</span>
+            </span>
+            <span class="hot-plays">{{ track.viewsMonth || 0 }} <small>{{ 'odsł.' | t:'plays' }}</small></span>
+          </a>
+        </li>
+      </ol>
+      <a class="hot-more" routerLink="/ranking">{{ 'Zobacz ranking →' | t:'See the ranking →' }}</a>
+    </aside>
   </section>
 
-  <section class="genre-grid">
-    <a class="genre-card" *ngFor="let genre of genres" [routerLink]="['/tracklist', genre.slug]" [queryParams]="{}">
-      <strong>{{ genre.label }}</strong>
-      <span>{{ blurb(genre) }}</span>
-    </a>
+  <app-growth-board></app-growth-board>
+
+  <section class="genres-block">
+    <div class="section-head">
+      <div>
+        <p class="kicker">{{ 'Gatunki' | t:'Genres' }}</p>
+        <h2>{{ 'Wybierz swój klimat' | t:'Pick your vibe' }}</h2>
+      </div>
+    </div>
+    <div class="genre-tiles">
+      <a class="genre-tile" *ngFor="let genre of genres" [class.wide]="genre.id === 'VIXA' || genre.id === 'DISCO_POLO'" [routerLink]="['/tracklist', genre.slug]" [queryParams]="{}">
+        <app-genre-art [id]="genre.id"></app-genre-art>
+        <span class="tile-text">
+          <strong>{{ genre.label }}</strong>
+          <span>{{ blurb(genre) }}</span>
+          <em *ngIf="countFor(genre.id) as count">{{ count }} {{ phrase(count, 'tracks') }}</em>
+        </span>
+      </a>
+    </div>
   </section>
 
   <div class="ad-row">
@@ -30,30 +76,17 @@
           </span>
           <app-score [value]="track.score"></app-score>
         </span>
-        <span>
+        <span class="track-lines">
           <h2>{{ track.title }}<span class="version" *ngIf="track | versionLabel as version"> ({{ version }})</span></h2>
-          <span class="meta">{{ genreName(track.genre) }} · {{ track.artist }}<app-track-facts [track]="track"></app-track-facts></span>
+          <span class="line artist">{{ track.artist }}</span>
+          <span class="line meta"><app-track-facts [track]="track" part="stats"></app-track-facts></span>
+          <span class="line meta added-by">
+            <span *ngIf="track.createdAt">{{ track.createdAt | date:'dd.MM.yyyy HH:mm':'Europe/Warsaw' }}</span>
+            <ng-container *ngIf="track.sharedBy"><span class="dot" *ngIf="track.createdAt">·</span> {{ 'dodał' | t:'added by' }} <app-person [name]="track.sharedBy" [rank]="track.authorRank" [to]="['/profile', track.sharedBy]"></app-person></ng-container>
+          </span>
         </span>
       </a>
     </div>
   </section>
 
-  <section class="home-stats" *ngIf="stats" [attr.aria-label]="'Statystyki Oskarro' | t:'Oskarro stats'">
-    <div>
-      <strong>{{ stats.visitorsToday }}</strong>
-      <span>{{ phrase(stats.visitorsToday, 'visitors') }}</span>
-    </div>
-    <div>
-      <strong>{{ stats.users }}</strong>
-      <span>{{ phrase(stats.users, 'users') }}</span>
-    </div>
-    <div>
-      <strong>{{ stats.tracks }}</strong>
-      <span>{{ phrase(stats.tracks, 'tracks') }}</span>
-    </div>
-    <div>
-      <strong>{{ stats.plays }}</strong>
-      <span>{{ phrase(stats.plays, 'plays') }}</span>
-    </div>
-  </section>
 </div>

@@ -46,6 +46,8 @@ import { VideoEditComponent } from './videos/video-edit/video-edit.component';
 import { PlaylistAllComponent } from './playlists/playlist-all/playlist-all.component';
 import { HomeComponent } from './home/home.component';
 import { ActivityChartComponent } from './home/activity-chart.component';
+import { GrowthBoardComponent } from './home/growth-board.component';
+import { GenreArtComponent } from './home/genre-art.component';
 import { FooterComponent } from './footer/footer.component';
 import { TrackPlayerComponent } from './tracks/kraken-player/kraken-player.component';
 import { TrackFormComponent } from './tracks/track-form/track-form.component';
@@ -97,6 +99,8 @@ import { ActivateAccountComponent } from './auth/activate.component';
     PlaylistAllComponent,
     HomeComponent,
     ActivityChartComponent,
+    GrowthBoardComponent,
+    GenreArtComponent,
     FooterComponent,
     TrackPlayerComponent,
     RankingComponent,

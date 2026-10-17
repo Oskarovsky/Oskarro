@@ -29,6 +29,8 @@ export class TrackComponent implements OnInit, OnDestroy {
   dislikes = 0;
   score = 0;
   mine = 0;
+  voting = false;
+  voteNote = '';
   isLoggedIn = false;
   draft = '';
   genrePath = 'club';
@@ -286,9 +288,23 @@ export class TrackComponent implements OnInit, OnDestroy {
     if (!this.track.id) {
       return;
     }
-    this.trackService.vote(this.track.id, value).subscribe(state => {
-      this.applyVote(state);
-      this.loadTrack(this.track.id);
+    if (this.voting) {
+      return;
+    }
+    this.voting = true;
+    this.voteNote = '';
+    this.trackService.vote(this.track.id, value).subscribe({
+      next: state => {
+        this.voting = false;
+        this.applyVote(state);
+        this.loadTrack(this.track.id);
+      },
+      error: error => {
+        this.voting = false;
+        this.voteNote = error?.status === 401
+          ? this.lang.t('Sesja wygasła. Zaloguj się ponownie, żeby zagłosować.', 'Your session expired. Sign in again to vote.')
+          : (error?.error?.message || this.lang.t('Nie udało się zapisać oceny.', 'Could not save your vote.'));
+      }
     });
   }
 

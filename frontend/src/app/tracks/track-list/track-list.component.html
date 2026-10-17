@@ -1,17 +1,35 @@
 <div class="page" *ngIf="community">
-  <p class="kicker">{{ 'Muzyka na imprezę' | t:'Party music' }}</p>
-  <h1 class="display">{{ genreLabel | t }}</h1>
-  <p class="lede">{{ genreAbout }}</p>
+  <header class="genre-head">
+    <div class="genre-intro">
+      <p class="kicker">{{ 'Muzyka na imprezę' | t:'Party music' }}</p>
+      <h1 class="display">{{ genreLabel | t }}</h1>
+      <p class="lede">{{ genreAbout }}</p>
+    </div>
+    <aside class="genre-summary" *ngIf="tracks.length" [attr.aria-label]="'Podsumowanie gatunku' | t:'Genre summary'">
+      <div class="figures">
+        <div><strong>{{ tracks.length }}</strong><span>{{ lang.plural(tracks.length, ['utwór', 'utwory', 'utworów'], ['track', 'tracks']) }}</span></div>
+        <div><strong>{{ monthViews }}</strong><span>{{ 'odsłuchów w tym miesiącu' | t:'plays this month' }}</span></div>
+        <div><strong>+{{ newThisWeek }}</strong><span>{{ 'nowych w 7 dni' | t:'new in 7 days' }}</span></div>
+      </div>
+      <a class="top-pick" *ngIf="topTrack as top" [routerLink]="['/track', top.id]">
+        <span class="meta">{{ 'Najczęściej grany w tym miesiącu' | t:'Most played this month' }}</span>
+        <strong>{{ top.title }}</strong>
+        <span class="meta">{{ top.artist }}</span>
+      </a>
+      <a class="btn-accent add-track" routerLink="/track/add" [queryParams]="{genre: genre}">{{ 'Dodaj utwór' | t:'Add a track' }}</a>
+    </aside>
+  </header>
 
-  <div class="votes">
-    <button class="like" type="button" [class.on]="sort === 'new'" (click)="setSort('new')">{{ 'Najnowsze' | t:'Newest' }}</button>
-    <button class="like" type="button" [class.on]="sort === 'score'" (click)="setSort('score')">{{ 'Najlepsza ocena' | t:'Best score' }}</button>
-  </div>
-  <div class="votes">
-    <span class="meta vote-label">{{ 'Wyświetlenia' | t:'Views' }}</span>
-    <button class="like" type="button" [class.on]="sort === 'views-month'" (click)="setSort('views-month')">{{ 'W tym miesiącu' | t:'This month' }}</button>
-    <button class="like" type="button" [class.on]="sort === 'views-year'" (click)="setSort('views-year')">{{ 'W tym roku' | t:'This year' }}</button>
-    <button class="like" type="button" [class.on]="sort === 'views-all'" (click)="setSort('views-all')">{{ 'Od zawsze' | t:'All time' }}</button>
+  <div class="sort-bar" role="group" [attr.aria-label]="'Sortowanie' | t:'Sorting'">
+    <span class="meta sort-label">{{ 'Sortuj' | t:'Sort' }}</span>
+    <button class="chip" type="button" [class.on]="sort === 'new'" (click)="setSort('new')">{{ 'Najnowsze' | t:'Newest' }}</button>
+    <button class="chip" type="button" [class.on]="sort === 'score'" (click)="setSort('score')">{{ 'Najlepsza ocena' | t:'Best score' }}</button>
+    <span class="sort-sep" aria-hidden="true"></span>
+    <span class="meta sort-label">{{ 'Odsłuchy' | t:'Plays' }}</span>
+    <button class="chip" type="button" [class.on]="sort === 'views-month'" (click)="setSort('views-month')">{{ 'Miesiąc' | t:'Month' }}</button>
+    <button class="chip" type="button" [class.on]="sort === 'views-year'" (click)="setSort('views-year')">{{ 'Rok' | t:'Year' }}</button>
+    <button class="chip" type="button" [class.on]="sort === 'views-all'" (click)="setSort('views-all')">{{ 'Od zawsze' | t:'All time' }}</button>
+    <span class="meta sort-count" *ngIf="tracks.length">{{ 'Strona' | t:'Page' }} {{ currentPage }} / {{ pageCount }}</span>
   </div>
 
   <p *ngIf="tracks.length === 0">{{ 'Nikt jeszcze nie dodał utworu w tym gatunku.' | t:'Nobody has added a track in this genre yet.' }}</p>
@@ -25,10 +43,14 @@
           </span>
           <app-score [value]="track.score"></app-score>
         </span>
-        <span>
+        <span class="track-lines">
           <h2>{{ track.title }}<span class="version" *ngIf="track | versionLabel as version"> ({{ version }})</span></h2>
-          <span class="meta">{{ track.artist }}<app-track-facts [track]="track"></app-track-facts></span>
-          <span class="meta added-by" *ngIf="track.sharedBy">{{ 'dodał' | t:'added by' }} <app-person [name]="track.sharedBy" [rank]="track.authorRank" [to]="['/profile', track.sharedBy]"></app-person></span>
+          <span class="line artist">{{ track.artist }}</span>
+          <span class="line meta"><app-track-facts [track]="track" part="stats"></app-track-facts></span>
+          <span class="line meta added-by">
+            <span *ngIf="track.createdAt">{{ track.createdAt | date:'dd.MM.yyyy HH:mm':'Europe/Warsaw' }}</span>
+            <ng-container *ngIf="track.sharedBy"><span class="dot" *ngIf="track.createdAt">·</span> {{ 'dodał' | t:'added by' }} <app-person [name]="track.sharedBy" [rank]="track.authorRank" [to]="['/profile', track.sharedBy]"></app-person></ng-container>
+          </span>
         </span>
       </a>
       <app-ad-slot *ngIf="i === 3" slot="lista" format="banner"></app-ad-slot>

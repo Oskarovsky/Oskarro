@@ -8,6 +8,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -45,6 +46,9 @@ public class User {
 
     /** Null keeps accounts created before activation able to sign in. */
     private Boolean activated;
+
+    /** Registration time; null for accounts created before 2026-10-17. */
+    private Instant createdAt;
 
     @JsonIgnore
     public String getPassword() {

@@ -20,4 +20,7 @@ public interface TrackViewRepository extends CrudRepository<TrackView, Long> {
     @Modifying
     @Query("delete from TrackView v where v.trackId = :trackId")
     void deleteByTrackId(@Param("trackId") Integer trackId);
+
+    @Query("select v.playedAt from TrackView v where v.playedAt >= :from")
+    List<Instant> playedSince(@Param("from") Instant from);
 }

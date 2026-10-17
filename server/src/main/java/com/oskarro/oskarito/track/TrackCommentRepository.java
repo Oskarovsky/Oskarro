@@ -1,5 +1,6 @@
 package com.oskarro.oskarito.track;
 
+import java.time.Instant;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
@@ -25,4 +26,7 @@ public interface TrackCommentRepository extends CrudRepository<TrackComment, Int
     @Modifying
     @Query("delete from TrackComment c where c.track.id = :trackId")
     void deleteByTrackId(@Param("trackId") Integer trackId);
+
+    @Query("select c.createdAt from TrackComment c where c.createdAt >= :from")
+    List<Instant> createdSince(@Param("from") Instant from);
 }

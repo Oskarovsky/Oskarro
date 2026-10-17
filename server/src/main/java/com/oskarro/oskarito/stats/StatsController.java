@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -28,6 +29,11 @@ public class StatsController {
     @GetMapping("/added")
     List<DailyAdds> added() {
         return statsService.communityAdds();
+    }
+
+    @GetMapping("/growth")
+    GrowthStats growth(@RequestParam(defaultValue = "30") int days) {
+        return statsService.growth(days);
     }
 
     @PostMapping("/visit")

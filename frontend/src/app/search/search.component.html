@@ -15,9 +15,14 @@
           </span>
           <app-score [value]="track.score"></app-score>
         </span>
-        <span>
+        <span class="track-lines">
           <h2>{{ track.title }}<span class="version" *ngIf="track | versionLabel as version"> ({{ version }})</span></h2>
-          <span class="meta">{{ genreName(track.genre) }} · {{ track.artist }}<app-track-facts [track]="track"></app-track-facts></span>
+          <span class="line artist">{{ track.artist }}</span>
+          <span class="line meta"><app-track-facts [track]="track" part="stats"></app-track-facts></span>
+          <span class="line meta added-by">
+            <span *ngIf="track.createdAt">{{ track.createdAt | date:'dd.MM.yyyy HH:mm':'Europe/Warsaw' }}</span>
+            <ng-container *ngIf="track.sharedBy"><span class="dot" *ngIf="track.createdAt">·</span> {{ 'dodał' | t:'added by' }} <app-person [name]="track.sharedBy" [rank]="track.authorRank" [to]="['/profile', track.sharedBy]"></app-person></ng-container>
+          </span>
         </span>
       </a>
       <app-ad-slot *ngIf="i === 3" slot="szukaj" format="banner"></app-ad-slot>

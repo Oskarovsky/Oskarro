@@ -28,7 +28,8 @@ export function genreById(id: string): GenreOption | undefined {
 }
 
 export function genreBySlug(slug: string): GenreOption | undefined {
-  return GENRES.find(genre => genre.slug === (slug || '').trim().toLowerCase());
+  const key = (slug || '').trim().toLowerCase().replace(/_/g, '-');
+  return GENRES.find(genre => genre.slug === key || genre.slug.replace(/-/g, '') === key);
 }
 
 export function genreLabel(id: string): string {

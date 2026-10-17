@@ -16,6 +16,25 @@ export interface DailyAdds {
   count: number;
 }
 
+export interface GrowthDay {
+  date: string;
+  tracks: number;
+  comments: number;
+  plays: number;
+  votes: number;
+  users: number;
+  visitors: number;
+}
+
+export interface GrowthStats {
+  days: GrowthDay[];
+  tracks: number;
+  comments: number;
+  plays: number;
+  votes: number;
+  users: number;
+}
+
 const VISITOR_KEY = 'oskarro-visitor';
 const DAY_KEY = 'oskarro-visit-day';
 
@@ -28,6 +47,10 @@ export class StatsService {
 
   added(): Observable<DailyAdds[]> {
     return this.http.get<DailyAdds[]>(environment.serverUrl + '/stats/added');
+  }
+
+  growth(days: number): Observable<GrowthStats> {
+    return this.http.get<GrowthStats>(environment.serverUrl + '/stats/growth', {params: {days}});
   }
 
   load(): Observable<SiteStats> {

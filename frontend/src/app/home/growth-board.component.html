@@ -1,0 +1,67 @@
+<section class="board" [attr.aria-label]="'Jak rośnie Oskarro' | t:'How Oskarro grows'">
+  <header class="head">
+    <div>
+      <p class="kicker">{{ 'Puls Oskarro' | t:'Oskarro pulse' }}</p>
+      <h2>{{ 'Biblioteka rośnie każdego dnia' | t:'The library grows every day' }}</h2>
+    </div>
+    <div class="range" role="group" [attr.aria-label]="'Zakres' | t:'Range'">
+      <button type="button" [class.on]="range === 30" (click)="setRange(30)">30 {{ 'dni' | t:'days' }}</button>
+      <button type="button" [class.on]="range === 90" (click)="setRange(90)">90 {{ 'dni' | t:'days' }}</button>
+    </div>
+  </header>
+
+  <div class="hero-card">
+    <div class="hero-figure">
+      <strong>{{ totalTracks }}</strong>
+      <span>{{ tracksWord(totalTracks) }} {{ 'w bibliotece' | t:'in the library' }}</span>
+      <em *ngIf="addedInRange > 0">+{{ addedInRange }} {{ lang.en ? 'in ' + range + ' days' : 'w ' + range + ' dni' }} · +{{ addedThisWeek }} {{ 'w tym tygodniu' | t:'this week' }}</em>
+    </div>
+
+    <div class="plot" #plot>
+      <svg *ngIf="points.length" [attr.width]="width" [attr.height]="height" [attr.viewBox]="'0 0 ' + width + ' ' + height"
+           role="img" [attr.aria-label]="('Liczba utworów w bibliotece, ostatnie ' | t:'Tracks in the library, last ') + range + (' dni' | t:' days')">
+        <g class="grid">
+          <line *ngFor="let t of yTicks" [attr.x1]="pad.left" [attr.x2]="width - pad.right" [attr.y1]="t.y" [attr.y2]="t.y"></line>
+        </g>
+        <g class="axis">
+          <text *ngFor="let t of yTicks" [attr.x]="pad.left - 8" [attr.y]="t.y + 4" text-anchor="end">{{ t.label }}</text>
+          <text *ngFor="let t of xTicks" [attr.x]="t.x" [attr.y]="height - 8" [attr.text-anchor]="t.anchor">{{ t.label }}</text>
+        </g>
+        <path class="area" [attr.d]="areaPath"></path>
+        <path class="line" [attr.d]="linePath"></path>
+        <circle class="end" [attr.cx]="points[points.length - 1].x" [attr.cy]="points[points.length - 1].y" r="4"></circle>
+        <g *ngIf="hover">
+          <line class="cross" [attr.x1]="hover.x" [attr.x2]="hover.x" [attr.y1]="pad.top" [attr.y2]="height - pad.bottom"></line>
+          <circle class="end" [attr.cx]="hover.x" [attr.cy]="hover.y" r="5"></circle>
+        </g>
+        <rect class="hit" [attr.x]="pad.left - 10" [attr.y]="0" [attr.width]="width - pad.left - pad.right + 20" [attr.height]="height"
+              (pointermove)="onMove($event)" (pointerdown)="onMove($event)" (pointerleave)="onLeave()"></rect>
+      </svg>
+      <div class="tip" *ngIf="hover" [style.left.px]="tipLeft">
+        <span>{{ dayLabel(hover.date, true) }}</span>
+        <strong>{{ hover.total }} {{ tracksWord(hover.total) }}</strong>
+        <span>+{{ hover.added }} {{ 'tego dnia' | t:'that day' }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="tiles">
+    <article class="tile" *ngFor="let tile of tiles">
+      <span class="label">{{ tile.label }}</span>
+      <strong>{{ tile.value }}</strong>
+      <span class="scope">{{ tileScope(tile) }}</span>
+      <svg class="spark" [attr.viewBox]="'0 0 ' + sparkW + ' ' + sparkH" preserveAspectRatio="none" aria-hidden="true">
+        <rect *ngFor="let b of tile.bars" [attr.x]="b.x" [attr.y]="b.y" [attr.width]="b.w" [attr.height]="b.h" rx="1" [class.last]="b.last"><title>{{ b.title }}</title></rect>
+      </svg>
+      <span class="delta" [class.up]="tile.up" [attr.title]="tile.compare">{{ tile.delta }} <small>· {{ tile.compare }}</small></span>
+    </article>
+  </div>
+
+  <table class="sr-only" *ngIf="data">
+    <caption>{{ 'Aktywność dzień po dniu' | t:'Activity day by day' }}</caption>
+    <thead><tr><th>{{ 'Dzień' | t:'Day' }}</th><th>{{ 'Nowe utwory' | t:'New tracks' }}</th><th>{{ 'Odsłuchy' | t:'Plays' }}</th><th>{{ 'Komentarze' | t:'Comments' }}</th><th>{{ 'Oceny' | t:'Votes' }}</th><th>{{ 'Nowe konta' | t:'New accounts' }}</th><th>{{ 'Odwiedzający' | t:'Visitors' }}</th></tr></thead>
+    <tbody>
+      <tr *ngFor="let d of data.days"><td>{{ d.date }}</td><td>{{ d.tracks }}</td><td>{{ d.plays }}</td><td>{{ d.comments }}</td><td>{{ d.votes }}</td><td>{{ d.users }}</td><td>{{ d.visitors }}</td></tr>
+    </tbody>
+  </table>
+</section>

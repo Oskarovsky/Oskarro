@@ -13,6 +13,7 @@ import com.oskarro.oskarito.track.TrackCommentRepository;
 import com.oskarro.oskarito.track.TrackLike;
 import com.oskarro.oskarito.track.TrackLikeRepository;
 import com.oskarro.oskarito.track.TrackRepository;
+import com.oskarro.oskarito.track.TrackViewRepository;
 import com.oskarro.oskarito.user.Role;
 import com.oskarro.oskarito.user.RoleName;
 import com.oskarro.oskarito.user.RoleRepository;
@@ -46,6 +47,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -74,6 +76,7 @@ class SecurityRulesTest {
     @Autowired PlaylistEntryRepository entries;
     @Autowired VideoRepository videos;
     @Autowired ImageRepository images;
+    @Autowired TrackViewRepository views;
 
     @BeforeEach
     void roles() {
@@ -219,6 +222,52 @@ class SecurityRulesTest {
 
         assertThat(entries.existsByPlaylist_IdAndTrack_Id(playlist.getId(), someoneElses.getId())).isFalse();
         assertThat(tracks.findById(someoneElses.getId())).isPresent();
+    }
+
+    @Test
+    void votingIsOnePointPerUserAndCanBeUndone() throws Exception {
+        Track track = track(user(RoleName.ROLE_USER));
+        String voter = bearer(user(RoleName.ROLE_USER));
+        String up = "{\"vote\":1}";
+        String down = "{\"vote\":-1}";
+        String path = "/api/tracks/" + track.getId() + "/vote";
+
+        String first = mvc.perform(post(path).contentType(MediaType.APPLICATION_JSON).content(up).header("Authorization", voter))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        assertThat(json.readTree(first).get("score").asInt()).isEqualTo(1);
+
+        mvc.perform(post(path).contentType(MediaType.APPLICATION_JSON).content(down).header("Authorization", voter))
+                .andExpect(status().isConflict());
+
+        String undone = mvc.perform(post(path).contentType(MediaType.APPLICATION_JSON).content(up).header("Authorization", voter))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        assertThat(json.readTree(undone).get("score").asInt()).isEqualTo(0);
+
+        String other = bearer(user(RoleName.ROLE_USER));
+        String total = mvc.perform(post(path).contentType(MediaType.APPLICATION_JSON).content(down).header("Authorization", other))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        assertThat(json.readTree(total).get("score").asInt()).isEqualTo(-1);
+    }
+
+    @Test
+    void repeatedPlaysFromOneListenerCountOnce() throws Exception {
+        Track track = track(user(RoleName.ROLE_USER));
+        for (int i = 0; i < 3; i++) {
+            mvc.perform(post("/api/tracks/" + track.getId() + "/view").header("X-Real-IP", "10.0.0.1")).andExpect(status().isOk());
+        }
+        mvc.perform(post("/api/tracks/" + track.getId() + "/view").header("X-Real-IP", "10.0.0.2")).andExpect(status().isOk());
+        assertThat(views.countsAll(List.of(track.getId())).get(0)[1]).isEqualTo(2L);
+    }
+
+    @Test
+    void growthStatsCoverEveryDayOfTheRange() throws Exception {
+        track(user(RoleName.ROLE_USER));
+        String body = mvc.perform(get("/api/stats/growth").param("days", "14"))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        var tree = json.readTree(body);
+        assertThat(tree.get("days").size()).isEqualTo(14);
+        assertThat(tree.get("days").get(13).get("tracks").asInt()).isGreaterThanOrEqualTo(1);
+        assertThat(tree.get("tracks").asInt()).isGreaterThanOrEqualTo(1);
     }
 
     private User user(RoleName role) {
