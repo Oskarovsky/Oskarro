@@ -2,7 +2,6 @@ package com.oskarro.oskarito.track;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.oskarro.oskarito.playlist.Playlist;
-import com.oskarro.oskarito.provider.Provider;
 import com.oskarro.oskarito.record.Record;
 import com.oskarro.oskarito.user.User;
 import com.oskarro.oskarito.video.Video;
@@ -42,9 +41,6 @@ public class Track {
 
     private Integer position;
 
-    @ManyToOne
-    @JoinColumn(name = "provider_id")
-    private Provider provider;
 
     @ManyToOne
     @JoinColumn(name = "record_id")

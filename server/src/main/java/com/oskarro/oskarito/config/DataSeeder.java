@@ -1,14 +1,7 @@
 package com.oskarro.oskarito.config;
 
-import com.oskarro.oskarito.crawler.CrawlerService;
 import com.oskarro.oskarito.playlist.Playlist;
 import com.oskarro.oskarito.playlist.PlaylistRepository;
-import com.oskarro.oskarito.provider.Provider;
-import com.oskarro.oskarito.provider.ProviderRepository;
-import com.oskarro.oskarito.provider.contractor.AppleService;
-import com.oskarro.oskarito.provider.contractor.BillboardService;
-import com.oskarro.oskarito.provider.contractor.RadiopartyService;
-import com.oskarro.oskarito.track.Genre;
 import com.oskarro.oskarito.track.Track;
 import com.oskarro.oskarito.track.TrackRepository;
 import com.oskarro.oskarito.user.Role;
@@ -25,7 +18,6 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
@@ -36,38 +28,23 @@ public class DataSeeder implements ApplicationRunner {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
-    private final ProviderRepository providerRepository;
     private final PlaylistRepository playlistRepository;
     private final VideoRepository videoRepository;
     private final TrackRepository trackRepository;
     private final PasswordEncoder passwordEncoder;
-    private final CrawlerService crawlerService;
-    private final RadiopartyService radiopartyService;
-    private final BillboardService billboardService;
-    private final AppleService appleService;
 
     public DataSeeder(UserRepository userRepository,
                       RoleRepository roleRepository,
-                      ProviderRepository providerRepository,
                       PlaylistRepository playlistRepository,
                       VideoRepository videoRepository,
                       TrackRepository trackRepository,
-                      PasswordEncoder passwordEncoder,
-                      CrawlerService crawlerService,
-                      RadiopartyService radiopartyService,
-                      BillboardService billboardService,
-                      AppleService appleService) {
+                      PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
-        this.providerRepository = providerRepository;
         this.playlistRepository = playlistRepository;
         this.videoRepository = videoRepository;
         this.trackRepository = trackRepository;
         this.passwordEncoder = passwordEncoder;
-        this.crawlerService = crawlerService;
-        this.radiopartyService = radiopartyService;
-        this.billboardService = billboardService;
-        this.appleService = appleService;
     }
 
     @Override
@@ -95,15 +72,6 @@ public class DataSeeder implements ApplicationRunner {
                 .roles(new HashSet<>(List.of(roleUser)))
                 .build());
 
-        providerRepository.save(Provider.builder().description("nice").url("https://nuteczki.eu/top20/#").name("nuteczki").genres(new ArrayList<>(List.of(Genre.CLUB, Genre.DANCE))).build());
-        Provider radioparty = providerRepository.save(Provider.builder().description("very nice").url("https://radioparty.pl/partylista.html").genres(new ArrayList<>(List.of(Genre.CLUB))).name("radioparty").build());
-        providerRepository.save(Provider.builder().description("sehr gut").url("https://www.dance-charts.de/").name("dancecharts").build());
-        Provider billboard = providerRepository.save(Provider.builder().description("beautiful").url("https://www.billboard.com/charts/year-end/2019/dance-club-songs").genres(new ArrayList<>(List.of(Genre.DANCE))).name("billboard").build());
-        providerRepository.save(Provider.builder().description("super woop").url("https://promodj.com/top100/").name("promodj").build());
-        providerRepository.save(Provider.builder().description("bombastic").url("https://musiclist.com/en/").name("musiclist").build());
-        providerRepository.save(Provider.builder().description("nicename").url("https://www.ariacharts.com.au/").name("ariacharts").build());
-        Provider apple = providerRepository.save(Provider.builder().description("tasty service").url("https://music.apple.com/").genres(new ArrayList<>(List.of(Genre.CLUB, Genre.RETRO))).name("apple").build());
-
         Playlist playlist = playlistRepository.save(Playlist.builder().name("MyTop").user(userAdmin).build());
         Playlist playlist2 = playlistRepository.save(Playlist.builder().name("SecondTop").user(userJacek).build());
 
@@ -121,20 +89,6 @@ public class DataSeeder implements ApplicationRunner {
         trackRepository.save(Track.builder().title("Firseconddtitle").artist("Msssed").version("dsd edit").video(video2).build());
         trackRepository.save(Track.builder().title("one tow three").artist("test").version("dsd edit").video(video2).build());
 
-        importCharts(radioparty, billboard, apple);
-    }
-
-    private void importCharts(Provider radioparty, Provider billboard, Provider apple) {
-        try {
-            crawlerService.parseWeb(apple);
-            radiopartyService.getTrackList(radioparty);
-            billboardService.getTrackList(billboard);
-            appleService.getTracklistByGenre(apple, Genre.RETRO);
-            appleService.getTracklistByGenre(apple, Genre.TRANCE);
-            appleService.getTracklistByGenre(apple, Genre.CLUB);
-        } catch (RuntimeException ex) {
-            log.warn("External chart import failed, local seed data is still available: {}", ex.toString());
-        }
     }
 
     private Role role(RoleName name) {
