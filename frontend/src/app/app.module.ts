@@ -48,6 +48,11 @@ import { HomeComponent } from './home/home.component';
 import { ActivityChartComponent } from './home/activity-chart.component';
 import { GrowthBoardComponent } from './home/growth-board.component';
 import { GenreArtComponent } from './home/genre-art.component';
+import { LegalComponent } from './legal/legal.component';
+import { ReportComponent } from './legal/report.component';
+import { CookieNoticeComponent } from './legal/cookie-notice.component';
+import { SsoButtonsComponent } from './auth/sso-buttons.component';
+import { SsoDoneComponent } from './auth/sso-done.component';
 import { SetListComponent } from './tracks/set-list/set-list.component';
 import { AdminLayoutComponent } from './admin/admin-layout.component';
 import { AdminDashboardComponent } from './admin/admin-dashboard.component';
@@ -55,6 +60,7 @@ import { AdminUsersComponent } from './admin/admin-users.component';
 import { AdminUserComponent } from './admin/admin-user.component';
 import { AdminTracksComponent } from './admin/admin-tracks.component';
 import { AdminCommentsComponent } from './admin/admin-comments.component';
+import { AdminReportsComponent } from './admin/admin-reports.component';
 import { AdminActivityComponent } from './admin/admin-activity.component';
 import { AdminFeedComponent } from './admin/admin-feed.component';
 import { AgoPipe } from './admin/ago.pipe';
@@ -112,6 +118,11 @@ import { ActivateAccountComponent } from './auth/activate.component';
     ActivityChartComponent,
     GrowthBoardComponent,
     GenreArtComponent,
+    LegalComponent,
+    ReportComponent,
+    CookieNoticeComponent,
+    SsoButtonsComponent,
+    SsoDoneComponent,
     SetListComponent,
     AdminLayoutComponent,
     AdminDashboardComponent,
@@ -119,6 +130,7 @@ import { ActivateAccountComponent } from './auth/activate.component';
     AdminUserComponent,
     AdminTracksComponent,
     AdminCommentsComponent,
+    AdminReportsComponent,
     AdminActivityComponent,
     AdminFeedComponent,
     AgoPipe,

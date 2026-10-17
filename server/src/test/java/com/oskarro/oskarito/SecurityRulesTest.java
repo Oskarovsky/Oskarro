@@ -97,7 +97,7 @@ class SecurityRulesTest {
         mvc.perform(post("/api/auth/signup").contentType(MediaType.APPLICATION_JSON)
                         .content(json.writeValueAsString(Map.of(
                                 "username", name, "email", name + "@example.com",
-                                "password", PASSWORD, "role", List.of("admin", "mod")))))
+                                "password", PASSWORD, "role", List.of("admin", "mod"), "acceptTerms", true))))
                 .andExpect(status().isOk());
         User user = users.findByUsername(name).orElseThrow();
         user.setActivated(true);
@@ -363,6 +363,80 @@ class SecurityRulesTest {
         String body = mvc.perform(get("/actuator/prometheus")).andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
         assertThat(body).contains("jvm_memory_used_bytes").contains("application=\"oskarro\"");
+    }
+
+    @Test
+    void signupRequiresAcceptingTheTerms() throws Exception {
+        String name = "noterms" + SEQ.incrementAndGet();
+        mvc.perform(post("/api/auth/signup").contentType(MediaType.APPLICATION_JSON)
+                        .content(json.writeValueAsString(Map.of("username", name, "email", name + "@example.com", "password", PASSWORD))))
+                .andExpect(status().isBadRequest());
+        assertThat(users.findByUsername(name)).isEmpty();
+    }
+
+    @Test
+    void usersCanExportAndDeleteTheirAccount() throws Exception {
+        User me = user(RoleName.ROLE_USER);
+        String token = bearer(me);
+        Track mine = track(me);
+        Track other = track(user(RoleName.ROLE_USER));
+        mvc.perform(post("/api/tracks/" + other.getId() + "/vote").header("Authorization", token)
+                .contentType(MediaType.APPLICATION_JSON).content("{\"vote\":1}")).andExpect(status().isOk());
+        mvc.perform(post("/api/tracks/" + other.getId() + "/comments").header("Authorization", token)
+                .contentType(MediaType.APPLICATION_JSON).content("{\"text\":\"super\"}")).andExpect(status().isOk());
+
+        String export = mvc.perform(get("/api/profile/me/export").header("Authorization", token))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        var tree = json.readTree(export);
+        assertThat(tree.get("account").get("email").asText()).isEqualTo(me.getEmail());
+        assertThat(tree.get("tracks").size()).isEqualTo(1);
+        assertThat(tree.get("comments").size()).isEqualTo(1);
+        assertThat(tree.get("votes").size()).isEqualTo(1);
+
+        mvc.perform(delete("/api/profile/me").header("Authorization", token)
+                .contentType(MediaType.APPLICATION_JSON).content("{\"confirm\":\"wrong\"}")).andExpect(status().isBadRequest());
+        mvc.perform(delete("/api/profile/me").header("Authorization", token)
+                .contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(Map.of("confirm", PASSWORD))))
+                .andExpect(status().isOk());
+
+        assertThat(users.findByUsername(me.getUsername())).isEmpty();
+        assertThat(tracks.findById(mine.getId())).isEmpty();
+        assertThat(tracks.findById(other.getId())).isPresent();
+        assertThat(likes.findByTrackIdAndUserId(other.getId(), me.getId())).isEmpty();
+        mvc.perform(get("/api/profile/me").header("Authorization", token)).andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void reportsReachTheAdminQueue() throws Exception {
+        Track track = track(user(RoleName.ROLE_USER));
+        mvc.perform(post("/api/reports").contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(
+                        Map.of("reason", "COPYRIGHT", "trackId", track.getId(), "details", "To mój utwór, nie zgadzam się"))))
+                .andExpect(status().isBadRequest());
+        mvc.perform(post("/api/reports").contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(
+                        Map.of("reason", "COPYRIGHT", "trackId", track.getId(), "details", "To mój utwór, nie zgadzam się",
+                                "email", "label@example.com", "name", "Label"))))
+                .andExpect(status().isOk());
+
+        String admin = bearer(user(RoleName.ROLE_ADMIN));
+        mvc.perform(get("/api/admin/reports").header("Authorization", bearer(user(RoleName.ROLE_USER))))
+                .andExpect(status().isForbidden());
+        String open = mvc.perform(get("/api/admin/reports").header("Authorization", admin))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        var report = json.readTree(open).get(0);
+        assertThat(report.get("reporterEmail").asText()).isEqualTo("label@example.com");
+        assertThat(report.get("trackTitle").asText()).contains("Original");
+
+        mvc.perform(patch("/api/admin/reports/" + report.get("id").asLong()).header("Authorization", admin)
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"status\":\"RESOLVED\",\"resolution\":\"usunięto\"}"))
+                .andExpect(status().isOk());
+        assertThat(mvc.perform(get("/api/admin/reports").header("Authorization", admin))
+                .andReturn().getResponse().getContentAsString()).doesNotContain("label@example.com");
+    }
+
+    @Test
+    void ssoIsOffWithoutKeys() throws Exception {
+        assertThat(mvc.perform(get("/api/auth/providers")).andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString()).isEqualTo("[]");
     }
 
     private User user(RoleName role) {

@@ -137,7 +137,7 @@ export class VideoEditComponent implements OnInit {
   }
 
   secureAllUrl(video: Video) {
-    video.safeUrl = this.sanitizer.bypassSecurityTrustResourceUrl(`https://www.youtube.com/embed/${video.url}`);
+    video.safeUrl = this.sanitizer.bypassSecurityTrustResourceUrl(`https://www.youtube-nocookie.com/embed/${video.url}`);
   }
 
 }

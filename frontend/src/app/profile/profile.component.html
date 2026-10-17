@@ -81,6 +81,21 @@
     <p class="meta" *ngIf="message">{{ message | t }}</p>
   </section>
 
+  <section class="composer data-zone" *ngIf="self">
+    <h2>{{ 'Twoje dane' | t:'Your data' }}</h2>
+    <p class="meta">{{ 'Możesz pobrać wszystko, co o Tobie przechowujemy, albo usunąć konto razem z dodanymi utworami, setami, komentarzami, ocenami i składankami.' | t:'Download everything we store about you, or delete the account together with your tracks, sets, comments, votes and playlists.' }} <a routerLink="/polityka-prywatnosci">{{ 'Polityka prywatności' | t:'Privacy policy' }}</a></p>
+    <button class="btn-ghost" type="button" (click)="exportData()">{{ 'Pobierz moje dane (JSON)' | t:'Download my data (JSON)' }}</button>
+    <details class="danger-zone">
+      <summary>{{ 'Usuń konto' | t:'Delete account' }}</summary>
+      <p>{{ 'Tego nie da się cofnąć. Znikną Twoje utwory, sety, komentarze, oceny i składanki.' | t:'This cannot be undone. Your tracks, sets, comments, votes and playlists will be removed.' }}</p>
+      <label>{{ externalAccount ? ('Wpisz swoją nazwę użytkownika, żeby potwierdzić' | t:'Type your username to confirm') : ('Podaj hasło, żeby potwierdzić' | t:'Enter your password to confirm') }}
+        <input [(ngModel)]="deleteConfirm" name="deleteConfirm" [type]="externalAccount ? 'text' : 'password'" autocomplete="off">
+      </label>
+      <button class="btn-danger" type="button" [disabled]="!deleteConfirm || deleting" (click)="deleteAccount()">{{ 'Usuń konto na zawsze' | t:'Delete my account forever' }}</button>
+      <p class="alert" *ngIf="deleteError" role="alert">{{ deleteError }}</p>
+    </details>
+  </section>
+
   <section class="panel" *ngIf="!self && profile.bio" style="padding: 18px; margin-bottom: 18px;">
     <p>{{ profile.bio }}</p>
   </section>

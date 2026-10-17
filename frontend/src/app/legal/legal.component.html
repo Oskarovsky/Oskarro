@@ -1,0 +1,155 @@
+<div class="page legal">
+  <nav class="legal-nav" aria-label="Dokumenty">
+    <a routerLink="/regulamin" routerLinkActive="on">Regulamin</a>
+    <a routerLink="/polityka-prywatnosci" routerLinkActive="on">Polityka prywatności</a>
+    <a routerLink="/cookies" routerLinkActive="on">Cookies</a>
+    <a routerLink="/zglos-naruszenie" routerLinkActive="on">Zgłoś naruszenie</a>
+  </nav>
+  <p class="meta" lang="en">These documents are available in Polish. Questions: {{ contact }}.</p>
+
+  <!-- ===================== REGULAMIN ===================== -->
+  <article *ngIf="doc === 'terms'">
+    <p class="kicker">Dokument</p>
+    <h1 class="display">Regulamin serwisu Oskarro.com</h1>
+    <p class="meta">Obowiązuje od: {{ updated }}</p>
+
+    <h2>§1. Postanowienia ogólne</h2>
+    <ol>
+      <li>Regulamin określa zasady korzystania z serwisu internetowego <strong>oskarro.com</strong> („Serwis”).</li>
+      <li>Serwis prowadzi <strong>Oskar Słyk</strong> („Administrator”), kontakt: <a [href]="'mailto:' + contact">{{ contact }}</a>.</li>
+      <li>Serwis jest społecznościową platformą do dzielenia się, słuchania, oceniania i komentowania muzyki klubowej oraz setów DJ-skich. Korzystanie z Serwisu jest bezpłatne.</li>
+      <li>Do korzystania z Serwisu potrzebne jest urządzenie z dostępem do internetu i aktualną przeglądarką z włączoną obsługą JavaScript.</li>
+    </ol>
+
+    <h2>§2. Konto użytkownika</h2>
+    <ol>
+      <li>Przeglądanie i słuchanie części treści nie wymaga konta. Dodawanie utworów i setów, ocenianie, komentowanie i tworzenie składanek wymaga założenia konta.</li>
+      <li>Konto zakłada się, podając nazwę użytkownika, adres e-mail i hasło, albo przez logowanie kontem Google lub Facebook. Zakładając konto, użytkownik akceptuje Regulamin i Politykę prywatności.</li>
+      <li>Konto może założyć osoba, która ukończyła 16 lat. Osoby młodsze mogą korzystać z Serwisu wyłącznie za zgodą opiekuna prawnego.</li>
+      <li>Użytkownik odpowiada za poufność swojego hasła i za działania wykonane z jego konta.</li>
+      <li>Użytkownik może w każdej chwili usunąć konto w ustawieniach profilu („Usuń konto”). Usunięcie konta usuwa też dodane przez niego utwory, sety, komentarze, oceny i składanki.</li>
+    </ol>
+
+    <h2>§3. Treści dodawane przez użytkowników</h2>
+    <ol>
+      <li>Serwis nie przechowuje plików muzycznych. Użytkownicy dodają <strong>odnośniki</strong> do plików przechowywanych w zewnętrznych serwisach (hostuje.net, soundfiles.eu) oraz opisy, okładki, tracklisty i komentarze.</li>
+      <li>Dodając treść, użytkownik oświadcza, że ma prawo ją udostępnić i że nie narusza ona praw osób trzecich, w szczególności praw autorskich i praw pokrewnych.</li>
+      <li>Zabronione jest dodawanie treści bezprawnych, obraźliwych, dyskryminujących, wulgarnych, reklamowych bez zgody Administratora (spam) oraz podszywanie się pod inne osoby.</li>
+      <li>Użytkownik udziela Administratorowi nieodpłatnej, niewyłącznej licencji na wyświetlanie w Serwisie dodanych przez siebie opisów, okładek i komentarzy — na czas ich obecności w Serwisie.</li>
+      <li>Autor może poprawić dodany utwór lub set w ciągu 24 godzin od dodania.</li>
+    </ol>
+
+    <h2>§4. Zgłaszanie naruszeń i moderacja</h2>
+    <ol>
+      <li>Każdy może zgłosić treść naruszającą prawo lub Regulamin przez formularz <a routerLink="/zglos-naruszenie">Zgłoś naruszenie</a> albo e-mailem na adres Administratora.</li>
+      <li>Zgłoszenie naruszenia praw autorskich powinno wskazywać utwór (adres strony), uprawnionego i dane kontaktowe zgłaszającego.</li>
+      <li>Administrator rozpatruje zgłoszenia bez zbędnej zwłoki. Treść oczywiście bezprawna jest usuwana lub blokowana niezwłocznie po uzyskaniu wiarygodnej wiadomości o jej bezprawnym charakterze.</li>
+      <li>Administrator może usunąć lub poprawić treść naruszającą Regulamin oraz czasowo lub na stałe zablokować konto użytkownika, który narusza Regulamin. O decyzji użytkownik może zostać poinformowany e-mailem, jeśli to możliwe.</li>
+      <li>Od decyzji moderacyjnej można się odwołać, pisząc na adres Administratora w ciągu 14 dni.</li>
+    </ol>
+
+    <h2>§5. Odpowiedzialność</h2>
+    <ol>
+      <li>Administrator dokłada starań, aby Serwis działał nieprzerwanie, ale nie gwarantuje jego stałej dostępności. Przerwy techniczne mogą wynikać z prac konserwacyjnych lub awarii.</li>
+      <li>Administrator nie odpowiada za treść i dostępność plików w zewnętrznych serwisach, do których prowadzą odnośniki użytkowników.</li>
+      <li>Za treści dodane przez użytkowników odpowiadają ich autorzy, z zastrzeżeniem obowiązków Administratora wynikających z przepisów prawa.</li>
+    </ol>
+
+    <h2>§6. Reklamacje</h2>
+    <ol>
+      <li>Reklamacje dotyczące działania Serwisu można składać e-mailem na adres Administratora.</li>
+      <li>Administrator odpowiada na reklamację w terminie 14 dni.</li>
+    </ol>
+
+    <h2>§7. Postanowienia końcowe</h2>
+    <ol>
+      <li>Zasady przetwarzania danych osobowych opisuje <a routerLink="/polityka-prywatnosci">Polityka prywatności</a>.</li>
+      <li>Administrator może zmienić Regulamin z ważnych przyczyn (np. zmiana przepisów, nowe funkcje Serwisu). Zmiany wchodzą w życie po 7 dniach od opublikowania; użytkownik, który się nie zgadza, może usunąć konto.</li>
+      <li>W sprawach nieuregulowanych stosuje się przepisy prawa polskiego.</li>
+    </ol>
+  </article>
+
+  <!-- ===================== POLITYKA PRYWATNOŚCI ===================== -->
+  <article *ngIf="doc === 'privacy'">
+    <p class="kicker">Dokument</p>
+    <h1 class="display">Polityka prywatności</h1>
+    <p class="meta">Obowiązuje od: {{ updated }}</p>
+
+    <h2>1. Administrator danych</h2>
+    <p>Administratorem danych osobowych użytkowników Serwisu oskarro.com jest <strong>Oskar Słyk</strong>, kontakt: <a [href]="'mailto:' + contact">{{ contact }}</a>. We wszystkich sprawach dotyczących danych osobowych można pisać na ten adres.</p>
+
+    <h2>2. Jakie dane przetwarzamy, w jakim celu i na jakiej podstawie</h2>
+    <div class="legal-table">
+      <table>
+        <thead><tr><th>Dane</th><th>Cel</th><th>Podstawa (RODO)</th><th>Jak długo</th></tr></thead>
+        <tbody>
+          <tr><td>nazwa użytkownika, e-mail, hasło (zaszyfrowane), data rejestracji i akceptacji regulaminu</td><td>założenie i prowadzenie konta, logowanie</td><td>art. 6 ust. 1 lit. b — umowa (Regulamin)</td><td>do usunięcia konta</td></tr>
+          <tr><td>dane z Google/Facebook: adres e-mail, imię i nazwisko (do utworzenia nazwy użytkownika)</td><td>logowanie kontem Google lub Facebook — tylko jeśli użytkownik je wybierze</td><td>art. 6 ust. 1 lit. b</td><td>do usunięcia konta</td></tr>
+          <tr><td>dane profilu podane dobrowolnie (opis, imię, nazwisko, strona www, ulubione gatunki, zdjęcie)</td><td>wyświetlanie profilu</td><td>art. 6 ust. 1 lit. a — zgoda (podanie danych)</td><td>do usunięcia danych lub konta</td></tr>
+          <tr><td>dodane utwory, sety, okładki, komentarze, oceny, składanki</td><td>działanie Serwisu</td><td>art. 6 ust. 1 lit. b</td><td>do usunięcia treści lub konta</td></tr>
+          <tr><td>data ostatniego logowania i ostatniej aktywności</td><td>bezpieczeństwo, moderacja, statystyki aktywności</td><td>art. 6 ust. 1 lit. f — prawnie uzasadniony interes</td><td>do usunięcia konta</td></tr>
+          <tr><td>adres IP i dane techniczne w logach serwera</td><td>bezpieczeństwo, ochrona przed atakami, diagnostyka</td><td>art. 6 ust. 1 lit. f</td><td>14 dni (logi serwera)</td></tr>
+          <tr><td>losowy identyfikator odwiedzin zapisany w przeglądarce</td><td>liczenie unikalnych odwiedzających (bez profilowania)</td><td>art. 6 ust. 1 lit. f</td><td>zapis dzienny w statystyce</td></tr>
+          <tr><td>dane ze zgłoszeń naruszeń (imię, e-mail, treść)</td><td>rozpatrzenie zgłoszenia</td><td>art. 6 ust. 1 lit. c i f</td><td>do 3 lat od rozpatrzenia</td></tr>
+          <tr><td>korespondencja e-mail</td><td>odpowiedź na pytania i reklamacje</td><td>art. 6 ust. 1 lit. f</td><td>do 3 lat</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Podanie danych jest dobrowolne, ale bez adresu e-mail, nazwy użytkownika i hasła (albo konta Google/Facebook) nie da się założyć konta. Nie podejmujemy decyzji w sposób zautomatyzowany i nie profilujemy użytkowników w celach marketingowych.</p>
+
+    <h2>3. Komu przekazujemy dane</h2>
+    <ul>
+      <li><strong>Dostawca serwera (hosting VPS)</strong> — przechowuje Serwis i bazę danych na podstawie umowy powierzenia.</li>
+      <li><strong>Dostawca poczty e-mail (OVH)</strong> — wysyłka wiadomości aktywacyjnych i resetu hasła.</li>
+      <li><strong>Google i Meta (Facebook)</strong> — tylko jeśli użytkownik wybierze logowanie ich kontem; zasady przetwarzania danych przez te firmy opisują ich polityki prywatności.</li>
+      <li><strong>Serwisy z plikami muzycznymi (hostuje.net, soundfiles.eu)</strong> — odtwarzany plik pobierany jest bezpośrednio z ich serwerów, więc poznają one adres IP słuchającego.</li>
+      <li><strong>YouTube</strong> — w sekcji Wideo filmy są osadzane w trybie rozszerzonej prywatności (youtube-nocookie.com); YouTube przetwarza dane dopiero po uruchomieniu filmu.</li>
+      <li><strong>Dostawcy czcionek i bibliotek (Google Fonts, cdnjs, code.jquery.com, BootstrapCDN)</strong> — przy ładowaniu strony przeglądarka pobiera z ich serwerów czcionki i style, przekazując im adres IP.</li>
+      <li>Organy publiczne — wyłącznie gdy wymagają tego przepisy prawa.</li>
+    </ul>
+    <p>Część wymienionych firm (Google, Meta) może przetwarzać dane poza Europejskim Obszarem Gospodarczym na podstawie standardowych klauzul umownych lub decyzji Komisji Europejskiej (EU-US Data Privacy Framework).</p>
+
+    <h2>4. Twoje prawa</h2>
+    <p>Masz prawo do dostępu do danych, ich sprostowania, usunięcia, ograniczenia przetwarzania, przenoszenia, sprzeciwu wobec przetwarzania opartego na prawnie uzasadnionym interesie oraz cofnięcia zgody (bez wpływu na wcześniejsze przetwarzanie).</p>
+    <ul>
+      <li><strong>Pobranie danych</strong> — w profilu: „Pobierz moje dane” (plik JSON z kontem, utworami, komentarzami, ocenami i składankami).</li>
+      <li><strong>Usunięcie konta</strong> — w profilu: „Usuń konto”. Usuwa konto i wszystkie dodane treści; z kopii zapasowych dane znikają po upływie okresu ich przechowywania (na serwerze: 14 dni).</li>
+      <li><strong>Pozostałe prawa</strong> — napisz na <a [href]="'mailto:' + contact">{{ contact }}</a>.</li>
+    </ul>
+    <p>Przysługuje Ci też skarga do Prezesa Urzędu Ochrony Danych Osobowych (ul. Stawki 2, 00-193 Warszawa, uodo.gov.pl).</p>
+
+    <h2>5. Bezpieczeństwo</h2>
+    <p>Połączenie z Serwisem jest szyfrowane (HTTPS). Hasła przechowujemy wyłącznie w postaci zaszyfrowanej (bcrypt). Dostęp do serwera i bazy jest ograniczony, a kopie zapasowe przechowywane są w zabezpieczonych miejscach.</p>
+
+    <h2>6. Pliki cookies i pamięć przeglądarki</h2>
+    <p>Szczegóły w <a routerLink="/cookies">informacji o cookies</a>. Nie używamy cookies reklamowych ani analitycznych firm trzecich.</p>
+
+    <h2>7. Zmiany</h2>
+    <p>O istotnych zmianach Polityki prywatności poinformujemy w Serwisie. Aktualna wersja jest zawsze dostępna na tej stronie.</p>
+  </article>
+
+  <!-- ===================== COOKIES ===================== -->
+  <article *ngIf="doc === 'cookies'">
+    <p class="kicker">Dokument</p>
+    <h1 class="display">Cookies i pamięć przeglądarki</h1>
+    <p class="meta">Obowiązuje od: {{ updated }}</p>
+
+    <p>Oskarro.com <strong>nie używa cookies reklamowych ani śledzących</strong>. Zapisujemy w przeglądarce tylko to, co jest potrzebne do działania Serwisu — na takie zapisy nie jest wymagana zgoda (art. 399 ust. 3 Prawa komunikacji elektronicznej).</p>
+    <div class="legal-table">
+      <table>
+        <thead><tr><th>Zapis</th><th>Do czego</th><th>Jak długo</th></tr></thead>
+        <tbody>
+          <tr><td><code>auth-token</code>, <code>auth-user</code> (pamięć sesji)</td><td>utrzymanie zalogowania</td><td>do zamknięcia karty lub wylogowania</td></tr>
+          <tr><td><code>oskarro-visitor</code>, <code>oskarro-visit-day</code></td><td>losowy identyfikator do liczenia unikalnych odwiedzających (bez danych osobowych)</td><td>do wyczyszczenia przeglądarki</td></tr>
+          <tr><td>język, motyw, ustawienia odtwarzacza i radia</td><td>zapamiętanie Twoich ustawień</td><td>do wyczyszczenia przeglądarki</td></tr>
+          <tr><td>informacja o zamknięciu tego komunikatu</td><td>żeby nie pokazywać go ponownie</td><td>do wyczyszczenia przeglądarki</td></tr>
+          <tr><td><code>JSESSIONID</code> (tylko podczas logowania Google/Facebook)</td><td>bezpieczne dokończenie logowania</td><td>kilka sekund — usuwane po zalogowaniu</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <h2>Treści zewnętrzne</h2>
+    <p>Filmy YouTube osadzamy w trybie rozszerzonej prywatności — YouTube może zapisać swoje pliki dopiero po uruchomieniu filmu. Pliki muzyczne odtwarzane są z serwerów hostuje.net i soundfiles.eu, które mogą stosować własne mechanizmy.</p>
+    <h2>Jak to wyłączyć</h2>
+    <p>Zapisy możesz w każdej chwili usunąć w ustawieniach przeglądarki („Wyczyść dane witryny”). Serwis będzie działał, ale wylogujesz się i stracisz zapisane ustawienia.</p>
+  </article>
+</div>

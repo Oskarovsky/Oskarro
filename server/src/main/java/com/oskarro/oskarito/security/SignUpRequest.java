@@ -4,6 +4,7 @@ package com.oskarro.oskarito.security;
 import lombok.Getter;
 import lombok.Setter;
 
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -31,5 +32,8 @@ public class SignUpRequest {
     private String company;
 
     private String hp;
+
+    @AssertTrue(message = "Zaakceptuj regulamin i politykę prywatności")
+    private boolean acceptTerms;
 
 }

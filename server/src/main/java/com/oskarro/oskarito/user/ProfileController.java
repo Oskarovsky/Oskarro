@@ -1,5 +1,6 @@
 package com.oskarro.oskarito.user;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -10,9 +11,25 @@ import java.util.Map;
 public class ProfileController {
 
     private final ProfileService profileService;
+    private final AccountService accountService;
 
-    public ProfileController(ProfileService profileService) {
+    public ProfileController(ProfileService profileService, AccountService accountService) {
         this.profileService = profileService;
+        this.accountService = accountService;
+    }
+
+    /** RODO art. 20: everything we hold about the signed-in user, as JSON. */
+    @GetMapping("/me/export")
+    ResponseEntity<Map<String, Object>> export() {
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=\"oskarro-moje-dane.json\"")
+                .body(accountService.export());
+    }
+
+    /** RODO art. 17: deletes the account and everything it created. Body: {"confirm": password or username}. */
+    @DeleteMapping("/me")
+    void deleteAccount(@RequestBody Map<String, String> body) {
+        accountService.delete(body == null ? null : body.get("confirm"));
     }
 
     @GetMapping("/me")

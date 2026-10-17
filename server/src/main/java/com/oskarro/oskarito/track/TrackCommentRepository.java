@@ -33,4 +33,10 @@ public interface TrackCommentRepository extends JpaRepository<TrackComment, Inte
     List<TrackComment> findTop200ByOrderByCreatedAtDesc();
 
     List<TrackComment> findTop20ByAuthor_IdOrderByCreatedAtDesc(Integer authorId);
+
+    @Modifying
+    @Query("delete from TrackComment c where c.author.id = :userId")
+    void deleteByAuthorId(@Param("userId") Integer userId);
+
+    List<TrackComment> findByAuthor_IdOrderByCreatedAtDesc(Integer authorId);
 }

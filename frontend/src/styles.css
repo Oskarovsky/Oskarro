@@ -2717,3 +2717,236 @@ label {
 .set-event {
   margin-top: 4px;
 }
+
+/* ---------- Legal pages, report form, cookie notice ---------- */
+.legal {
+  max-width: 900px;
+}
+
+.legal-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.legal-nav a {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 0.88rem;
+}
+
+.legal-nav a.on {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
+.legal article h2 {
+  margin: 28px 0 10px;
+  font-size: 1.3rem;
+}
+
+.legal article ol,
+.legal article ul {
+  padding-left: 22px;
+  line-height: 1.6;
+}
+
+.legal article li {
+  margin: 4px 0;
+}
+
+.legal-table {
+  overflow-x: auto;
+  margin: 10px 0;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+
+.legal-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.legal-table th,
+.legal-table td {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+
+.legal-table th {
+  color: var(--muted);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.report-done {
+  padding: 22px;
+  border-radius: 18px;
+  border: 1px solid rgba(123, 216, 143, 0.4);
+  background: var(--surface);
+}
+
+.composer .hp {
+  position: absolute;
+  left: -9999px;
+}
+
+.cookie-notice {
+  position: fixed;
+  left: 50%;
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  z-index: 60;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: min(680px, calc(100% - 32px));
+  padding: 12px 14px 12px 18px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: var(--bg-2);
+  box-shadow: var(--shadow);
+}
+
+.cookie-notice p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.cookie-notice .btn-accent {
+  flex: none;
+}
+
+/* ---------- Google / Facebook sign-in ---------- */
+.sso {
+  display: grid;
+  gap: 8px;
+  margin: 8px 8px 4px;
+}
+
+.sso-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 11px 14px;
+  border-radius: 12px;
+  font-weight: 650;
+  border: 1px solid var(--line);
+}
+
+.sso-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.sso-btn.google {
+  background: #fff;
+  color: #1f1f1f;
+}
+
+.sso-btn.facebook {
+  background: #1877f2;
+  border-color: #1877f2;
+  color: #fff;
+}
+
+.sso-btn:hover {
+  filter: brightness(0.95);
+}
+
+.sso-note {
+  margin: 2px 0 0;
+  font-size: 0.8rem;
+}
+
+.sso-or {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 8px 0 2px;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.sso-or::before,
+.sso-or::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+
+.data-zone h2 {
+  margin: 0 0 6px;
+  font-size: 1.2rem;
+}
+
+.danger-zone {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 141, 122, 0.4);
+}
+
+.danger-zone summary {
+  cursor: pointer;
+  color: var(--danger);
+  font-weight: 650;
+}
+
+.danger-zone label {
+  display: grid;
+  gap: 6px;
+  margin: 8px 0;
+  max-width: 360px;
+}
+
+.btn-danger {
+  padding: 9px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--danger);
+  background: transparent;
+  color: var(--danger);
+  font: 650 0.92rem var(--sans);
+  cursor: pointer;
+}
+
+.btn-danger:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Ad rows collapse while ads are switched off (ADS_ENABLED in ads component). */
+.ad-row:not(:has(.ad-slot)) {
+  display: none;
+}
+
+.footer-legal {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin-top: 10px;
+  font-size: 0.85rem;
+}
+
+.footer-legal a {
+  color: var(--muted);
+}
+
+.track-actions .report-link {
+  align-self: center;
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 0.85rem;
+}

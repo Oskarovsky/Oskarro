@@ -1,7 +1,11 @@
 package com.oskarro.oskarito.admin;
 
 import com.oskarro.oskarito.admin.AdminViews.*;
+import com.oskarro.oskarito.report.ReportService;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
 
 /** Admin panel API. Access is limited to ROLE_ADMIN in WebSecurityConfig. */
 @RestController
@@ -9,9 +13,22 @@ import org.springframework.web.bind.annotation.*;
 public class AdminController {
 
     private final AdminService admin;
+    private final ReportService reports;
 
-    public AdminController(AdminService admin) {
+    public AdminController(AdminService admin, ReportService reports) {
         this.admin = admin;
+        this.reports = reports;
+    }
+
+    @GetMapping("/reports")
+    List<ReportService.ReportView> reports(@RequestParam(defaultValue = "OPEN") String status) {
+        return reports.list(status);
+    }
+
+    @PatchMapping("/reports/{id}")
+    ReportService.ReportView resolveReport(@PathVariable Long id, @RequestBody Map<String, String> body,
+                                           java.security.Principal principal) {
+        return reports.resolve(id, body.get("status"), body.get("resolution"), principal.getName());
     }
 
     @GetMapping("/overview")

@@ -42,4 +42,10 @@ public interface TrackLikeRepository extends JpaRepository<TrackLike, Integer> {
 
     @Query("select l.user.id, count(l) from TrackLike l group by l.user.id")
     List<Object[]> countGroupedByVoter();
+
+    @Modifying
+    @Query("delete from TrackLike l where l.user.id = :userId")
+    void deleteByVoterId(@Param("userId") Integer userId);
+
+    List<TrackLike> findByUser_Id(Integer userId);
 }

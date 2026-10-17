@@ -23,6 +23,8 @@ public record ProfileView(
         int downloadSlots,
         boolean canGrant,
         boolean autoplayNext,
-        List<ProfileTrack> shared
+        List<ProfileTrack> shared,
+        /** Only for the owner: "password", "google" or "facebook". */
+        String signInMethod
 ) {
 }

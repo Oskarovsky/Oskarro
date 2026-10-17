@@ -22,6 +22,7 @@ import {RefreshAfterHttpDirective} from '../services/ui-refresh';
         <a class="adm-kpi" routerLink="/admin/uzytkownicy"><span>Użytkownicy</span><strong>{{ o.users }}</strong><small>+{{ o.newUsers7d }} w 7 dni · +{{ o.newUsers30d }} w 30 dni</small></a>
         <a class="adm-kpi" [routerLink]="['/admin/uzytkownicy']" [queryParams]="{filtr: 'active'}"><span>Aktywni</span><strong>{{ o.active24h }}</strong><small>24 h · {{ o.active7d }} w 7 dni · {{ o.active30d }} w 30 dni</small></a>
         <a class="adm-kpi" [class.alert]="o.notActivated > 0" [routerLink]="['/admin/uzytkownicy']" [queryParams]="{filtr: 'unactivated'}"><span>Nieaktywowane konta</span><strong>{{ o.notActivated }}</strong><small>czekają na link z maila</small></a>
+        <a class="adm-kpi" [class.alert]="o.openReports > 0" routerLink="/admin/zgloszenia"><span>Zgłoszenia do rozpatrzenia</span><strong>{{ o.openReports }}</strong><small>naruszenia, spam, martwe pliki</small></a>
         <a class="adm-kpi" [routerLink]="['/admin/uzytkownicy']" [queryParams]="{filtr: 'banned'}"><span>Zablokowani</span><strong>{{ o.banned }}</strong><small>zespół: {{ o.staff }} os.</small></a>
         <a class="adm-kpi" routerLink="/admin/utwory"><span>Utwory</span><strong>{{ o.tracks }}</strong><small>+{{ o.tracks7d }} w 7 dni</small></a>
         <a class="adm-kpi" routerLink="/admin/komentarze"><span>Komentarze</span><strong>{{ o.comments }}</strong><small>+{{ o.comments7d }} w 7 dni</small></a>

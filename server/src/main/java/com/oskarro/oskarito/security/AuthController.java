@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 import jakarta.validation.Valid;
 
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +22,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
@@ -55,6 +58,9 @@ public class AuthController {
     @Autowired
     PresenceService presenceService;
 
+    @Autowired
+    ObjectProvider<ClientRegistrationRepository> ssoProviders;
+
     @PostMapping(value = "/signin")
     @CrossOrigin(origins = "*", allowedHeaders = "*")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
@@ -87,6 +93,31 @@ public class AuthController {
                 roles));
     }
 
+    /** Which external sign-ins are switched on, e.g. ["google","facebook"]; empty until keys are configured. */
+    @GetMapping("/providers")
+    public List<String> providers() {
+        ClientRegistrationRepository repository = ssoProviders.getIfAvailable();
+        List<String> ids = new java.util.ArrayList<>();
+        if (repository instanceof Iterable<?> registrations) {
+            for (Object registration : registrations) {
+                ids.add(((ClientRegistration) registration).getRegistrationId());
+            }
+        }
+        return ids;
+    }
+
+    /** Session details for a token obtained through Google/Facebook (same shape as /signin). */
+    @GetMapping("/session")
+    public ResponseEntity<?> session(@RequestHeader(value = "Authorization", required = false) String header) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (header == null || !header.startsWith("Bearer ") || authentication == null
+                || !(authentication.getPrincipal() instanceof UserPrincipal principal)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ResponseMessage("Zaloguj się ponownie"));
+        }
+        List<String> roles = principal.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList());
+        return ResponseEntity.ok(new JwtResponse(header.substring(7), principal.getId(), principal.getUsername(), principal.getEmail(), roles));
+    }
+
     @PostMapping("/signup")
     @CrossOrigin(origins = "*", allowedHeaders = "*")
     public ResponseEntity<?> registerUser(@Valid @RequestBody SignUpRequest signupRequest) {
@@ -112,6 +143,7 @@ public class AuthController {
                 .password(encoder.encode(signupRequest.getPassword()))
                 .activated(false)
                 .createdAt(java.time.Instant.now())
+                .termsAcceptedAt(java.time.Instant.now())
                 .build();
 
         // Role is never taken from the request: self-registered accounts are always plain users.

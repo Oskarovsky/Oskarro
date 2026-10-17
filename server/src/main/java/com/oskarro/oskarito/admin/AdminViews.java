@@ -16,7 +16,7 @@ public final class AdminViews {
                            long notActivated, long banned, long staff,
                            long tracks, long tracks7d, long comments, long comments7d,
                            long votes, long plays, long plays7d,
-                           List<UserRow> latestUsers, List<Event> latestEvents) {
+                           long openReports, List<UserRow> latestUsers, List<Event> latestEvents) {
     }
 
     public record UserRow(Integer id, String username, String email, String createdAt,

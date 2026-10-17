@@ -1,4 +1,7 @@
 import {NgModule} from '@angular/core';
+import {LegalComponent} from './legal/legal.component';
+import {ReportComponent} from './legal/report.component';
+import {SsoDoneComponent} from './auth/sso-done.component';
 import {SetListComponent} from './tracks/set-list/set-list.component';
 import {AdminLayoutComponent} from './admin/admin-layout.component';
 import {AdminDashboardComponent} from './admin/admin-dashboard.component';
@@ -6,6 +9,7 @@ import {AdminUsersComponent} from './admin/admin-users.component';
 import {AdminUserComponent} from './admin/admin-user.component';
 import {AdminTracksComponent} from './admin/admin-tracks.component';
 import {AdminCommentsComponent} from './admin/admin-comments.component';
+import {AdminReportsComponent} from './admin/admin-reports.component';
 import {AdminActivityComponent} from './admin/admin-activity.component';
 import {adminGuard} from './admin/admin.guard';
 import {RouterModule, Routes} from '@angular/router';
@@ -55,6 +59,11 @@ const routes: Routes = [
   { path: 'playlist/:id/edit', component: PlaylistEditComponent },
   { path: 'playlist/:id/details', component: PlaylistDetailsComponent },
   { path: 'login', component: LoginComponent },
+  { path: 'logowanie/sso', component: SsoDoneComponent },
+  { path: 'regulamin', component: LegalComponent, data: {doc: 'terms'} },
+  { path: 'polityka-prywatnosci', component: LegalComponent, data: {doc: 'privacy'} },
+  { path: 'cookies', component: LegalComponent, data: {doc: 'cookies'} },
+  { path: 'zglos-naruszenie', component: ReportComponent },
   { path: 'register', component: RegisterComponent },
   { path: 'przypomnij', component: PasswordResetComponent, data: {mode: 'forgot'} },
   { path: 'haslo', component: PasswordResetComponent, data: {mode: 'reset'} },
@@ -76,6 +85,7 @@ const routes: Routes = [
       { path: 'uzytkownicy/:id', component: AdminUserComponent },
       { path: 'utwory', component: AdminTracksComponent },
       { path: 'komentarze', component: AdminCommentsComponent },
+      { path: 'zgloszenia', component: AdminReportsComponent },
       { path: 'aktywnosc', component: AdminActivityComponent },
       { path: 'dziennik', component: AdminActivityComponent, data: {audit: true} }
     ]

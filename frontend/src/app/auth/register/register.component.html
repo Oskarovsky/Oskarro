@@ -3,6 +3,7 @@
     <h1 class="display" style="font-size: 2.4rem; margin: 12px 8px 0;">{{ 'Załóż konto' | t:'Create an account' }}</h1>
     <p class="lede" style="margin: 8px;">{{ 'Potem możesz dodawać utwory, słuchać ich i zostawiać komentarze.' | t:'Then you can add tracks, listen to them and leave comments.' }}</p>
 
+    <app-sso-buttons *ngIf="!isSuccessful" mode="register"></app-sso-buttons>
     <form *ngIf="!isSuccessful" (ngSubmit)="onSubmit()" #f="ngForm" novalidate>
       <div class="form-group">
         <label for="username">{{ 'Nazwa użytkownika' | t:'Username' }}</label>
@@ -47,7 +48,7 @@
       <div class="form-group">
         <label>
           <input type="checkbox" name="terms" [(ngModel)]="form.terms" required #terms="ngModel">
-          {{ 'Zgadzam się na warunki regulaminu' | t:'I agree to the terms' }}
+          {{ 'Akceptuję' | t:'I accept the' }} <a routerLink="/regulamin" target="_blank">{{ 'regulamin' | t:'terms' }}</a> {{ 'i' | t:'and' }} <a routerLink="/polityka-prywatnosci" target="_blank">{{ 'politykę prywatności' | t:'privacy policy' }}</a>
         </label>
         <div class="alert alert-danger" *ngIf="submitted && terms.invalid">
           {{ 'Zaznacz zgodę, żeby założyć konto.' | t:'Tick the agreement to create an account.' }}

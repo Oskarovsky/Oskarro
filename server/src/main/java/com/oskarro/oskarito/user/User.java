@@ -62,6 +62,13 @@ public class User {
     @Column(length = 200)
     private String banReason;
 
+    /** When the user accepted the terms and privacy policy (null for accounts from before 2026-10-17). */
+    private Instant termsAcceptedAt;
+
+    /** How the account was created: null/"local" = password, "google", "facebook". */
+    @Column(length = 20)
+    private String authProvider;
+
     @JsonIgnore
     public String getPassword() {
         return password;

@@ -1,6 +1,7 @@
 package com.oskarro.oskarito.admin;
 
 import com.oskarro.oskarito.admin.AdminViews.*;
+import com.oskarro.oskarito.report.ReportService;
 import com.oskarro.oskarito.track.Genre;
 import com.oskarro.oskarito.track.Track;
 import com.oskarro.oskarito.track.TrackComment;
@@ -48,10 +49,11 @@ public class AdminService {
     private final TrackViewRepository plays;
     private final TrackSocialService social;
     private final AdminActionRepository audit;
+    private final ReportService reports;
 
     public AdminService(UserRepository users, RoleRepository roles, TrackRepository tracks,
                         TrackCommentRepository comments, TrackLikeRepository votes, TrackViewRepository plays,
-                        TrackSocialService social, AdminActionRepository audit) {
+                        TrackSocialService social, AdminActionRepository audit, ReportService reports) {
         this.users = users;
         this.roles = roles;
         this.tracks = tracks;
@@ -60,6 +62,7 @@ public class AdminService {
         this.plays = plays;
         this.social = social;
         this.audit = audit;
+        this.reports = reports;
     }
 
     // ---------- dashboard ----------
@@ -93,6 +96,7 @@ public class AdminService {
                 votes.count(),
                 plays.count(),
                 plays.playedSince(now.minus(Duration.ofDays(7))).size(),
+                reports.openCount(),
                 latest,
                 events("all").stream().limit(12).toList());
     }

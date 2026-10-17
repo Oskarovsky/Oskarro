@@ -65,6 +65,7 @@
           </span>
         </span>
         <a class="btn-ghost" *ngIf="!isLoggedIn" routerLink="/login">{{ 'Zapisz po zalogowaniu' | t:'Save after you sign in' }}</a>
+        <a class="report-link" routerLink="/zglos-naruszenie" [queryParams]="{utwor: track.id}">{{ 'Zgłoś' | t:'Report' }}</a>
       </div>
       <p class="meta track-note" *ngIf="saved">{{ lang.en ? 'Saved in “' + saved + '”.' : 'Zapisane w „' + saved + '”.' }}</p>
       <p class="meta track-note" *ngIf="shareUrl">{{ lang.en ? 'Copy the link: ' + shareUrl : 'Skopiuj link: ' + shareUrl }}</p>

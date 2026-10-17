@@ -63,6 +63,7 @@ export class RegisterComponent implements OnInit {
       username,
       email,
       password: this.form.password,
+      terms: this.form.terms,
       hp: this.form.hp || ''
     }).subscribe({
       next: (body) => {

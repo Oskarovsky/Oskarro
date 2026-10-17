@@ -21,6 +21,13 @@ export class ProfileComponent implements OnInit {
 
   profile: any;
   self = false;
+  deleteConfirm = '';
+
+  get externalAccount() {
+    return !!this.profile?.signInMethod && this.profile.signInMethod !== 'password';
+  }
+  deleting = false;
+  deleteError = '';
   bio = '';
   firstName = '';
   lastName = '';
@@ -151,6 +158,35 @@ export class ProfileComponent implements OnInit {
         this.message = 'Hasło zmienione.';
       },
       error: () => this.message = 'Nie udało się zmienić hasła.'
+    });
+  }
+
+  exportData() {
+    this.http.get(environment.serverUrl + '/profile/me/export').subscribe(data => {
+      const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'oskarro-moje-dane.json';
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+    });
+  }
+
+  deleteAccount() {
+    if (!confirm(this.lang.t('Na pewno usunąć konto? Tego nie da się cofnąć.', 'Really delete the account? This cannot be undone.'))) {
+      return;
+    }
+    this.deleting = true;
+    this.deleteError = '';
+    this.http.request('DELETE', environment.serverUrl + '/profile/me', {body: {confirm: this.deleteConfirm}}).subscribe({
+      next: () => {
+        this.token.signOut();
+        window.location.assign('/?konto=usuniete');
+      },
+      error: err => {
+        this.deleting = false;
+        this.deleteError = err?.error?.message || this.lang.t('Nie udało się usunąć konta.', 'Could not delete the account.');
+      }
     });
   }
 

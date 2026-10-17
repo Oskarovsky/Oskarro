@@ -19,6 +19,7 @@ import {TokenStorageService} from '../services/auth/token-storage.service';
           <a routerLink="/admin/uzytkownicy" routerLinkActive="on"><span>◉</span>Użytkownicy</a>
           <a routerLink="/admin/utwory" routerLinkActive="on"><span>♫</span>Utwory</a>
           <a routerLink="/admin/komentarze" routerLinkActive="on"><span>✎</span>Komentarze</a>
+          <a routerLink="/admin/zgloszenia" routerLinkActive="on"><span>⚑</span>Zgłoszenia</a>
           <a routerLink="/admin/aktywnosc" routerLinkActive="on"><span>↯</span>Aktywność</a>
           <a routerLink="/admin/dziennik" routerLinkActive="on"><span>☰</span>Dziennik zmian</a>
         </nav>

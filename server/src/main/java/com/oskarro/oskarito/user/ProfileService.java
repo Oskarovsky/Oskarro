@@ -307,7 +307,8 @@ public class ProfileService {
                 activityCount * 10,
                 isAdmin(),
                 !Boolean.FALSE.equals(user.getAutoplayNext()),
-                shared);
+                shared,
+                includeEmail ? (user.getAuthProvider() == null ? "password" : user.getAuthProvider()) : null);
     }
 
     private Map<Integer, int[]> voteTotals(List<Integer> ids) {
