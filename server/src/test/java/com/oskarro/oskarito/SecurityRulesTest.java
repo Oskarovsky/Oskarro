@@ -358,6 +358,13 @@ class SecurityRulesTest {
         assertThat(mvc.perform(get("/api/tracks/genre/pop")).andReturn().getResponse().getContentAsString()).contains("PopPop123456");
     }
 
+    @Test
+    void prometheusMetricsAreExposedForTheLocalScraper() throws Exception {
+        String body = mvc.perform(get("/actuator/prometheus")).andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        assertThat(body).contains("jvm_memory_used_bytes").contains("application=\"oskarro\"");
+    }
+
     private User user(RoleName role) {
         String name = "user" + SEQ.incrementAndGet();
         return users.save(User.builder()
