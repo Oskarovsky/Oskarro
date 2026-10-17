@@ -26,6 +26,14 @@ export class TrackService {
       TRACK_API + '/' + id + '/file');
   }
 
+  getHome() {
+    return this.http.get<{latest: any[], hot: any[], genreCounts: Record<string, number>, setCounts: Record<string, number>}>(TRACK_API + '/home');
+  }
+
+  searchTracks(q: string) {
+    return this.http.get<any[]>(TRACK_API + '/search', {params: {q, limit: 200}});
+  }
+
   getSets(category: string, sort = 'new') {
     return this.http.get<any[]>(TRACK_API + '/sets', {params: {category, sort}});
   }

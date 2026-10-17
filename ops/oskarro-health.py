@@ -79,7 +79,7 @@ def run_checks():
     api_code, api_ms = http("/api/stats")
     results.append(check("API (/api/stats)", api_code == 200 and api_ms < 5000, f"HTTP {api_code}, {api_ms} ms"))
     for unit, label in [("oskarro", "Backend (oskarro)"), ("nginx", "Nginx"),
-                        ("postgresql@13-main", "PostgreSQL"), ("fail2ban", "fail2ban"),
+                        ("postgresql@15-main", "PostgreSQL"), ("fail2ban", "fail2ban"),
                         ("prometheus", "Prometheus"), ("grafana-server", "Grafana")]:
         active = unit_active(unit)
         results.append(check(label, active, "działa" if active else "NIE DZIAŁA"))

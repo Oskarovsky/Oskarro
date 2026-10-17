@@ -27,6 +27,7 @@ public class TrackController {
     private final SoundfilesAudioResolver soundfilesAudioResolver;
     private final WaveformService waveformService;
     private final TrackFileService trackFileService;
+    private final TrackQueryService trackQueryService;
 
     public TrackController(TrackService trackService,
                            com.oskarro.oskarito.track.TrackRepository trackRepository,
@@ -34,7 +35,8 @@ public class TrackController {
                            HostujeAudioResolver hostujeAudioResolver,
                            SoundfilesAudioResolver soundfilesAudioResolver,
                            WaveformService waveformService,
-                           TrackFileService trackFileService) {
+                           TrackFileService trackFileService,
+                           TrackQueryService trackQueryService) {
         this.trackService = trackService;
         this.trackRepository = trackRepository;
         this.trackSocialService = trackSocialService;
@@ -42,6 +44,7 @@ public class TrackController {
         this.soundfilesAudioResolver = soundfilesAudioResolver;
         this.waveformService = waveformService;
         this.trackFileService = trackFileService;
+        this.trackQueryService = trackQueryService;
     }
 
     @GetMapping(value = "/{id}/file")
@@ -109,6 +112,17 @@ public class TrackController {
     List<Track> findByGenre(@PathVariable String genre,
                             @RequestParam(defaultValue = "new") String sort) {
         return trackSocialService.listByGenre(genre, sort);
+    }
+
+    /** Everything the home page needs in one small response (instead of the whole catalogue). */
+    @GetMapping(value = "/home")
+    TrackQueryService.HomeFeed home() {
+        return trackQueryService.home();
+    }
+
+    @GetMapping(value = "/search")
+    List<Track> search(@RequestParam(defaultValue = "") String q, @RequestParam(defaultValue = "100") int limit) {
+        return trackQueryService.search(q, limit);
     }
 
     @GetMapping(value = "/sets")

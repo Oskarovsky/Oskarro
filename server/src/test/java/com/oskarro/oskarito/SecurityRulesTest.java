@@ -439,6 +439,37 @@ class SecurityRulesTest {
                 .andReturn().getResponse().getContentAsString()).isEqualTo("[]");
     }
 
+    @Test
+    void homeFeedSearchAndSitemapAvoidTheFullCatalogue() throws Exception {
+        User author = user(RoleName.ROLE_USER);
+        Track track = track(author);
+        String token = bearer(author);
+        String set = json.writeValueAsString(Map.of("artist", "DJ Szukany", "title", "Noc w Klubie", "genre", "club",
+                "url", "https://soundfiles.eu/Sz0kany12345", "kind", "set", "setCategory", "kluby",
+                "tracklist", "Unikalny Wykonawca 100% Remix"));
+        mvc.perform(post("/api/tracks/share").header("Authorization", token)
+                .contentType(MediaType.APPLICATION_JSON).content(set)).andExpect(status().isOk());
+
+        var home = json.readTree(mvc.perform(get("/api/tracks/home")).andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString());
+        assertThat(home.get("latest").size()).isBetween(1, 6);
+        assertThat(home.get("hot").size()).isBetween(1, 3);
+        assertThat(home.get("genreCounts").get("CLUB").asInt()).isGreaterThanOrEqualTo(1);
+        assertThat(home.get("setCounts").get("CLUBS").asInt()).isGreaterThanOrEqualTo(1);
+
+        assertThat(mvc.perform(get("/api/tracks/search").param("q", "unikalny 100%"))
+                .andReturn().getResponse().getContentAsString()).contains("Noc w Klubie");
+        assertThat(mvc.perform(get("/api/tracks/search").param("q", "unikalny 200%"))
+                .andReturn().getResponse().getContentAsString()).isEqualTo("[]");
+        assertThat(mvc.perform(get("/api/tracks/search").param("q", author.getUsername()))
+                .andReturn().getResponse().getContentAsString()).contains("\"id\":" + track.getId());
+
+        String sitemap = mvc.perform(get("/api/seo/sitemap.xml")).andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        assertThat(sitemap).contains("https://oskarro.com/track/" + track.getId())
+                .contains("https://oskarro.com/tracklist/hands-up").contains("https://oskarro.com/sety/kluby");
+    }
+
     private User user(RoleName role) {
         String name = "user" + SEQ.incrementAndGet();
         return users.save(User.builder()
