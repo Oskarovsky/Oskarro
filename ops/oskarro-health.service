@@ -1,0 +1,7 @@
+[Unit]
+Description=oskarro.com health check (writes /var/www/status)
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 /usr/local/bin/oskarro-health
