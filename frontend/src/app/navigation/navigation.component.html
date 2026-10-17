@@ -38,6 +38,7 @@
     </details>
     <button *ngIf="isLoggedIn" class="btn-ghost" type="button" (click)="logout()">{{ 'Wyloguj się' | t:'Log out' }}</button>
     <a *ngIf="!isLoggedIn" routerLink="/login" (click)="menuOpen = false">{{ 'Zaloguj się' | t:'Sign in' }}</a>
+    <a *ngIf="!isLoggedIn" class="btn-accent nav-join" routerLink="/register" (click)="menuOpen = false"><span class="long">{{ 'Załóż konto' | t:'Create account' }}</span><span class="short">{{ 'Dołącz' | t:'Join' }}</span></a>
   </div>
   <button class="nav-toggle" type="button" (click)="menuOpen = !menuOpen">Menu</button>
 </header>

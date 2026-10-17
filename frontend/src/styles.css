@@ -2549,3 +2549,23 @@ label {
     grid-row: auto;
   }
 }
+
+/* Guest call to action in the top bar. */
+.account .nav-join {
+  padding: 8px 14px;
+  white-space: nowrap;
+}
+
+.nav-join .short {
+  display: none;
+}
+
+@media (max-width: 560px) {
+  .nav-join .long {
+    display: none;
+  }
+
+  .nav-join .short {
+    display: inline;
+  }
+}
