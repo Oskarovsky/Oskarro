@@ -13,7 +13,9 @@ const WASH: Record<string, string> = {
   BIG_ROOM: '#ff8a3d',
   TRANCE: '#7af0ff',
   ELECTRO: '#ff4ad2',
-  DISCO_POLO: '#ffe14a'
+  DISCO_POLO: '#ffe14a',
+  HANDS_UP: '#4affd2',
+  POP: '#ff9ee6'
 };
 
 let nextCover = 0;

@@ -111,6 +111,13 @@ public class TrackController {
         return trackSocialService.listByGenre(genre, sort);
     }
 
+    @GetMapping(value = "/sets")
+    @CrossOrigin(origins = "*", allowedHeaders = "*")
+    List<Track> sets(@RequestParam(defaultValue = "") String category,
+                     @RequestParam(defaultValue = "new") String sort) {
+        return trackSocialService.listSets(category, sort);
+    }
+
     @PostMapping(value = "/share")
     @CrossOrigin(origins = "*", allowedHeaders = "*")
     Track share(@RequestBody Track track) {

@@ -17,7 +17,12 @@ public interface TrackRepository extends CrudRepository<Track, Integer> {
     Track save(Track track);
 
 
-    List<Track> findTracksByGenre(String genre);
+    /** Single tracks of a genre; sets have their own section. */
+    @Query("select t from Track t where t.genre = :genre and (t.kind is null or t.kind <> 'set')")
+    List<Track> findTracksByGenre(@Param("genre") String genre);
+
+    @Query("select t from Track t where t.kind = 'set'")
+    List<Track> findSets();
 
 
 

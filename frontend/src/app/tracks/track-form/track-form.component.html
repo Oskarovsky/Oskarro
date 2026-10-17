@@ -8,28 +8,40 @@
   <p class="kicker">{{ 'Edycja' | t:'Edit' }}</p>
   <h1 class="display">{{ 'Ten utwór jest już zamknięty' | t:'This track is already closed' }}</h1>
   <p class="lede">{{ 'Poprawki może wprowadzić tylko autor i tylko przez 24 godziny od dodania.' | t:'Only the author can edit it, and only for 24 hours after it was added.' }}</p>
-  <p><a class="btn-ghost" [routerLink]="['/tracklist', backGenre]">{{ 'Wróć do listy' | t:'Back to the list' }}</a></p>
+  <p><a class="btn-ghost" [routerLink]="backLink">{{ 'Wróć do listy' | t:'Back to the list' }}</a></p>
 </div>
 
 <div class="page" *ngIf="loggedIn && !closed">
-  <a class="back" [routerLink]="['/tracklist', backGenre]">← {{ backGenre }}</a>
-  <p class="kicker">{{ editing ? ('Poprawka' | t:'Edit') : ('Nowy utwór' | t:'New track') }}</p>
-  <h1 class="display">{{ editing ? ('Popraw utwór' | t:'Edit track') : ('Dodaj utwór' | t:'Add a track') }}</h1>
+  <a class="back" [routerLink]="backLink">← {{ isSet ? ('Sety/Mixy' | t:'Sets/Mixes') : backGenre }}</a>
+  <p class="kicker">{{ editing ? ('Poprawka' | t:'Edit') : (isSet ? ('Nowy set' | t:'New set') : ('Nowy utwór' | t:'New track')) }}</p>
+  <h1 class="display">{{ editing ? (isSet ? ('Popraw set' | t:'Edit set') : ('Popraw utwór' | t:'Edit track')) : (isSet ? ('Dodaj set lub mix' | t:'Add a set or mix') : ('Dodaj utwór' | t:'Add a track')) }}</h1>
   <p class="lede" *ngIf="!editing">{{ 'Po zapisaniu autor może jeszcze poprawić dane przez 24 godziny. Potem utwór zostaje w tej postaci.' | t:'After saving, the author can still edit the details for 24 hours. Then the track stays as it is.' }}</p>
   <p class="lede" *ngIf="editing && editableUntil">{{ 'Możesz poprawiać do' | t:'You can edit until' }} {{ editableUntil | date:'dd.MM.yyyy HH:mm' }}.</p>
 
   <form class="composer" (submit)="$event.preventDefault(); save()">
+    <div class="kind-switch" role="radiogroup" [attr.aria-label]="'Co dodajesz' | t:'What are you adding'">
+      <button type="button" class="chip" [class.on]="!isSet" (click)="draft.kind = 'track'" role="radio" [attr.aria-checked]="!isSet">{{ 'Utwór' | t:'Track' }}</button>
+      <button type="button" class="chip" [class.on]="isSet" (click)="draft.kind = 'set'" role="radio" [attr.aria-checked]="isSet">{{ 'Set / Mix' | t:'Set / Mix' }}</button>
+    </div>
     <div class="form-grid">
+      <label *ngIf="isSet">{{ 'Kategoria seta' | t:'Set category' }}
+        <select [(ngModel)]="draft.setCategory" name="setCategory">
+          <option *ngFor="let c of setCategories" [value]="c.id">{{ c.label }}</option>
+        </select>
+      </label>
+      <label *ngIf="isSet">{{ eventLabel | t }}
+        <input [(ngModel)]="draft.eventName" name="eventName" type="text" maxlength="120">
+      </label>
       <label>{{ 'Tytuł' | t:'Title' }}
         <input [(ngModel)]="draft.title" name="title" type="text" maxlength="80" required>
       </label>
-      <label>{{ 'Wykonawca' | t:'Artist' }}
+      <label>{{ isSet ? ('DJ / wykonawca' | t:'DJ / artist') : ('Wykonawca' | t:'Artist') }}
         <input [(ngModel)]="draft.artist" name="artist" type="text" maxlength="80" required>
       </label>
-      <label>{{ 'Remixer lub wersja' | t:'Remixer or version' }}
+      <label *ngIf="!isSet">{{ 'Remixer lub wersja' | t:'Remixer or version' }}
         <input [(ngModel)]="draft.version" name="version" type="text" maxlength="80" [placeholder]="'np. Extended Mix, Remix by…' | t:'e.g. Extended Mix, Remix by…'">
       </label>
-      <label>{{ 'Gatunek' | t:'Genre' }}
+      <label>{{ isSet ? ('Główny gatunek' | t:'Main genre') : ('Gatunek' | t:'Genre') }}
         <select [(ngModel)]="draft.genre" name="genre">
           <option *ngFor="let genre of genres" [value]="genre.id">{{ genre.label }}</option>
         </select>
@@ -46,6 +58,9 @@
                required>
       </label>
       <p class="meta wide">{{ 'hostuje.net ma 32 znaki po' | t:'hostuje.net has 32 characters after' }} <span class="meta">id=</span>. {{ 'soundfiles.eu ma 12 znaków w adresie pliku.' | t:'soundfiles.eu has 12 characters in the file address.' }}</p>
+      <label class="wide" *ngIf="isSet">{{ 'Tracklista (opcjonalnie, jeden utwór w linii)' | t:'Tracklist (optional, one track per line)' }}
+        <textarea [(ngModel)]="draft.tracklist" name="tracklist" rows="8" maxlength="5000" [placeholder]="'00:00 Artist – Title&#10;04:30 Artist – Title' | t"></textarea>
+      </label>
       <label class="wide">{{ 'Zdjęcie utworu' | t:'Track photo' }}
         <input type="file" accept="image/jpeg,image/png,image/gif,image/webp" (change)="selectCover($event)">
       </label>
@@ -54,7 +69,7 @@
     <app-cover class="cover" [hasCover]="!!coverSrc()" [src]="coverSrc()" [genre]="draft.genre"></app-cover>
     <p class="alert" *ngIf="notice">{{ notice | t }}</p>
     <button class="btn-accent" type="submit" style="margin-top: 16px;" [disabled]="saving">
-      {{ editing ? ('Zapisz poprawkę' | t:'Save edit') : ('Dodaj utwór' | t:'Add a track') }}
+      {{ editing ? ('Zapisz poprawkę' | t:'Save edit') : (isSet ? ('Dodaj set' | t:'Add the set') : ('Dodaj utwór' | t:'Add a track')) }}
     </button>
   </form>
 </div>

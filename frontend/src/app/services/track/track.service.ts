@@ -26,6 +26,10 @@ export class TrackService {
       TRACK_API + '/' + id + '/file');
   }
 
+  getSets(category: string, sort = 'new') {
+    return this.http.get<any[]>(TRACK_API + '/sets', {params: {category, sort}});
+  }
+
   getTracksByGenre(genre: string, sort = 'new') {
     return this.http.get(TRACK_API + '/genre/' + genre, {params: {sort}});
   }

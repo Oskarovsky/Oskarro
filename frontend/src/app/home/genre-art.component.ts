@@ -10,21 +10,21 @@ import {Component, Input} from '@angular/core';
   template: `
     <svg viewBox="0 0 320 180" preserveAspectRatio="xMidYMid slice" aria-hidden="true" [ngSwitch]="id">
       <defs>
-        <linearGradient [attr.id]="'g-' + id" x1="0" y1="0" x2="1" y2="1">
+        <linearGradient [attr.id]="'g-' + id + key" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0" [attr.stop-color]="palette[0]"/>
           <stop offset="1" [attr.stop-color]="palette[1]"/>
         </linearGradient>
-        <radialGradient [attr.id]="'r-' + id" cx="0.5" cy="0.5" r="0.5">
+        <radialGradient [attr.id]="'r-' + id + key" cx="0.5" cy="0.5" r="0.5">
           <stop offset="0" stop-color="#fff" stop-opacity="0.85"/>
           <stop offset="1" stop-color="#fff" stop-opacity="0"/>
         </radialGradient>
       </defs>
-      <rect width="320" height="180" [attr.fill]="'url(#g-' + id + ')'"/>
+      <rect width="320" height="180" [attr.fill]="'url(#g-' + id + key + ')'"/>
 
       <!-- Club: laser fan from the booth -->
       <g *ngSwitchCase="'CLUB'" stroke="#fff" stroke-linecap="round">
         <line *ngFor="let a of fan" x1="160" y1="190" [attr.x2]="160 + a * 26" y2="-10" stroke-width="1.6" [attr.stroke-opacity]="0.25 + (a % 2 ? 0.35 : 0.1)"/>
-        <circle cx="160" cy="184" r="34" [attr.fill]="'url(#r-' + id + ')'" stroke="none" opacity="0.7"/>
+        <circle cx="160" cy="184" r="34" [attr.fill]="'url(#r-' + id + key + ')'" stroke="none" opacity="0.7"/>
       </g>
 
       <!-- Dance: speaker pulse -->
@@ -68,7 +68,7 @@ import {Component, Input} from '@angular/core';
         <line *ngFor="let x of floor" x1="160" y1="70" [attr.x2]="x" y2="190" stroke-opacity="0.35"/>
         <line *ngFor="let y of floorRows" x1="0" [attr.y1]="y" x2="320" [attr.y2]="y" stroke-opacity="0.3"/>
         <rect x="0" y="0" width="320" height="70" fill="#000" fill-opacity="0.35" stroke="none"/>
-        <circle cx="160" cy="58" r="40" [attr.fill]="'url(#r-' + id + ')'" stroke="none"/>
+        <circle cx="160" cy="58" r="40" [attr.fill]="'url(#r-' + id + key + ')'" stroke="none"/>
       </g>
 
       <!-- Big room: stage light cones over the crowd -->
@@ -104,10 +104,26 @@ import {Component, Input} from '@angular/core';
           <ellipse cx="210" cy="86" rx="36" ry="52" fill="none"/>
           <line x1="158" y1="86" x2="262" y2="86"/>
         </g>
-        <circle cx="192" cy="66" r="10" [attr.fill]="'url(#r-' + id + ')'"/>
+        <circle cx="192" cy="66" r="10" [attr.fill]="'url(#r-' + id + key + ')'"/>
         <path *ngFor="let s of sparkles" [attr.d]="'M' + s[0] + ' ' + (s[1] - 8) + ' L' + (s[0] + 2) + ' ' + (s[1] - 2) + ' L' + (s[0] + 8) + ' ' + s[1] + ' L' + (s[0] + 2) + ' ' + (s[1] + 2) + ' L' + s[0] + ' ' + (s[1] + 8) + ' L' + (s[0] - 2) + ' ' + (s[1] + 2) + ' L' + (s[0] - 8) + ' ' + s[1] + ' L' + (s[0] - 2) + ' ' + (s[1] - 2) + ' Z'" fill="#fff"/>
       </g>
 
+
+      <!-- Hands up: raised hands and a melodic lead line -->
+      <g *ngSwitchCase="'HANDS_UP'">
+        <path d="M-10 70 Q 40 20, 80 60 T 170 50 T 260 40 T 340 30" fill="none" stroke="#fff" stroke-width="3" stroke-opacity="0.75" stroke-linecap="round"/>
+        <g fill="#0b2a2a" fill-opacity="0.85">
+          <path *ngFor="let x of hands; let i = index" [attr.d]="'M' + x + ' 180 L' + x + ' ' + (118 - (i % 3) * 12) + ' q 0 -10 6 -10 q 6 0 6 10 L' + (x + 12) + ' 180 Z'"/>
+          <ellipse *ngFor="let x of hands; let i = index" [attr.cx]="x + 6" [attr.cy]="(108 - (i % 3) * 12)" rx="9" ry="11"/>
+        </g>
+        <circle cx="250" cy="44" r="26" [attr.fill]="'url(#r-' + id + key + ')'"/>
+      </g>
+
+      <!-- Pop: bubbles and a star burst -->
+      <g *ngSwitchCase="'POP'">
+        <circle *ngFor="let b of bubbles" [attr.cx]="b[0]" [attr.cy]="b[1]" [attr.r]="b[2]" fill="#fff" [attr.fill-opacity]="b[3]"/>
+        <path d="M230 30 L242 72 L286 72 L250 98 L264 140 L230 114 L196 140 L210 98 L174 72 L218 72 Z" fill="#fff" fill-opacity="0.9"/>
+      </g>
     </svg>
   `,
   styles: [`
@@ -117,6 +133,10 @@ import {Component, Input} from '@angular/core';
 })
 export class GenreArtComponent {
   @Input() id = 'CLUB';
+  /** Optional palette override (e.g. set categories reuse a motif in their own colours). */
+  @Input() colors: [string, string] | null = null;
+  /** Unique gradient ids when the same motif appears twice on one page. */
+  @Input() key = '';
 
   readonly fan = [-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5];
   readonly rings = [24, 40, 58, 78, 100, 124, 150];
@@ -126,6 +146,8 @@ export class GenreArtComponent {
   readonly floorRows = [86, 106, 132, 164];
   readonly cones = [60, 160, 260];
   readonly waves = [0, 14, 28, 42, 56, 70];
+  readonly hands = [20, 52, 84, 116, 148, 180, 212, 244, 276];
+  readonly bubbles = [[40, 50, 22, 0.25], [90, 120, 34, 0.18], [150, 40, 14, 0.35], [300, 150, 30, 0.2], [120, 160, 10, 0.4], [60, 150, 8, 0.5]];
   readonly sparkles = [[60, 40], [110, 120], [280, 150], [40, 140], [290, 36]];
 
   private static readonly PALETTES: Record<string, [string, string]> = {
@@ -139,10 +161,15 @@ export class GenreArtComponent {
     BIG_ROOM: ['#2a1b5c', '#f2a03d'],
     TRANCE: ['#0bb4d8', '#6a3cff'],
     ELECTRO: ['#0d7a4f', '#18c6b3'],
-    DISCO_POLO: ['#c8102e', '#f5b700']
+    DISCO_POLO: ['#c8102e', '#f5b700'],
+    HANDS_UP: ['#00c6a7', '#1e3c72'],
+    POP: ['#ff6ec4', '#7873f5']
   };
 
   get palette(): [string, string] {
+    if (this.colors) {
+      return this.colors;
+    }
     return GenreArtComponent.PALETTES[this.id] || GenreArtComponent.PALETTES['CLUB'];
   }
 }

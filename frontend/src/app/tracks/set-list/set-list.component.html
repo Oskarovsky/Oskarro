@@ -1,0 +1,65 @@
+<div class="page sets-page">
+  <header class="genre-head">
+    <div class="genre-intro">
+      <p class="kicker">{{ 'Sety / Mixy' | t:'Sets / Mixes' }}</p>
+      <h1 class="display">{{ title }}</h1>
+      <p class="lede">{{ about }}</p>
+    </div>
+    <aside class="genre-summary" [attr.aria-label]="'Podsumowanie' | t:'Summary'">
+      <div class="figures">
+        <div><strong>{{ counts['ALL'] || 0 }}</strong><span>{{ 'setów łącznie' | t:'sets in total' }}</span></div>
+        <div><strong>{{ category ? (counts[category.id] || 0) : categories.length }}</strong><span>{{ category ? ('w tej kategorii' | t:'in this category') : ('kategorie' | t:'categories') }}</span></div>
+      </div>
+      <a class="btn-accent add-track" [routerLink]="addLink" [queryParams]="addParams">{{ isLoggedIn ? ('Dodaj swój set' | t:'Share your set') : ('Załóż konto i dodaj set' | t:'Join and share a set') }}</a>
+    </aside>
+  </header>
+
+  <nav class="set-cats" [attr.aria-label]="'Kategorie setów' | t:'Set categories'">
+    <a class="set-cat" routerLink="/sety" [class.on]="!category">
+      <span class="set-cat-all" aria-hidden="true">≡</span>
+      <span class="set-cat-text"><strong>{{ 'Wszystkie' | t:'All' }}</strong><em>{{ counts['ALL'] || 0 }}</em></span>
+    </a>
+    <a class="set-cat genre-tile" *ngFor="let c of categories" [routerLink]="['/sety', c.slug]" [class.on]="category?.id === c.id">
+      <app-genre-art [id]="c.art" [colors]="c.palette" [key]="'-set-' + c.slug"></app-genre-art>
+      <span class="set-cat-text"><strong>{{ label(c) }}</strong><em>{{ counts[c.id] || 0 }}</em></span>
+    </a>
+  </nav>
+
+  <div class="sort-bar" role="group" [attr.aria-label]="'Sortowanie' | t:'Sorting'">
+    <span class="meta sort-label">{{ 'Sortuj' | t:'Sort' }}</span>
+    <button class="chip" type="button" [class.on]="sort === 'new'" (click)="setSort('new')">{{ 'Najnowsze' | t:'Newest' }}</button>
+    <button class="chip" type="button" [class.on]="sort === 'score'" (click)="setSort('score')">{{ 'Najlepsza ocena' | t:'Best score' }}</button>
+    <button class="chip" type="button" [class.on]="sort === 'views-month'" (click)="setSort('views-month')">{{ 'Odsłuchy w miesiącu' | t:'Plays this month' }}</button>
+    <button class="chip" type="button" [class.on]="sort === 'views-all'" (click)="setSort('views-all')">{{ 'Odsłuchy od zawsze' | t:'All-time plays' }}</button>
+    <span class="meta sort-count" *ngIf="sets.length">{{ 'Strona' | t:'Page' }} {{ currentPage }} / {{ pageCount }}</span>
+  </div>
+
+  <div class="sets-empty" *ngIf="loaded && !sets.length">
+    <h2>{{ 'Jeszcze nikt nie dodał tu seta.' | t:'Nobody has shared a set here yet.' }}</h2>
+    <p class="lede">{{ 'Masz nagranie z klubu, festiwalu albo własny miks? Wrzuć plik na hostuje.net lub soundfiles.eu i dodaj link — będzie pierwszy na liście.' | t:'Got a recording from a club, a festival or your own mix? Upload it to hostuje.net or soundfiles.eu and add the link — it will be first on the list.' }}</p>
+    <a class="btn-accent" [routerLink]="addLink" [queryParams]="addParams">{{ 'Dodaj pierwszy set' | t:'Share the first set' }}</a>
+  </div>
+
+  <div class="latest-grid" *ngIf="sets.length">
+    <a class="track-row" *ngFor="let set of pageSets" [routerLink]="['/track', set.id]">
+      <span class="thumb-col">
+        <span class="thumb-slot">
+          <app-cover [hasCover]="set.hasCover" [src]="coverSrc(set)" [genre]="set.genre"></app-cover>
+        </span>
+        <app-score [value]="set.score"></app-score>
+      </span>
+      <span class="track-lines">
+        <h2>{{ set.title }}</h2>
+        <span class="line artist">{{ set.artist }}</span>
+        <span class="line meta"><span class="pill set-pill">{{ categoryOf(set) }}</span><span *ngIf="set.eventName"> {{ set.eventName }}</span> · {{ genreName(set.genre) }}</span>
+        <span class="line meta"><app-track-facts [track]="set" part="stats"></app-track-facts></span>
+        <span class="line meta added-by">
+          <span *ngIf="set.createdAt">{{ set.createdAt | date:'dd.MM.yyyy HH:mm':'Europe/Warsaw' }}</span>
+          <ng-container *ngIf="set.sharedBy"><span class="dot" *ngIf="set.createdAt">·</span> {{ 'dodał' | t:'added by' }} <app-person [name]="set.sharedBy" [rank]="set.authorRank" [to]="['/profile', set.sharedBy]"></app-person></ng-container>
+        </span>
+      </span>
+    </a>
+  </div>
+
+  <app-pager *ngIf="sets.length" [page]="currentPage" [count]="pageCount" label="Strony setów" (pageChange)="showPage($event)"></app-pager>
+</div>

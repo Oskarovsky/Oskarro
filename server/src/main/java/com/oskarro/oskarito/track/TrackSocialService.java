@@ -79,7 +79,22 @@ public class TrackSocialService {
 
     public List<Track> listByGenre(String genre, String sort) {
         String normalized = normalizeGenre(genre);
-        List<Track> tracks = new ArrayList<>(trackRepository.findTracksByGenre(normalized));
+        return sorted(new ArrayList<>(trackRepository.findTracksByGenre(normalized)), sort);
+    }
+
+    /** Sets and mixes, optionally limited to one {@link SetCategory} (enum name or URL slug). */
+    public List<Track> listSets(String category, String sort) {
+        Optional<SetCategory> wanted = SetCategory.parse(category);
+        if (category != null && !category.isBlank() && !"all".equalsIgnoreCase(category) && wanted.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nieznana kategoria setów");
+        }
+        List<Track> sets = trackRepository.findSets().stream()
+                .filter(set -> wanted.isEmpty() || wanted.get().name().equals(set.getSetCategory()))
+                .collect(java.util.stream.Collectors.toCollection(ArrayList::new));
+        return sorted(sets, sort);
+    }
+
+    private List<Track> sorted(List<Track> tracks, String sort) {
         decorateAll(tracks);
         Comparator<Track> newest = Comparator
                 .comparing(Track::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder()))
@@ -97,6 +112,32 @@ public class TrackSocialService {
             tracks.sort(newest);
         }
         return tracks;
+    }
+
+    /** Copies the set-only fields (kind, category, event, tracklist) after validating them. */
+    private void applySetFields(Track track, Track incoming) {
+        boolean set = "set".equalsIgnoreCase(incoming.getKind() == null ? "" : incoming.getKind().trim());
+        if (!set) {
+            track.setKind(null);
+            track.setSetCategory(null);
+            track.setEventName(null);
+            track.setTracklist(null);
+            return;
+        }
+        SetCategory category = SetCategory.parse(incoming.getSetCategory())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Wybierz kategorię seta"));
+        String event = incoming.getEventName() == null ? "" : incoming.getEventName().trim();
+        if (event.length() > 120) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nazwa wydarzenia: najwyżej 120 znaków");
+        }
+        String tracklist = incoming.getTracklist() == null ? "" : incoming.getTracklist().trim();
+        if (tracklist.length() > 5000) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tracklista: najwyżej 5000 znaków");
+        }
+        track.setKind("set");
+        track.setSetCategory(category.name());
+        track.setEventName(event.isEmpty() ? null : event);
+        track.setTracklist(tracklist.isEmpty() ? null : tracklist);
     }
 
     /** Counts a play at most once per listener and track within {@link #VIEW_WINDOW}. */
@@ -182,6 +223,7 @@ public class TrackSocialService {
                 .createdAt(Instant.now())
                 .author(currentUser())
                 .build();
+        applySetFields(track, incoming);
         return decorate(trackRepository.save(track));
     }
 
@@ -201,6 +243,7 @@ public class TrackSocialService {
         track.setVersion(incoming.getVersion() == null ? "" : incoming.getVersion().trim());
         track.setUrl(url);
         track.setGenre(normalizeGenre(incoming.getGenre()));
+        applySetFields(track, incoming);
         return decorate(trackRepository.save(track));
     }
 
@@ -439,6 +482,9 @@ public class TrackSocialService {
             String key = genre.trim().toUpperCase(Locale.ROOT).replace('-', '_').replace(' ', '_');
             if ("BIGROOM".equals(key)) {
                 key = "BIG_ROOM";
+            }
+            if ("HANDSUP".equals(key)) {
+                key = "HANDS_UP";
             }
             return Genre.valueOf(key).name();
         } catch (IllegalArgumentException ex) {

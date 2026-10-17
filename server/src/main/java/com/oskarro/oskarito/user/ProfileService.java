@@ -174,7 +174,7 @@ public class ProfileService {
     }
 
     private static final java.util.Set<String> PUBLIC_GENRES = java.util.Set.of(
-            "CLUB", "DANCE", "RETRO", "HOUSE", "VIXA", "BASS_HOUSE", "TECHNO", "BIG_ROOM", "TRANCE", "ELECTRO", "DISCO_POLO");
+            "CLUB", "DANCE", "RETRO", "HOUSE", "VIXA", "BASS_HOUSE", "TECHNO", "BIG_ROOM", "TRANCE", "ELECTRO", "DISCO_POLO", "HANDS_UP", "POP");
 
     private static String genres(Object raw) {
         String text = raw == null ? "" : String.valueOf(raw).trim();

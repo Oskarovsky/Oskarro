@@ -5,7 +5,8 @@ import {TrackService} from '../../services/track/track.service';
 import {TokenStorageService} from '../../services/auth/token-storage.service';
 import {AudioHost, audioHostOf, hostujeId, soundfilesId} from '../../services/audio-hosts';
 import {Track} from '../track/model/track';
-import {GENRES} from '../genres';
+import {GENRES, genreSlug} from '../genres';
+import {SET_CATEGORIES, setCategoryById, setCategoryBySlug} from '../sets';
 
 @Component({
   selector: 'app-track-form',
@@ -27,7 +28,8 @@ export class TrackFormComponent implements OnInit {
   previewUrl = '';
   coverFile: File = null;
   source: AudioHost = 'hostuje';
-  draft = {artist: '', title: '', version: '', url: '', genre: 'CLUB'};
+  draft = {artist: '', title: '', version: '', url: '', genre: 'CLUB', kind: 'track', setCategory: 'USERS', eventName: '', tracklist: ''};
+  readonly setCategories = SET_CATEGORIES;
 
   constructor(private route: ActivatedRoute,
               private router: Router,
@@ -46,7 +48,10 @@ export class TrackFormComponent implements OnInit {
       const requested = (this.route.snapshot.queryParamMap.get('genre') || 'club').trim().toLowerCase();
       const known = GENRES.find(genre => genre.slug === requested || genre.id.toLowerCase() === requested.replace(/-/g, '_'));
       this.source = 'hostuje';
-      this.draft = {artist: '', title: '', version: '', url: '', genre: known ? known.id : 'CLUB'};
+      const query = this.route.snapshot.queryParamMap;
+      const category = setCategoryBySlug(query.get('kategoria') || '');
+      this.draft = {artist: '', title: '', version: '', url: '', genre: known ? known.id : 'CLUB',
+        kind: query.get('typ') === 'set' ? 'set' : 'track', setCategory: category ? category.id : 'USERS', eventName: '', tracklist: ''};
       if (this.editing && this.loggedIn) {
         this.trackService.getTrackById(String(this.trackId)).subscribe((track: any) => {
           if (!track.editable) {
@@ -60,7 +65,11 @@ export class TrackFormComponent implements OnInit {
             title: track.title || '',
             version: track.version || '',
             url: track.url || '',
-            genre: track.genre || 'CLUB'
+            genre: track.genre || 'CLUB',
+            kind: track.kind === 'set' ? 'set' : 'track',
+            setCategory: track.setCategory || 'USERS',
+            eventName: track.eventName || '',
+            tracklist: track.tracklist || ''
           };
           this.existingCover = !!track.hasCover;
           this.editableUntil = track.editableUntil;
@@ -70,7 +79,20 @@ export class TrackFormComponent implements OnInit {
   }
 
   get backGenre() {
-    return (this.draft.genre || 'club').toLowerCase();
+    return genreSlug(this.draft.genre);
+  }
+
+  get isSet() {
+    return this.draft.kind === 'set';
+  }
+
+  get backLink() {
+    return this.isSet ? ['/sety', setCategoryById(this.draft.setCategory)?.slug || ''] : ['/tracklist', this.backGenre];
+  }
+
+  get eventLabel() {
+    const category = setCategoryById(this.draft.setCategory);
+    return category ? category.eventLabel : 'Wydarzenie';
   }
 
   coverSrc() {
@@ -131,6 +153,10 @@ export class TrackFormComponent implements OnInit {
     const track = {
       artist, title, version, url,
       genre: this.draft.genre,
+      kind: this.isSet ? 'set' : 'track',
+      setCategory: this.isSet ? this.draft.setCategory : null,
+      eventName: this.isSet ? this.draft.eventName.trim() : null,
+      tracklist: this.isSet ? this.draft.tracklist.trim() : null,
       id: this.trackId, points: 0, position: null, playlist: null, video: null
     } as Track;
     this.saving = true;
@@ -140,11 +166,11 @@ export class TrackFormComponent implements OnInit {
       : this.trackService.shareTrack(track);
     request.subscribe({
       next: saved => this.storeCover(saved.id),
-      error: () => {
+      error: err => {
         this.saving = false;
-        this.notice = this.editing
+        this.notice = err?.error?.message || (this.editing
           ? 'Nie udało się zapisać. Poprawki są dostępne tylko dla autora przez 24 godziny.'
-          : 'Nie udało się dodać utworu.';
+          : 'Nie udało się dodać utworu.');
       }
     });
   }

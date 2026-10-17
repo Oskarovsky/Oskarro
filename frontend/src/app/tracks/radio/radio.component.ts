@@ -163,6 +163,7 @@ export class RadioComponent implements OnInit, OnDestroy {
   }
 
   private catalog(all: Track[]): PlayableTrack[] {
-    return all.filter(item => item?.id && item.url && item.genre && !!audioRef(item.url));
+    // Hour-long sets would swamp the radio rotation, so it plays single tracks only.
+    return all.filter(item => item?.id && item.url && item.genre && item.kind !== 'set' && !!audioRef(item.url));
   }
 }

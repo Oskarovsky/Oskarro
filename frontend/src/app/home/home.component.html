@@ -48,12 +48,32 @@
       </div>
     </div>
     <div class="genre-tiles">
-      <a class="genre-tile" *ngFor="let genre of genres" [class.wide]="genre.id === 'VIXA' || genre.id === 'DISCO_POLO'" [routerLink]="['/tracklist', genre.slug]" [queryParams]="{}">
+      <a class="genre-tile" *ngFor="let genre of genres" [class.wide]="wideGenres.includes(genre.id)" [routerLink]="['/tracklist', genre.slug]" [queryParams]="{}">
         <app-genre-art [id]="genre.id"></app-genre-art>
         <span class="tile-text">
           <strong>{{ genre.label }}</strong>
           <span>{{ blurb(genre) }}</span>
           <em *ngIf="countFor(genre.id) as count">{{ count }} {{ phrase(count, 'tracks') }}</em>
+        </span>
+      </a>
+    </div>
+  </section>
+
+  <section class="genres-block">
+    <div class="section-head">
+      <div>
+        <p class="kicker">{{ 'Sety / Mixy' | t:'Sets / Mixes' }}</p>
+        <h2>{{ 'Całe noce w jednym nagraniu' | t:'Whole nights in one recording' }}</h2>
+      </div>
+      <a class="btn-ghost" routerLink="/sety">{{ 'Wszystkie sety →' | t:'All sets →' }}</a>
+    </div>
+    <div class="genre-tiles set-tiles">
+      <a class="genre-tile" *ngFor="let c of setCategories" [routerLink]="['/sety', c.slug]">
+        <app-genre-art [id]="c.art" [colors]="c.palette" [key]="'-home-' + c.slug"></app-genre-art>
+        <span class="tile-text">
+          <strong>{{ setLabel(c) }}</strong>
+          <span>{{ lang.en ? c.blurbEn : c.blurb }}</span>
+          <em *ngIf="setCount(c.id) as count">{{ count }} {{ lang.plural(count, ['set', 'sety', 'setów'], ['set', 'sets']) }}</em>
         </span>
       </a>
     </div>

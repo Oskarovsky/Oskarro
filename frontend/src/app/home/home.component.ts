@@ -6,6 +6,7 @@ import {GENRES, genreLabel} from '../tracks/genres';
 import {SiteStats, StatsService} from '../services/stats.service';
 import {LangService} from '../lang.service';
 import {GenreOption} from '../tracks/genres';
+import {SET_CATEGORIES, SetCategoryOption} from '../tracks/sets';
 
 @Component({
   selector: 'app-home',
@@ -19,6 +20,9 @@ export class HomeComponent implements OnInit {
   currentUser: any;
   catalog: Array<any> = [];
   genres = GENRES;
+  readonly setCategories = SET_CATEGORIES;
+  /** Club is the 2x2 hero tile; four wide tiles keep 13 genres packed in a 4-column grid (4 + 4x2 + 8 = 20 cells). */
+  readonly wideGenres = ['VIXA', 'DISCO_POLO', 'HANDS_UP', 'POP'];
   stats: SiteStats | null = null;
 
   constructor(private tokenStorage: TokenStorageService,
@@ -52,8 +56,16 @@ export class HomeComponent implements OnInit {
       .slice(0, 3);
   }
 
+  setLabel(c: SetCategoryOption) {
+    return this.lang.en ? c.labelEn : c.label;
+  }
+
+  setCount(id: string) {
+    return this.catalog.filter(track => track.kind === 'set' && track.setCategory === id).length;
+  }
+
   countFor(genreId: string) {
-    return this.catalog.filter(track => track.genre === genreId).length;
+    return this.catalog.filter(track => track.genre === genreId && track.kind !== 'set').length;
   }
 
   genreName(genre: string) {

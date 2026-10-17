@@ -41,6 +41,22 @@ public class Track {
 
     private Integer position;
 
+    /** "set" for DJ sets and mixes; null means a single track. */
+    @Column(length = 10)
+    private String kind;
+
+    /** For sets: one of {@link SetCategory}. */
+    @Column(length = 20)
+    private String setCategory;
+
+    /** For sets: club, festival or radio show name (optional). */
+    @Column(length = 120)
+    private String eventName;
+
+    /** For sets: free-text tracklist, one track per line (optional). */
+    @Column(length = 5000)
+    private String tracklist;
+
 
     @ManyToOne
     @JoinColumn(name = "record_id")

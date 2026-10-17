@@ -1,5 +1,5 @@
 <div class="page" *ngIf="track.id">
-  <a class="back" [routerLink]="['/tracklist', genrePath]">← {{ genreLabel }}</a>
+  <a class="back" [routerLink]="backLink">← {{ backLabel }}</a>
   <div class="track-layout">
     <div class="cover-col">
       <div class="cover-plate">
@@ -19,15 +19,23 @@
       </div>
     </div>
     <section class="track-hero">
-      <p class="kicker">{{ genreLabel }}</p>
+      <p class="kicker" *ngIf="!isSet">{{ genreLabel }}</p>
+      <p class="kicker" *ngIf="isSet">{{ 'Set' | t }} · {{ setLabel }} · {{ genreLabel }}</p>
       <h1>{{ track.title }}<span class="version" *ngIf="track | versionLabel as version"> ({{ version }})</span></h1>
       <p class="artist">{{ track.artist }}</p>
+      <p class="meta set-event" *ngIf="isSet && track.eventName">📍 {{ track.eventName }}</p>
       <p class="meta">
         <span *ngIf="track.sharedBy">
           {{ 'dodał' | t:'added by' }}
           <app-person [name]="track.sharedBy" [rank]="track.authorRank" [to]="['/profile', track.sharedBy]"></app-person>
         </span>
       </p>
+    </section>
+    <section class="tracklist" *ngIf="isSet && track.tracklist">
+      <h2>{{ 'Tracklista' | t:'Tracklist' }}</h2>
+      <ol>
+        <li *ngFor="let line of tracklistLines">{{ line }}</li>
+      </ol>
     </section>
     <div class="track-play">
       <app-deck *ngIf="showDeck"></app-deck>

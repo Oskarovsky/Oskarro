@@ -8,6 +8,7 @@ import {Track} from "./model/track";
 import {TokenStorageService} from "../../services/auth/token-storage.service";
 import {audioRef} from "../../services/audio-hosts";
 import {genreLabel, genreSlug} from "../genres";
+import {setCategoryById} from "../sets";
 import {SeoService} from "../../seo.service";
 import {PlaybackService, PlayableTrack} from "../playback.service";
 import {PlaylistService} from "../../services/playlist/playlist.service";
@@ -35,6 +36,27 @@ export class TrackComponent implements OnInit, OnDestroy {
   draft = '';
   genrePath = 'club';
   genreLabel = 'Club';
+
+  get isSet() {
+    return this.track?.kind === 'set';
+  }
+
+  get setLabel() {
+    const category = setCategoryById(this.track?.setCategory);
+    return category ? (this.lang.en ? category.labelEn : category.label) : '';
+  }
+
+  get backLink() {
+    return this.isSet ? ['/sety', setCategoryById(this.track?.setCategory)?.slug || ''] : ['/tracklist', this.genrePath];
+  }
+
+  get backLabel() {
+    return this.isSet ? this.setLabel || this.lang.t('Sety', 'Sets') : this.genreLabel;
+  }
+
+  get tracklistLines(): string[] {
+    return (this.track?.tracklist || '').split('\n').map(line => line.trim()).filter(line => line.length);
+  }
   coverStamp = '';
   similar: PlayableTrack[] = [];
   playlists: Array<{id: number, name: string}> = [];

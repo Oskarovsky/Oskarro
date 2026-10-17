@@ -2569,3 +2569,151 @@ label {
     display: inline;
   }
 }
+
+.kind-switch {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.composer textarea {
+  width: 100%;
+  font: inherit;
+}
+
+/* ---------- Sety / Mixy ---------- */
+.set-cats {
+  display: grid;
+  grid-template-columns: 0.7fr repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.set-cat {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  min-height: 92px;
+  aspect-ratio: auto;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 2px solid transparent;
+  background: var(--surface);
+  color: #fff;
+}
+
+.set-cat.genre-tile {
+  aspect-ratio: auto;
+}
+
+.set-cat.on {
+  border-color: var(--accent);
+}
+
+.set-cat-all {
+  position: absolute;
+  top: 10px;
+  left: 14px;
+  font-size: 1.6rem;
+  color: var(--muted);
+}
+
+.set-cat-text {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 12px;
+}
+
+.set-cat-text strong {
+  font-family: var(--display);
+  font-size: 1.05rem;
+  line-height: 1.1;
+}
+
+.set-cat-text em {
+  font-style: normal;
+  font-size: 0.78rem;
+  font-weight: 650;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.set-pill {
+  margin-right: 4px;
+  padding: 2px 7px;
+  font-size: 10px;
+}
+
+.sets-empty {
+  display: grid;
+  justify-items: start;
+  gap: 8px;
+  padding: 26px;
+  border-radius: 20px;
+  border: 1px dashed var(--line);
+  background: var(--bg-2);
+}
+
+.sets-empty h2 {
+  margin: 0;
+}
+
+.sets-empty .lede {
+  margin: 0 0 8px;
+}
+
+@media (max-width: 900px) {
+  .set-cats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .set-cats .set-cat:first-child {
+    grid-column: 1 / -1;
+    min-height: 56px;
+  }
+}
+
+.set-tiles .genre-tile:first-child {
+  grid-column: auto;
+  grid-row: auto;
+  aspect-ratio: 16 / 10;
+}
+
+.set-tiles .genre-tile:first-child .tile-text strong {
+  font-size: clamp(1.35rem, 2.2vw, 1.75rem);
+}
+
+.tracklist {
+  grid-column: 1 / -1;
+  padding: 16px 18px;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.tracklist h2 {
+  margin: 0 0 10px;
+  font-size: 1.2rem;
+}
+
+.tracklist ol {
+  margin: 0;
+  padding-left: 22px;
+  columns: 2 320px;
+  column-gap: 28px;
+}
+
+.tracklist li {
+  break-inside: avoid;
+  padding: 3px 0;
+  color: var(--text);
+}
+
+.set-event {
+  margin-top: 4px;
+}

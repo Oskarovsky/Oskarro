@@ -327,6 +327,37 @@ class SecurityRulesTest {
         assertThat(json.readTree(users).get("total").asInt()).isGreaterThanOrEqualTo(1);
     }
 
+    @Test
+    void setsLiveInTheirOwnSectionAndNewGenresWork() throws Exception {
+        String token = bearer(user(RoleName.ROLE_USER));
+        String set = json.writeValueAsString(Map.of("artist", "DJ Test", "title", "Live at Club X", "genre", "hands-up",
+                "url", "https://soundfiles.eu/SetSet123456", "kind", "set", "setCategory", "kluby",
+                "eventName", "Club X", "tracklist", "1. Intro\n2. Outro"));
+        String saved = mvc.perform(post("/api/tracks/share").header("Authorization", token)
+                        .contentType(MediaType.APPLICATION_JSON).content(set))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        var savedTree = json.readTree(saved);
+        assertThat(savedTree.get("kind").asText()).isEqualTo("set");
+        assertThat(savedTree.get("setCategory").asText()).isEqualTo("CLUBS");
+        assertThat(savedTree.get("genre").asText()).isEqualTo("HANDS_UP");
+        int id = savedTree.get("id").asInt();
+
+        assertThat(mvc.perform(get("/api/tracks/sets").param("category", "kluby"))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString()).contains("\"id\":" + id);
+        assertThat(mvc.perform(get("/api/tracks/sets").param("category", "festiwale"))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString()).doesNotContain("\"id\":" + id);
+        assertThat(mvc.perform(get("/api/tracks/genre/hands-up"))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString()).doesNotContain("\"id\":" + id);
+        mvc.perform(get("/api/tracks/sets").param("category", "disco")).andExpect(status().isBadRequest());
+
+        String pop = json.writeValueAsString(Map.of("artist", "A", "title", "B", "genre", "pop",
+                "url", "https://soundfiles.eu/PopPop123456"));
+        mvc.perform(post("/api/tracks/share").header("Authorization", token)
+                        .contentType(MediaType.APPLICATION_JSON).content(pop))
+                .andExpect(status().isOk());
+        assertThat(mvc.perform(get("/api/tracks/genre/pop")).andReturn().getResponse().getContentAsString()).contains("PopPop123456");
+    }
+
     private User user(RoleName role) {
         String name = "user" + SEQ.incrementAndGet();
         return users.save(User.builder()

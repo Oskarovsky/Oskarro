@@ -12,6 +12,7 @@
         <a *ngFor="let genre of genres" [routerLink]="['/tracklist', genre.slug]" [queryParams]="{}" routerLinkActive="is-on" (click)="closeMusic(musicMenu)">{{ genre.label }}</a>
       </div>
     </details>
+    <a routerLink="/sety" routerLinkActive="is-on" (click)="menuOpen = false">{{ 'Sety' | t:'Sets' }}</a>
     <a routerLink="/video" routerLinkActive="is-on" (click)="menuOpen = false">{{ 'Wideo' | t:'Video' }}</a>
     <a routerLink="/playlist/all" routerLinkActive="is-on" (click)="menuOpen = false">{{ 'Playlisty' | t:'Playlists' }}</a>
     <a routerLink="/ranking" routerLinkActive="is-on" (click)="menuOpen = false">Ranking</a>

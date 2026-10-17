@@ -1,4 +1,5 @@
 import {NgModule} from '@angular/core';
+import {SetListComponent} from './tracks/set-list/set-list.component';
 import {AdminLayoutComponent} from './admin/admin-layout.component';
 import {AdminDashboardComponent} from './admin/admin-dashboard.component';
 import {AdminUsersComponent} from './admin/admin-users.component';
@@ -45,6 +46,8 @@ const routes: Routes = [
   { path: 'track/:id', component: TrackComponent },
   { path: 'tracklist/:genre', component: TrackListComponent },
   { path: 'toplist/:genre', component: ToplistComponent },
+  { path: 'sety', component: SetListComponent },
+  { path: 'sety/:kategoria', component: SetListComponent },
   { path: 'playlist/all', component: PlaylistAllComponent },
   { path: 'playlist/all/:username', component: PlaylistComponent },
   { path: 'toplist/:genre/edit', component: ToplistEditComponent },

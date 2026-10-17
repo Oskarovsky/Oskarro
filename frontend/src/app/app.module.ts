@@ -48,6 +48,7 @@ import { HomeComponent } from './home/home.component';
 import { ActivityChartComponent } from './home/activity-chart.component';
 import { GrowthBoardComponent } from './home/growth-board.component';
 import { GenreArtComponent } from './home/genre-art.component';
+import { SetListComponent } from './tracks/set-list/set-list.component';
 import { AdminLayoutComponent } from './admin/admin-layout.component';
 import { AdminDashboardComponent } from './admin/admin-dashboard.component';
 import { AdminUsersComponent } from './admin/admin-users.component';
@@ -111,6 +112,7 @@ import { ActivateAccountComponent } from './auth/activate.component';
     ActivityChartComponent,
     GrowthBoardComponent,
     GenreArtComponent,
+    SetListComponent,
     AdminLayoutComponent,
     AdminDashboardComponent,
     AdminUsersComponent,

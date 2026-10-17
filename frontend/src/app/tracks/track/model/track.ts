@@ -15,4 +15,9 @@ export interface Track {
   createdAt?: string;
   score?: number;
   hasCover?: boolean;
+  /** 'set' for DJ sets and mixes. */
+  kind?: string;
+  setCategory?: string;
+  eventName?: string;
+  tracklist?: string;
 }
