@@ -18,7 +18,10 @@ export class HomeComponent implements OnInit {
 
   isLoggedIn = false;
   currentUser: any;
-  catalog: Array<any> = [];
+  latest: Array<any> = [];
+  hotTracks: Array<any> = [];
+  genreCounts: Record<string, number> = {};
+  setCounts: Record<string, number> = {};
   genres = GENRES;
   readonly setCategories = SET_CATEGORIES;
   /** Club is the 2x2 hero tile; four wide tiles keep 13 genres packed in a 4-column grid (4 + 4x2 + 8 = 20 cells). */
@@ -36,24 +39,20 @@ export class HomeComponent implements OnInit {
       this.currentUser = this.tokenStorage.getUser();
     }
     this.statsService.load().subscribe(stats => this.stats = stats);
-    this.trackService.getAllTracks().subscribe(tracks => {
-      this.catalog = (tracks || [])
-        .filter(track => track.genre && track.url)
-        .sort((a, b) => (b.id || 0) - (a.id || 0));
+    this.trackService.getHome().subscribe(feed => {
+      this.latest = feed.latest || [];
+      this.hotTracks = feed.hot || [];
+      this.genreCounts = feed.genreCounts || {};
+      this.setCounts = feed.setCounts || {};
     });
   }
 
   get results() {
-    return this.catalog.slice(0, 6);
+    return this.latest;
   }
 
-  /** Top three by plays this month, falling back to score, so the card is never empty. */
   get hot() {
-    return [...this.catalog]
-      .sort((a, b) => (Number(b.viewsMonth) || 0) - (Number(a.viewsMonth) || 0)
-        || (Number(b.score) || 0) - (Number(a.score) || 0)
-        || (b.id || 0) - (a.id || 0))
-      .slice(0, 3);
+    return this.hotTracks;
   }
 
   setLabel(c: SetCategoryOption) {
@@ -61,11 +60,11 @@ export class HomeComponent implements OnInit {
   }
 
   setCount(id: string) {
-    return this.catalog.filter(track => track.kind === 'set' && track.setCategory === id).length;
+    return this.setCounts[id] || 0;
   }
 
   countFor(genreId: string) {
-    return this.catalog.filter(track => track.genre === genreId && track.kind !== 'set').length;
+    return this.genreCounts[genreId] || 0;
   }
 
   genreName(genre: string) {

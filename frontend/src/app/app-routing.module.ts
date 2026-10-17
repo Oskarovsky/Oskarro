@@ -24,8 +24,6 @@ import {PlaylistEditComponent} from './playlists/playlist-edit/playlist-edit.com
 import {PlaylistDetailsComponent} from './playlists/playlist-details/playlist-details.component';
 import {LoginComponent} from './auth/login/login.component';
 import {RegisterComponent} from './auth/register/register.component';
-import {BoardModeratorComponent} from './user/board-moderator/board-moderator.component';
-import {BoardUserComponent} from './user/board-user/board-user.component';
 import {VideoComponent} from './videos/video/video.component';
 import {ChannelSetComponent} from './videos/channel-set/channel-set.component';
 import {VideoAddComponent} from './videos/video-add/video-add.component';
@@ -73,8 +71,6 @@ const routes: Routes = [
   { path: 'szukaj', component: SearchComponent },
   { path: 'profile', component: ProfileComponent },
   { path: 'profile/:username', component: ProfileComponent },
-  { path: 'user', component: BoardUserComponent },
-  { path: 'mod', component: BoardModeratorComponent },
   {
     path: 'admin',
     component: AdminLayoutComponent,

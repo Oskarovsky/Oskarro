@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { RefreshAfterHttpDirective, UiRefresh } from '../services/ui-refresh';
 import { TrackService } from '../services/track/track.service';
-import { TrackSearch, trackMatches } from '../services/track-search';
+import { TrackSearch } from '../services/track-search';
 import { genreLabel } from '../tracks/genres';
 import { LangService } from '../lang.service';
 
@@ -16,6 +16,7 @@ export class SearchComponent implements OnInit {
 
   query = '';
   catalog: Array<any> = [];
+  private loadedQuery = '';
   page = 1;
   readonly pageSize = 10;
 
@@ -32,20 +33,28 @@ export class SearchComponent implements OnInit {
       this.search.text = this.query;
       const page = Number(params.get('strona'));
       this.page = Number.isInteger(page) && page > 0 ? page : 1;
+      this.load();
       this.uiRefresh.refresh();
     });
-    this.trackService.getAllTracks().subscribe(tracks => {
-      this.catalog = (tracks || [])
-        .filter(track => track.genre && track.url)
-        .sort((a, b) => (b.id || 0) - (a.id || 0));
-    });
+
   }
 
   get results() {
-    if (!this.query) {
-      return [];
+    return this.query ? this.catalog : [];
+  }
+
+  /** Searching happens on the server (title, artist, version, event, tracklist, genre, who added it). */
+  private load() {
+    if (!this.query || this.query === this.loadedQuery) {
+      return;
     }
-    return this.catalog.filter(track => trackMatches(track, this.query));
+    const query = this.query;
+    this.trackService.searchTracks(query).subscribe(tracks => {
+      if (query === this.query) {
+        this.catalog = tracks || [];
+        this.loadedQuery = query;
+      }
+    });
   }
 
   get pageCount() {
