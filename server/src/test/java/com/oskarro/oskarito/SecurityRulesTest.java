@@ -48,6 +48,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -268,6 +270,61 @@ class SecurityRulesTest {
         assertThat(tree.get("days").size()).isEqualTo(14);
         assertThat(tree.get("days").get(13).get("tracks").asInt()).isGreaterThanOrEqualTo(1);
         assertThat(tree.get("tracks").asInt()).isGreaterThanOrEqualTo(1);
+    }
+
+    @Test
+    void adminPanelIsAdminOnly() throws Exception {
+        mvc.perform(get("/api/admin/overview")).andExpect(status().isUnauthorized());
+        mvc.perform(get("/api/admin/overview").header("Authorization", bearer(user(RoleName.ROLE_USER))))
+                .andExpect(status().isForbidden());
+        mvc.perform(get("/api/admin/overview").header("Authorization", bearer(user(RoleName.ROLE_MODERATOR))))
+                .andExpect(status().isForbidden());
+        mvc.perform(get("/api/admin/overview").header("Authorization", bearer(user(RoleName.ROLE_ADMIN))))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void banCutsOffExistingSessionsAndLogins() throws Exception {
+        User target = user(RoleName.ROLE_USER);
+        String targetToken = bearer(target);
+        User adminUser = user(RoleName.ROLE_ADMIN);
+        String admin = bearer(adminUser);
+
+        mvc.perform(patch("/api/admin/users/" + target.getId()).header("Authorization", admin)
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"banned\":true,\"banReason\":\"spam\"}"))
+                .andExpect(status().isOk());
+
+        mvc.perform(get("/api/profile/me").header("Authorization", targetToken)).andExpect(status().isUnauthorized());
+        mvc.perform(post("/api/auth/signin").contentType(MediaType.APPLICATION_JSON)
+                        .content(json.writeValueAsString(Map.of("username", target.getUsername(), "password", PASSWORD))))
+                .andExpect(status().isForbidden());
+
+        mvc.perform(patch("/api/admin/users/" + adminUser.getId()).header("Authorization", admin)
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"banned\":true}"))
+                .andExpect(status().isBadRequest());
+
+        String log = mvc.perform(get("/api/admin/audit").header("Authorization", admin))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        assertThat(log).contains(target.getUsername()).contains("spam");
+    }
+
+    @Test
+    void adminCanEditAnyTrackAndComment() throws Exception {
+        Track track = track(user(RoleName.ROLE_USER));
+        String admin = bearer(user(RoleName.ROLE_ADMIN));
+        String change = json.writeValueAsString(Map.of("artist", "Fixed", "title", "Better", "version", "",
+                "genre", "dance", "url", "https://soundfiles.eu/AbCdEf123456"));
+        mvc.perform(put("/api/admin/tracks/" + track.getId()).header("Authorization", admin)
+                        .contentType(MediaType.APPLICATION_JSON).content(change))
+                .andExpect(status().isOk());
+        Track saved = tracks.findById(track.getId()).orElseThrow();
+        assertThat(saved.getTitle()).isEqualTo("Better");
+        assertThat(saved.getGenre()).isEqualTo("DANCE");
+        assertThat(saved.getUrl()).isEqualTo("https://soundfiles.eu/AbCdEf123456/file");
+
+        String users = mvc.perform(get("/api/admin/users").param("filter", "staff").header("Authorization", admin))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        assertThat(json.readTree(users).get("total").asInt()).isGreaterThanOrEqualTo(1);
     }
 
     private User user(RoleName role) {

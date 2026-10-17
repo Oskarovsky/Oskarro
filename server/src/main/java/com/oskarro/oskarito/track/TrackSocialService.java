@@ -408,7 +408,7 @@ public class TrackSocialService {
         return SOUNDFILES_ID.matcher(value).matches() ? value : null;
     }
 
-    static String canonical(String url) {
+    public static String canonical(String url) {
         String hostuje = hostujeFile(url);
         if (hostuje != null) {
             return hostuje;

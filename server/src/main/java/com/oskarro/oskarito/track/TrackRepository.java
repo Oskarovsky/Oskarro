@@ -48,4 +48,8 @@ public interface TrackRepository extends CrudRepository<Track, Integer> {
     List<Instant> findCommunityCreatedSince(@Param("from") Instant from);
 
     void deleteById(Integer id);
+
+    List<Track> findTop200ByCreatedAtNotNullOrderByCreatedAtDesc();
+
+    List<Track> findTop20ByAuthor_IdOrderByIdDesc(Integer authorId);
 }

@@ -35,4 +35,11 @@ public interface TrackLikeRepository extends JpaRepository<TrackLike, Integer> {
 
     @Query("select l.createdAt from TrackLike l where l.createdAt >= :from")
     List<Instant> votedSince(@Param("from") Instant from);
+
+    List<TrackLike> findTop200ByCreatedAtNotNullOrderByCreatedAtDesc();
+
+    List<TrackLike> findTop20ByUser_IdOrderByIdDesc(Integer userId);
+
+    @Query("select l.user.id, count(l) from TrackLike l group by l.user.id")
+    List<Object[]> countGroupedByVoter();
 }

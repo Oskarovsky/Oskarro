@@ -3,13 +3,13 @@ package com.oskarro.oskarito.track;
 import java.time.Instant;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.query.Param;
 
 import java.util.Collection;
 import java.util.List;
 
-public interface TrackCommentRepository extends CrudRepository<TrackComment, Integer> {
+public interface TrackCommentRepository extends JpaRepository<TrackComment, Integer> {
     List<TrackComment> findByTrackIdOrderByCreatedAtAsc(Integer trackId);
     long countByAuthorId(Integer authorId);
     long countByTrack_Author_Id(Integer authorId);
@@ -29,4 +29,8 @@ public interface TrackCommentRepository extends CrudRepository<TrackComment, Int
 
     @Query("select c.createdAt from TrackComment c where c.createdAt >= :from")
     List<Instant> createdSince(@Param("from") Instant from);
+
+    List<TrackComment> findTop200ByOrderByCreatedAtDesc();
+
+    List<TrackComment> findTop20ByAuthor_IdOrderByCreatedAtDesc(Integer authorId);
 }

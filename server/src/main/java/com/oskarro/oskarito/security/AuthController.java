@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -51,6 +52,9 @@ public class AuthController {
     @Autowired
     AccountActivationService accountActivationService;
 
+    @Autowired
+    PresenceService presenceService;
+
     @PostMapping(value = "/signin")
     @CrossOrigin(origins = "*", allowedHeaders = "*")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
@@ -59,6 +63,9 @@ public class AuthController {
         try {
             authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+        } catch (LockedException ex) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new ResponseMessage("Konto zostało zablokowane przez administratora."));
         } catch (DisabledException ex) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(new ResponseMessage("Konto nie jest jeszcze aktywne. Otwórz link z maila aktywacyjnego."));
@@ -68,6 +75,7 @@ public class AuthController {
 
         String jwt = jwtTokenProvider.generateJwtToken(authentication);
         UserPrincipal userDetails = (UserPrincipal) authentication.getPrincipal();
+        presenceService.loggedIn(userDetails.getId());
         List<String> roles = userDetails.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList());

@@ -64,6 +64,7 @@ public class WebSecurityConfig {
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(unauthorizedHandler))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         // Curated content: only staff may add videos, ranking entries or raw tracks.
                         .requestMatchers(HttpMethod.POST, "/api/video/add", "/api/tracks/add", "/api/tracks/addToRanking")
                             .hasAnyRole("ADMIN", "MODERATOR")

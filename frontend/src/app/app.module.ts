@@ -48,6 +48,16 @@ import { HomeComponent } from './home/home.component';
 import { ActivityChartComponent } from './home/activity-chart.component';
 import { GrowthBoardComponent } from './home/growth-board.component';
 import { GenreArtComponent } from './home/genre-art.component';
+import { AdminLayoutComponent } from './admin/admin-layout.component';
+import { AdminDashboardComponent } from './admin/admin-dashboard.component';
+import { AdminUsersComponent } from './admin/admin-users.component';
+import { AdminUserComponent } from './admin/admin-user.component';
+import { AdminTracksComponent } from './admin/admin-tracks.component';
+import { AdminCommentsComponent } from './admin/admin-comments.component';
+import { AdminActivityComponent } from './admin/admin-activity.component';
+import { AdminFeedComponent } from './admin/admin-feed.component';
+import { AgoPipe } from './admin/ago.pipe';
+
 import { FooterComponent } from './footer/footer.component';
 import { TrackPlayerComponent } from './tracks/kraken-player/kraken-player.component';
 import { TrackFormComponent } from './tracks/track-form/track-form.component';
@@ -101,6 +111,15 @@ import { ActivateAccountComponent } from './auth/activate.component';
     ActivityChartComponent,
     GrowthBoardComponent,
     GenreArtComponent,
+    AdminLayoutComponent,
+    AdminDashboardComponent,
+    AdminUsersComponent,
+    AdminUserComponent,
+    AdminTracksComponent,
+    AdminCommentsComponent,
+    AdminActivityComponent,
+    AdminFeedComponent,
+    AgoPipe,
     FooterComponent,
     TrackPlayerComponent,
     RankingComponent,

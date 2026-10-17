@@ -50,6 +50,18 @@ public class User {
     /** Registration time; null for accounts created before 2026-10-17. */
     private Instant createdAt;
 
+    /** Last successful sign-in. */
+    private Instant lastLoginAt;
+
+    /** Last authenticated request (updated at most every few minutes). */
+    private Instant lastSeenAt;
+
+    /** Blocked by an administrator: cannot sign in and existing tokens stop working. */
+    private Boolean banned;
+
+    @Column(length = 200)
+    private String banReason;
+
     @JsonIgnore
     public String getPassword() {
         return password;

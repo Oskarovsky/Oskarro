@@ -41,6 +41,9 @@ public class UserPrincipal implements UserDetails {
     @Getter(AccessLevel.NONE)
     final private boolean enabled;
 
+    @Getter(AccessLevel.NONE)
+    final private boolean banned;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return authorities;
@@ -58,7 +61,7 @@ public class UserPrincipal implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return true;
+        return !banned;
     }
 
     @Override
@@ -73,12 +76,10 @@ public class UserPrincipal implements UserDetails {
 
 
     public static UserPrincipal build(User user) {
-        user.getRoles().forEach(s -> System.out.println(s.getName()));
         List<GrantedAuthority> authorities = user.getRoles()
                 .stream()
                 .map(role -> new SimpleGrantedAuthority(role.getName().name())
                 ).collect(Collectors.toList());
-        authorities.forEach(s -> System.out.println(s.getAuthority()));
 
         boolean enabled = user.getActivated() == null || Boolean.TRUE.equals(user.getActivated());
         return new UserPrincipal(
@@ -87,7 +88,8 @@ public class UserPrincipal implements UserDetails {
                 user.getEmail(),
                 user.getPassword(),
                 authorities,
-                enabled
+                enabled,
+                Boolean.TRUE.equals(user.getBanned())
         );
     }
 }

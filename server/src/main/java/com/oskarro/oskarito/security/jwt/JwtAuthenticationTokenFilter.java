@@ -1,6 +1,8 @@
 package com.oskarro.oskarito.security.jwt;
 
+import com.oskarro.oskarito.user.PresenceService;
 import com.oskarro.oskarito.user.UserDetailsServiceImpl;
+import com.oskarro.oskarito.user.UserPrincipal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +37,9 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
     @Autowired
     private UserDetailsServiceImpl userDetailsService;
 
+    @Autowired
+    private PresenceService presenceService;
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
@@ -43,6 +48,14 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
             if (jwt != null && tokenProvider.validateJwtToken(jwt)) {
                 String username = tokenProvider.getUsernameFromJwtToken(jwt);
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                if (!userDetails.isAccountNonLocked() || !userDetails.isEnabled()) {
+                    // Banned or deactivated after the token was issued: treat as anonymous.
+                    filterChain.doFilter(request, response);
+                    return;
+                }
+                if (userDetails instanceof UserPrincipal principal) {
+                    presenceService.seen(principal.getId());
+                }
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

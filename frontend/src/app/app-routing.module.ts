@@ -1,4 +1,12 @@
 import {NgModule} from '@angular/core';
+import {AdminLayoutComponent} from './admin/admin-layout.component';
+import {AdminDashboardComponent} from './admin/admin-dashboard.component';
+import {AdminUsersComponent} from './admin/admin-users.component';
+import {AdminUserComponent} from './admin/admin-user.component';
+import {AdminTracksComponent} from './admin/admin-tracks.component';
+import {AdminCommentsComponent} from './admin/admin-comments.component';
+import {AdminActivityComponent} from './admin/admin-activity.component';
+import {adminGuard} from './admin/admin.guard';
 import {RouterModule, Routes} from '@angular/router';
 import {TrackComponent} from './tracks/track/track.component';
 import {TrackListComponent} from './tracks/track-list/track-list.component';
@@ -12,7 +20,6 @@ import {PlaylistDetailsComponent} from './playlists/playlist-details/playlist-de
 import {LoginComponent} from './auth/login/login.component';
 import {RegisterComponent} from './auth/register/register.component';
 import {BoardModeratorComponent} from './user/board-moderator/board-moderator.component';
-import {BoardAdminComponent} from './user/board-admin/board-admin.component';
 import {BoardUserComponent} from './user/board-user/board-user.component';
 import {VideoComponent} from './videos/video/video.component';
 import {ChannelSetComponent} from './videos/channel-set/channel-set.component';
@@ -56,7 +63,20 @@ const routes: Routes = [
   { path: 'profile/:username', component: ProfileComponent },
   { path: 'user', component: BoardUserComponent },
   { path: 'mod', component: BoardModeratorComponent },
-  { path: 'admin', component: BoardAdminComponent },
+  {
+    path: 'admin',
+    component: AdminLayoutComponent,
+    canActivate: [adminGuard],
+    children: [
+      { path: '', component: AdminDashboardComponent },
+      { path: 'uzytkownicy', component: AdminUsersComponent },
+      { path: 'uzytkownicy/:id', component: AdminUserComponent },
+      { path: 'utwory', component: AdminTracksComponent },
+      { path: 'komentarze', component: AdminCommentsComponent },
+      { path: 'aktywnosc', component: AdminActivityComponent },
+      { path: 'dziennik', component: AdminActivityComponent, data: {audit: true} }
+    ]
+  },
   { path: 'video', component: VideoComponent },
   { path: 'video/set/:id', component: ChannelSetComponent },
   { path: 'video/category/:category', redirectTo: '/video', pathMatch: 'full' },
