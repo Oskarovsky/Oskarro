@@ -6,9 +6,9 @@ import {LangService} from './lang.service';
 
 const ORIGIN = 'https://oskarro.com';
 const LOGO = ORIGIN + '/assets/logo.jpg';
-const HOME_TITLE = 'Tu jest parkiet | Oskarro';
-const HOME_DESCRIPTION = 'Oskarro.com. Club, trance, big room, electro i disco polo od ludzi z parkietu. Słuchaj, oceniaj i dodawaj swoje numery.';
-const HOME_DESCRIPTION_EN = 'Oskarro.com. Club, trance, big room, electro and disco polo from people on the dance floor. Listen, score and add your own tracks.';
+const HOME_TITLE = 'Słuchaj z nami | Oskarro';
+const HOME_DESCRIPTION = 'Oskarro.com — słuchaj z nami muzyki klubowej za darmo: club, vixa, trance, hands up i disco polo. Oceniaj, komentuj i dodawaj swoje numery.';
+const HOME_DESCRIPTION_EN = 'Oskarro.com — listen with us to club music for free: club, vixa, trance, hands up and disco polo. Vote, comment and share your own tracks.';
 
 @Injectable({providedIn: 'root'})
 export class SeoService {
@@ -24,7 +24,7 @@ export class SeoService {
 
     if (path === '/') {
       const description = this.lang.t(HOME_DESCRIPTION, HOME_DESCRIPTION_EN);
-      this.set(this.lang.t(HOME_TITLE, 'This is the dance floor | Oskarro'), description, '/');
+      this.set(this.lang.t(HOME_TITLE, 'Listen with us | Oskarro'), description, '/');
       this.jsonLd({
         '@context': 'https://schema.org',
         '@type': 'WebSite',
