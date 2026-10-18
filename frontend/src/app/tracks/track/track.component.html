@@ -106,6 +106,22 @@
   </section>
   <p class="meta" *ngIf="fileState === 'loading' && playable">{{ 'Sprawdzam jakość, rozmiar i tempo.' | t:'Checking quality, size and tempo.' }}</p>
 
+  <section class="comments">
+    <h2>{{ 'Komentarze' | t:'Comments' }}</h2>
+    <p class="meta" *ngIf="comments.length === 0">{{ 'Jeszcze nikt nie zostawił zdania. Pierwszy komentarz zostaje na stronie.' | t:'Nobody has left a note yet. The first comment stays on the page.' }}</p>
+    <article class="comment" *ngFor="let comment of comments">
+      <strong><app-person [name]="comment.author" [to]="['/profile', comment.author]"></app-person></strong>
+      <time>{{ comment.createdAt | date:'dd.MM.yyyy HH:mm' }}</time>
+      <div>{{ comment.text }}</div>
+    </article>
+
+    <form class="composer" *ngIf="isLoggedIn" (submit)="$event.preventDefault(); addComment()">
+      <textarea [(ngModel)]="draft" name="comment" rows="3" maxlength="1000" [placeholder]="'Co sądzisz o tym numerze?' | t:'What do you think of this track?'"></textarea>
+      <button class="btn-accent" type="submit" style="margin-top: 12px;">{{ 'Skomentuj' | t:'Comment' }}</button>
+    </form>
+    <p class="gate" *ngIf="!isLoggedIn"><a routerLink="/login">{{ 'Zaloguj się' | t:'Sign in' }}</a>{{ lang.en ? ' to comment.' : ', żeby skomentować.' }}</p>
+  </section>
+
   <section class="similar" *ngIf="similar.length">
     <div class="section-head"><h2>{{ 'Podobne' | t:'Similar' }}</h2></div>
     <div class="latest-grid">
@@ -122,21 +138,5 @@
         </span>
       </a>
     </div>
-  </section>
-
-  <section class="comments">
-    <h2>{{ 'Komentarze' | t:'Comments' }}</h2>
-    <p class="meta" *ngIf="comments.length === 0">{{ 'Jeszcze nikt nie zostawił zdania. Pierwszy komentarz zostaje na stronie.' | t:'Nobody has left a note yet. The first comment stays on the page.' }}</p>
-    <article class="comment" *ngFor="let comment of comments">
-      <strong><app-person [name]="comment.author" [to]="['/profile', comment.author]"></app-person></strong>
-      <time>{{ comment.createdAt | date:'dd.MM.yyyy HH:mm' }}</time>
-      <div>{{ comment.text }}</div>
-    </article>
-
-    <form class="composer" *ngIf="isLoggedIn" (submit)="$event.preventDefault(); addComment()">
-      <textarea [(ngModel)]="draft" name="comment" rows="3" maxlength="1000" [placeholder]="'Co sądzisz o tym numerze?' | t:'What do you think of this track?'"></textarea>
-      <button class="btn-accent" type="submit" style="margin-top: 12px;">{{ 'Skomentuj' | t:'Comment' }}</button>
-    </form>
-    <p class="gate" *ngIf="!isLoggedIn"><a routerLink="/login">{{ 'Zaloguj się' | t:'Sign in' }}</a>{{ lang.en ? ' to comment.' : ', żeby skomentować.' }}</p>
   </section>
 </div>
