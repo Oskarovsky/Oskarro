@@ -1044,6 +1044,7 @@ form app-cover.cover {
 }
 
 .cover-bar .vote-hint {
+  grid-column: 1 / -1;
   margin: 0;
   text-align: center;
   font-size: 0.82rem;
@@ -2235,7 +2236,8 @@ label {
   }
 }
 
-.vote-mark:disabled {
+.vote-mark:disabled,
+.vote-mark[aria-disabled="true"] {
   opacity: 0.35;
   cursor: not-allowed;
 }
