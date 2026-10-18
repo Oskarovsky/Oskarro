@@ -2975,3 +2975,120 @@ label {
   color: var(--muted);
   font-size: 0.85rem;
 }
+
+/* Sign-in and sign-up cards: centred header and footer, left-aligned fields. */
+.auth-card {
+  padding: 28px 24px 24px;
+}
+
+.auth-head {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.auth-head h1 {
+  font-size: 2.4rem;
+  margin: 0 0 8px;
+}
+
+.auth-head .lede {
+  margin: 0 auto;
+  max-width: 34ch;
+}
+
+.auth-card .sso {
+  margin: 0 0 6px;
+}
+
+.auth-card .sso-note {
+  text-align: center;
+}
+
+.auth-form .form-group {
+  margin-bottom: 14px;
+}
+
+.auth-form label {
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+
+.auth-form .check-row {
+  justify-content: center;
+  font-weight: 400;
+  margin: 4px 0 0;
+}
+
+.auth-form .alert {
+  margin: 6px 0 0;
+  padding: 8px 12px;
+  font-size: 0.88rem;
+}
+
+.field-hint {
+  margin: 6px 2px 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.label-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.label-row .meta {
+  font-size: 0.82rem;
+}
+
+.password-field {
+  position: relative;
+}
+
+.password-field input {
+  padding-right: 76px;
+}
+
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  transform: translateY(-50%);
+  padding: 4px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 500;
+}
+
+.password-toggle:hover {
+  color: var(--text);
+}
+
+.auth-submit {
+  margin-top: 6px;
+  padding: 12px 14px;
+  font-weight: 650;
+}
+
+.auth-submit:disabled {
+  opacity: 0.7;
+  cursor: progress;
+}
+
+.auth-error {
+  margin: 12px 0 0;
+  text-align: center;
+}
+
+.auth-links {
+  text-align: center;
+  margin: 18px 0 0;
+}
+
+.auth-done {
+  text-align: center;
+}

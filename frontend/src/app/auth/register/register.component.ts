@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import {RefreshAfterHttpDirective} from '../../services/ui-refresh';
 import { AuthService } from '../../services/auth/auth.service';
 import {LangService} from '../../lang.service';
+import {TokenStorageService} from '../../services/auth/token-storage.service';
 
 const USERNAME = /^[\p{L}0-9_.-]{3,32}$/u;
 
@@ -19,10 +20,13 @@ export class RegisterComponent implements OnInit {
   isSignUpFailed = false;
   errorMessage = '';
   delivered = false;
+  signedIn = false;
   submitted = false;
   busy = false;
+  showPassword = false;
 
   constructor(private authService: AuthService,
+              private tokenStorage: TokenStorageService,
               readonly lang: LangService) { }
 
   ngOnInit() {
@@ -70,6 +74,13 @@ export class RegisterComponent implements OnInit {
         this.busy = false;
         this.delivered = !!body?.delivered;
         this.isSuccessful = true;
+        // Without e-mail activation the server signs the new account in right away.
+        if (body?.session?.accessToken) {
+          this.tokenStorage.saveToken(body.session.accessToken);
+          this.tokenStorage.saveUser(body.session);
+          this.signedIn = true;
+          setTimeout(() => window.location.assign('/'), 1200);
+        }
       },
       error: err => {
         this.busy = false;

@@ -92,6 +92,43 @@ class SecurityRulesTest {
     }
 
     @Test
+    void signupWithoutMailActivationSignsTheUserInAtOnce() throws Exception {
+        String name = "newcomer" + SEQ.incrementAndGet();
+        String body = mvc.perform(post("/api/auth/signup").contentType(MediaType.APPLICATION_JSON)
+                        .content(json.writeValueAsString(Map.of(
+                                "username", name, "email", name + "@example.com", "password", PASSWORD, "acceptTerms", true))))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        assertThat(json.readTree(body).get("activationRequired").asBoolean()).isFalse();
+        assertThat(json.readTree(body).at("/session/accessToken").asText()).isNotBlank();
+        User user = users.findByUsername(name).orElseThrow();
+        assertThat(user.getActivated()).isTrue();
+        assertThat(user.getEmailVerified()).isFalse();
+    }
+
+    @Test
+    void pendingAccountIsActivatedOnSignInWhileMailActivationIsOff() throws Exception {
+        String name = "pending" + SEQ.incrementAndGet();
+        mvc.perform(post("/api/auth/signup").contentType(MediaType.APPLICATION_JSON)
+                        .content(json.writeValueAsString(Map.of(
+                                "username", name, "email", name + "@example.com", "password", PASSWORD, "acceptTerms", true))))
+                .andExpect(status().isOk());
+        User user = users.findByUsername(name).orElseThrow();
+        user.setActivated(false);
+        users.save(user);
+
+        mvc.perform(post("/api/auth/signin").contentType(MediaType.APPLICATION_JSON)
+                        .content(json.writeValueAsString(Map.of("username", name, "password", "wrong-pass"))))
+                .andExpect(status().isUnauthorized());
+        assertThat(users.findByUsername(name).orElseThrow().getActivated()).isFalse();
+
+        mvc.perform(post("/api/auth/signin").contentType(MediaType.APPLICATION_JSON)
+                        .content(json.writeValueAsString(Map.of("username", name, "password", PASSWORD))))
+                .andExpect(status().isOk());
+        assertThat(users.findByUsername(name).orElseThrow().getActivated()).isTrue();
+    }
+
+    @Test
     void signupIgnoresRequestedAdminRole() throws Exception {
         String name = "intruder" + SEQ.incrementAndGet();
         mvc.perform(post("/api/auth/signup").contentType(MediaType.APPLICATION_JSON)

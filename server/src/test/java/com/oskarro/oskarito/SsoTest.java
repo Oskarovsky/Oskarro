@@ -12,6 +12,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -44,6 +45,7 @@ class SsoTest {
     @Autowired SsoAccountService sso;
     @Autowired UserRepository users;
     @Autowired RoleRepository roles;
+    @Autowired PasswordEncoder encoder;
 
     @BeforeEach
     void roles() {
@@ -87,6 +89,27 @@ class SsoTest {
         assertThat(users.findById(existing.getId()).orElseThrow().getActivated()).isTrue();
         // The success handler reads the roles outside the service's transaction.
         assertThat(UserPrincipal.build(signedIn).getAuthorities()).isNotEmpty();
+    }
+
+    @Test
+    void unprovenAccountWithTheSameEmailIsTakenOverAndItsPasswordStopsWorking() {
+        User squatter = users.save(User.builder().username("podszywacz").email("ofiara@example.com")
+                .password(encoder.encode("haslo-podszywacza")).activated(true).emailVerified(false)
+                .roles(new HashSet<>(Set.of(roles.findByName(RoleName.ROLE_USER).orElseThrow()))).build());
+        sso.accountFor("google", Map.of("email", "ofiara@example.com", "email_verified", true));
+        User after = users.findById(squatter.getId()).orElseThrow();
+        assertThat(encoder.matches("haslo-podszywacza", after.getPassword())).isFalse();
+        assertThat(after.getEmailVerified()).isTrue();
+    }
+
+    @Test
+    void provenAccountKeepsItsPassword() {
+        User owner = users.save(User.builder().username("wlasciciel").email("wlasciciel@example.com")
+                .password(encoder.encode("moje-haslo")).activated(true)
+                .roles(new HashSet<>(Set.of(roles.findByName(RoleName.ROLE_USER).orElseThrow()))).build());
+        sso.accountFor("google", Map.of("email", "wlasciciel@example.com", "email_verified", true));
+        User after = users.findById(owner.getId()).orElseThrow();
+        assertThat(encoder.matches("moje-haslo", after.getPassword())).isTrue();
     }
 
     @Test

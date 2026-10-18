@@ -11,10 +11,12 @@ import java.util.stream.Collectors;
 import jakarta.validation.Valid;
 
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -61,20 +63,26 @@ public class AuthController {
     @Autowired
     ObjectProvider<ClientRegistrationRepository> ssoProviders;
 
+    /** Off until outgoing mail works: new accounts are active at once and pending ones activate on sign-in. */
+    @Value("${oskarro.app.emailActivation:false}")
+    boolean emailActivation;
+
     @PostMapping(value = "/signin")
     @CrossOrigin(origins = "*", allowedHeaders = "*")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
 
         Authentication authentication;
         try {
-            authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+            authentication = authenticate(loginRequest);
         } catch (LockedException ex) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(new ResponseMessage("Konto zostało zablokowane przez administratora."));
         } catch (DisabledException ex) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(new ResponseMessage("Konto nie jest jeszcze aktywne. Otwórz link z maila aktywacyjnego."));
+        } catch (BadCredentialsException ex) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ResponseMessage("Nieprawidłowa nazwa użytkownika albo hasło."));
         }
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -91,6 +99,28 @@ public class AuthController {
                 userDetails.getUsername(),
                 userDetails.getEmail(),
                 roles));
+    }
+
+    private Authentication authenticate(LoginRequest loginRequest) {
+        UsernamePasswordAuthenticationToken attempt =
+                new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword());
+        try {
+            return authenticationManager.authenticate(attempt);
+        } catch (DisabledException ex) {
+            if (emailActivation) {
+                throw ex;
+            }
+            // Signed up while activation was required. Spring rejects disabled accounts before it checks
+            // the password, so check it here before letting them in.
+            User user = userRepository.findByUsername(loginRequest.getUsername()).orElseThrow(() -> ex);
+            if (Boolean.TRUE.equals(user.getBanned()) || loginRequest.getPassword() == null
+                    || !encoder.matches(loginRequest.getPassword(), user.getPassword())) {
+                throw new BadCredentialsException("Bad credentials");
+            }
+            user.setActivated(true);
+            userRepository.save(user);
+            return authenticationManager.authenticate(attempt);
+        }
     }
 
     /** Which external sign-ins are switched on, e.g. ["google","facebook"]; empty until keys are configured. */
@@ -141,7 +171,8 @@ public class AuthController {
                 .username(signupRequest.getUsername())
                 .email(signupRequest.getEmail())
                 .password(encoder.encode(signupRequest.getPassword()))
-                .activated(false)
+                .activated(!emailActivation)
+                .emailVerified(false)
                 .createdAt(java.time.Instant.now())
                 .termsAcceptedAt(java.time.Instant.now())
                 .build();
@@ -152,6 +183,18 @@ public class AuthController {
         Set<Role> roles = new HashSet<>(Set.of(userRole));
         user.setRoles(roles);
         userRepository.save(user);
+        if (!emailActivation) {
+            // No mail step: sign the new user in straight away.
+            UserPrincipal principal = UserPrincipal.build(user);
+            String jwt = jwtTokenProvider.generateJwtToken(
+                    new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities()));
+            presenceService.loggedIn(user.getId());
+            return ResponseEntity.ok(java.util.Map.of(
+                    "message", "Konto utworzone. Jesteś zalogowany.",
+                    "activationRequired", false,
+                    "session", new JwtResponse(jwt, principal.getId(), principal.getUsername(), principal.getEmail(),
+                            principal.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()))));
+        }
         boolean delivered = accountActivationService.issueAndSend(user);
 
         return ResponseEntity.ok(java.util.Map.of(
