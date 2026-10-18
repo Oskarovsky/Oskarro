@@ -2,7 +2,7 @@
   <div class="radio-top">
     <div>
       <p class="kicker">Radio</p>
-      <h1>{{ 'Włącz i słuchaj.' | t:'Press play and listen.' }}</h1>
+      <h1>{{ 'Włącz i słuchaj z nami.' | t:'Press play and listen with us.' }}</h1>
       <p class="lede" *ngIf="!themes.size && playback.autoplayNext">{{ 'Następny numer jest losowy i startuje sam, gdy ten się skończy.' | t:'The next track is random and starts on its own when this one ends.' }}</p>
       <p class="lede" *ngIf="!themes.size && !playback.autoplayNext">{{ 'Po tym numerze odtwarzanie staje. Losowy włączysz przyciskiem. Ustawienie jest w profilu.' | t:'Playback stops after this track. Use the button for a random one. The setting is in your profile.' }}</p>
       <p class="lede" *ngIf="themes.size && playback.autoplayNext">{{ 'Słuchasz wybranych gatunków. Następny numer jest z nich losowany.' | t:'You are listening to the genres you picked. The next track is chosen from them at random.' }}</p>

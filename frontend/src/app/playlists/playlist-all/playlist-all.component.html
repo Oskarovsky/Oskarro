@@ -4,7 +4,7 @@
     <h1 class="display">{{ 'Playlisty' | t:'Playlists' }}</h1>
     <a class="btn-accent" routerLink="/playlist/add" *ngIf="loggedIn">{{ 'Nowa składanka' | t:'New playlist' }}</a>
   </div>
-  <p class="lede">{{ 'Składanki na imprezę złożone przez ludzi z Oskarro. Każda ma autora, nazwę i opis.' | t:'Party playlists put together by people on Oskarro. Each one has an author, a name and a description.' }}</p>
+  <p class="lede">{{ 'Składanki od ludzi z Oskarro na siłownię, do auta i na imprezę — posłuchaj albo złóż z nami własną.' | t:'Playlists by people on Oskarro for the gym, the car and the party — listen, or build your own with us.' }}</p>
 
   <label class="find">
     <input [(ngModel)]="searchText" type="search" [placeholder]="'Szukaj składanki' | t:'Search playlists'">
