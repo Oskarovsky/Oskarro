@@ -1,9 +1,9 @@
 <div class="page">
   <section class="landing">
     <div class="landing-copy">
-      <p class="kicker">{{ 'Społeczność muzyki klubowej' | t:'The club music community' }}</p>
-      <h1>{{ 'Numery, które rozkręcają parkiet.' | t:'Tracks that set the dance floor on fire.' }}</h1>
-      <p class="landing-lede">{{ 'Club, vixa, trance, big room i disco polo w jednym miejscu. Słuchasz za darmo, oceniasz +1 albo −1, a najlepsze numery wybiera społeczność — nie algorytm.' | t:'Club, vixa, trance, big room and disco polo in one place. Listen for free, vote +1 or −1, and the community — not an algorithm — picks the best tracks.' }}</p>
+      <p class="kicker">{{ 'Twoje miejsce z muzyką' | t:'Your place for music' }}</p>
+      <h1>{{ 'Słuchaj z nami. Wszędzie.' | t:'Listen with us. Anywhere.' }}</h1>
+      <p class="landing-lede">{{ 'Pompuj z nami na siłowni, zabierz nas na spacer, rozkręć z nami domówkę i dyskotekę — club, vixa, trance i disco polo za darmo, a najlepsze numery wybieracie Wy, nie algorytm.' | t:'Lift with us at the gym, take us for a walk, get the house party and the club going with us — club, vixa, trance and disco polo for free, and you pick the best tracks, not an algorithm.' }}</p>
       <div class="landing-actions">
         <a class="btn-accent" routerLink="/radio">▶ {{ 'Włącz radio' | t:'Play the radio' }}</a>
         <a class="btn-ghost" [routerLink]="isLoggedIn ? '/track/add' : '/register'">{{ isLoggedIn ? ('Dodaj swój numer' | t:'Share your track') : ('Dołącz za darmo' | t:'Join for free') }}</a>

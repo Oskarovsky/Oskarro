@@ -72,8 +72,8 @@ export class SetListComponent implements OnInit, OnDestroy {
 
   get about() {
     if (!this.category) {
-      return this.lang.t('Długie sety z klubów i festiwali, audycje radiowe i miksy didżejów z naszej społeczności. Słuchasz w całości, oceniasz i komentujesz.',
-        'Long sets from clubs and festivals, radio shows and mixes by DJs from our community. Listen in full, vote and comment.');
+      return this.lang.t('Sety z klubów, festiwali i radia oraz miksy naszych didżejów — puść z nami cały set na trening, do auta albo na domówkę.',
+        'Sets from clubs, festivals and radio plus mixes by our DJs — play a whole set with us for a workout, a drive or a house party.');
     }
     return this.lang.en ? this.category.blurbEn : this.category.blurb;
   }

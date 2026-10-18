@@ -1,7 +1,7 @@
 <div class="auth-wrap">
   <div class="auth-card">
       <h1 class="display" style="font-size: 2.4rem; margin: 12px 8px 0;">{{ 'Zaloguj się' | t:'Sign in' }}</h1>
-      <p class="lede" style="margin: 8px;">{{ 'Wracasz do odsłuchu, komentarzy i własnych utworów.' | t:'You are coming back to playback, comments and your own tracks.' }}</p>
+      <p class="lede" style="margin: 8px;">{{ 'Wracaj do nas — Twoje numery, składanki i komentarze już czekają.' | t:'Come back to us — your tracks, playlists and comments are waiting.' }}</p>
       <p class="alert alert-danger" role="status" *ngIf="sessionExpired && !isLoggedIn" style="margin: 8px;">{{ 'Sesja wygasła. Zaloguj się ponownie.' | t:'Your session expired. Please sign in again.' }}</p>
       <app-sso-buttons *ngIf="!isLoggedIn" mode="login"></app-sso-buttons>
       <form

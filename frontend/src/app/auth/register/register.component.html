@@ -1,7 +1,7 @@
 <div class="auth-wrap">
   <div class="auth-card">
     <h1 class="display" style="font-size: 2.4rem; margin: 12px 8px 0;">{{ 'Załóż konto' | t:'Create an account' }}</h1>
-    <p class="lede" style="margin: 8px;">{{ 'Potem możesz dodawać utwory, słuchać ich i zostawiać komentarze.' | t:'Then you can add tracks, listen to them and leave comments.' }}</p>
+    <p class="lede" style="margin: 8px;">{{ 'Dołącz do nas — dodawaj swoje numery, oceniaj i komentuj, a najlepsze wybierzemy razem.' | t:'Join us — share your tracks, vote and comment, and we will pick the best ones together.' }}</p>
 
     <app-sso-buttons *ngIf="!isSuccessful" mode="register"></app-sso-buttons>
     <form *ngIf="!isSuccessful" (ngSubmit)="onSubmit()" #f="ngForm" novalidate>
