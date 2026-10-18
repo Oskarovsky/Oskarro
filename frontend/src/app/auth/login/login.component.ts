@@ -20,6 +20,8 @@ export class LoginComponent implements OnInit {
   errorMessage = '';
   roles: string[] = [];
   sessionExpired = false;
+  busy = false;
+  showPassword = false;
 
   constructor(private authService: AuthService,
               private tokenStorage: TokenStorageService,
@@ -35,8 +37,14 @@ export class LoginComponent implements OnInit {
   }
 
   onSubmit() {
+    if (this.busy) {
+      return;
+    }
+    this.busy = true;
+    this.isLoginFailed = false;
     this.authService.login(this.form).subscribe(
       data => {
+        this.busy = false;
         this.tokenStorage.saveToken(data.accessToken);
         this.tokenStorage.saveUser(data);
 
@@ -46,6 +54,7 @@ export class LoginComponent implements OnInit {
         this.reloadPage();
       },
       error => {
+        this.busy = false;
         const raw = error?.error?.message || '';
         if (raw.includes('aktywne')) {
           this.errorMessage = this.lang.t(
@@ -53,7 +62,9 @@ export class LoginComponent implements OnInit {
             'The account is not active yet. Open the link from the activation email.'
           );
         } else {
-          this.errorMessage = raw || this.lang.t('Nieprawidłowa nazwa albo hasło.', 'Wrong username or password.');
+          this.errorMessage = !raw || raw.startsWith('Nieprawidłowa')
+            ? this.lang.t('Nieprawidłowa nazwa użytkownika albo hasło.', 'Wrong username or password.')
+            : raw;
         }
         this.isLoginFailed = true;
       }

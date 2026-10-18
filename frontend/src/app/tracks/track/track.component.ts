@@ -313,6 +313,13 @@ export class TrackComponent implements OnInit, OnDestroy {
     if (this.voting) {
       return;
     }
+    // One vote per track: the opposite vote has to be taken back first.
+    if (this.mine === -value) {
+      this.voteNote = this.mine === 1
+        ? this.lang.t('Najpierw cofnij +1 — kliknij je jeszcze raz.', 'Take back your +1 first — click it again.')
+        : this.lang.t('Najpierw cofnij −1 — kliknij je jeszcze raz.', 'Take back your −1 first — click it again.');
+      return;
+    }
     this.voting = true;
     this.voteNote = '';
     this.trackService.vote(this.track.id, value).subscribe({

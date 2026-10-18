@@ -1,14 +1,18 @@
 <div class="auth-wrap">
   <div class="auth-card">
-    <h1 class="display" style="font-size: 2.4rem; margin: 12px 8px 0;">{{ 'Załóż konto' | t:'Create an account' }}</h1>
-    <p class="lede" style="margin: 8px;">{{ 'Dołącz do nas — dodawaj swoje numery, oceniaj i komentuj, a najlepsze wybierzemy razem.' | t:'Join us — share your tracks, vote and comment, and we will pick the best ones together.' }}</p>
+    <header class="auth-head">
+      <h1 class="display">{{ 'Załóż konto' | t:'Create an account' }}</h1>
+      <p class="lede">{{ 'Dołącz do nas — dodawaj swoje numery, oceniaj i komentuj, a najlepsze wybierzemy razem.' | t:'Join us — share your tracks, vote and comment, and we will pick the best ones together.' }}</p>
+    </header>
 
     <app-sso-buttons *ngIf="!isSuccessful" mode="register"></app-sso-buttons>
-    <form *ngIf="!isSuccessful" (ngSubmit)="onSubmit()" #f="ngForm" novalidate>
+    <form *ngIf="!isSuccessful" class="auth-form" (ngSubmit)="onSubmit()" #f="ngForm" novalidate>
       <div class="form-group">
         <label for="username">{{ 'Nazwa użytkownika' | t:'Username' }}</label>
         <input id="username" type="text" class="form-control" name="username" [(ngModel)]="form.username"
-               required minlength="3" maxlength="32" #username="ngModel" autocomplete="username">
+               required minlength="3" maxlength="32" #username="ngModel" autocomplete="username"
+               autocapitalize="none" spellcheck="false" [attr.aria-invalid]="submitted && (username.invalid || !!usernameHint)">
+        <p class="field-hint" *ngIf="!(submitted && (username.invalid || usernameHint))">{{ 'Tak będą Cię widzieć inni. 3–32 znaki.' | t:'This is how others will see you. 3–32 characters.' }}</p>
         <div class="alert alert-danger" *ngIf="submitted && (username.invalid || usernameHint)">
           <div *ngIf="username.errors?.required">{{ 'Nazwa użytkownika jest wymagana' | t:'Username is required' }}</div>
           <div *ngIf="username.errors?.minlength">{{ 'Nazwa: 3–32 znaki, litery, cyfry, kropka, myślnik albo _.' | t:'Username: 3–32 characters, letters, digits, a dot, a hyphen or _.' }}</div>
@@ -18,8 +22,9 @@
 
       <div class="form-group">
         <label for="email">Email</label>
-        <input id="email" type="email" class="form-control" name="email" [(ngModel)]="form.email"
-               required email maxlength="50" #email="ngModel" autocomplete="email">
+        <input id="email" type="email" class="form-control" name="email" [(ngModel)]="form.email" inputmode="email"
+               required email maxlength="50" #email="ngModel" autocomplete="email" autocapitalize="none" spellcheck="false"
+               [attr.aria-invalid]="submitted && email.invalid">
         <div class="alert alert-danger" *ngIf="submitted && email.invalid">
           <div *ngIf="email.errors?.required">{{ 'Wymagany adres email' | t:'Email address is required' }}</div>
           <div *ngIf="email.errors?.email">{{ 'Niepoprawny email' | t:'Invalid email' }}</div>
@@ -28,8 +33,15 @@
 
       <div class="form-group">
         <label for="reg-password">{{ 'Hasło' | t:'Password' }}</label>
-        <input id="reg-password" type="password" class="form-control" name="password" [(ngModel)]="form.password"
-               required minlength="6" maxlength="40" #password="ngModel" autocomplete="new-password">
+        <div class="password-field">
+          <input id="reg-password" [type]="showPassword ? 'text' : 'password'" class="form-control" name="password" [(ngModel)]="form.password"
+                 required minlength="6" maxlength="40" #password="ngModel" autocomplete="new-password"
+                 [attr.aria-invalid]="submitted && password.invalid">
+          <button type="button" class="password-toggle" (click)="showPassword = !showPassword" [attr.aria-pressed]="showPassword">
+            {{ showPassword ? ('Ukryj' | t:'Hide') : ('Pokaż' | t:'Show') }}
+          </button>
+        </div>
+        <p class="field-hint" *ngIf="!(submitted && password.invalid)">{{ 'Co najmniej 6 znaków.' | t:'At least 6 characters.' }}</p>
         <div class="alert alert-danger" *ngIf="submitted && password.invalid">
           <div *ngIf="password.errors?.required">{{ 'Wymagane hasło' | t:'Password is required' }}</div>
           <div *ngIf="password.errors?.minlength">{{ 'Hasło musi zawierać minimum 6 znaków' | t:'The password must be at least 6 characters' }}</div>
@@ -38,9 +50,9 @@
 
       <div class="form-group">
         <label for="reg-confirm">{{ 'Powtórz hasło' | t:'Repeat the password' }}</label>
-        <input id="reg-confirm" type="password" class="form-control" name="confirm" [(ngModel)]="form.confirm"
-               required #confirm="ngModel" autocomplete="new-password">
-        <div class="alert alert-danger" *ngIf="submitted && mismatch">
+        <input id="reg-confirm" [type]="showPassword ? 'text' : 'password'" class="form-control" name="confirm" [(ngModel)]="form.confirm"
+               required #confirm="ngModel" autocomplete="new-password" [attr.aria-invalid]="(submitted || confirm.dirty) && mismatch">
+        <div class="alert alert-danger" *ngIf="(submitted || (confirm.dirty && form.confirm.length >= form.password.length)) && mismatch">
           {{ 'Hasła nie są takie same.' | t:'The passwords do not match.' }}
         </div>
       </div>
@@ -59,20 +71,22 @@
         <input name="oskarro_hp" [(ngModel)]="form.hp" tabindex="-1" autocomplete="off">
       </div>
 
-      <div class="form-group">
-        <button class="btn btn-primary btn-block" type="submit" [disabled]="busy">{{ 'Dodaj konto' | t:'Create account' }}</button>
-      </div>
+      <button class="btn btn-primary btn-block auth-submit" type="submit" [disabled]="busy">
+        {{ busy ? ('Zakładam konto…' | t:'Creating your account…') : ('Załóż konto' | t:'Create account') }}
+      </button>
 
-      <div class="alert alert-danger" *ngIf="isSignUpFailed">
-        {{ 'Wystąpił błąd podczas rejestracji!' | t:'Registration failed.' }}<br>{{ errorMessage }}
-      </div>
+      <div class="alert alert-danger auth-error" role="alert" *ngIf="isSignUpFailed">{{ errorMessage }}</div>
     </form>
 
-    <p class="meta" *ngIf="!isSuccessful">{{ 'Masz już konto?' | t:'Already have an account?' }} <a routerLink="/login">{{ 'Zaloguj się' | t:'Sign in' }}</a></p>
-    <div class="alert alert-success" *ngIf="isSuccessful && delivered">
+    <p class="meta auth-links" *ngIf="!isSuccessful">{{ 'Masz już konto?' | t:'Already have an account?' }} <a routerLink="/login">{{ 'Zaloguj się' | t:'Sign in' }}</a></p>
+
+    <div class="alert alert-success auth-done" role="status" *ngIf="isSuccessful && signedIn">
+      {{ 'Witaj w Oskarro! Konto jest gotowe, zaraz przeniesiemy Cię na stronę główną.' | t:'Welcome to Oskarro! Your account is ready, taking you to the home page.' }}
+    </div>
+    <div class="alert alert-success auth-done" role="status" *ngIf="isSuccessful && !signedIn && delivered">
       {{ 'Konto jest zapisane. Sprawdź skrzynkę i otwórz link aktywacyjny. Dopiero wtedy można się zalogować.' | t:'The account is saved. Check your inbox and open the activation link. You can sign in only after that.' }}
     </div>
-    <div class="alert alert-success" *ngIf="isSuccessful && !delivered">
+    <div class="alert alert-success auth-done" role="status" *ngIf="isSuccessful && !signedIn && !delivered">
       {{ 'Konto jest zapisane i czeka na aktywację. Mail nie wyszedł, bo skrzynka nie jest jeszcze podłączona. Zalogować się będzie można po otwarciu linku z maila.' | t:'The account is saved and waiting for activation. The email was not sent, because the mailbox is not connected yet. You can sign in after opening the link from the email.' }}
     </div>
   </div>

@@ -6,6 +6,8 @@ import com.oskarro.oskarito.user.RoleRepository;
 import com.oskarro.oskarito.user.User;
 import com.oskarro.oskarito.user.UserRepository;
 import org.hibernate.Hibernate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +23,8 @@ import java.util.UUID;
 /** Finds or creates the local account behind a Google/Facebook sign-in. */
 @Service
 public class SsoAccountService {
+
+    private static final Logger log = LoggerFactory.getLogger(SsoAccountService.class);
 
     /** Why a sign-in was refused; the frontend shows a matching message. */
     public static class SsoRefused extends RuntimeException {
@@ -65,11 +69,19 @@ public class SsoAccountService {
             if (Boolean.TRUE.equals(user.getBanned())) {
                 throw new SsoRefused("zablokowane");
             }
-            // The provider has verified the address, so a pending activation is no longer needed.
-            if (Boolean.FALSE.equals(user.getActivated())) {
-                user.setActivated(true);
-                users.save(user);
+            // Someone signed up with this address but never proved it. The provider has now proven it,
+            // so the account goes to its owner and the password set by whoever signed up stops working.
+            boolean unproven = Boolean.FALSE.equals(user.getEmailVerified())
+                    || (user.getEmailVerified() == null && Boolean.FALSE.equals(user.getActivated()));
+            if (unproven) {
+                log.warn("SSO {} took over unverified account id={}: password reset", provider, user.getId());
+                user.setPassword(encoder.encode(UUID.randomUUID().toString()));
+                user.setAuthProvider(provider);
             }
+            user.setEmailVerified(true);
+            // The provider has verified the address, so a pending activation is no longer needed.
+            user.setActivated(true);
+            users.save(user);
             // The caller builds the JWT from the roles after this transaction has closed.
             Hibernate.initialize(user.getRoles());
             return user;
@@ -81,6 +93,7 @@ public class SsoAccountService {
                 .email(email)
                 .password(encoder.encode(UUID.randomUUID().toString()))
                 .activated(true)
+                .emailVerified(true)
                 .createdAt(now)
                 .termsAcceptedAt(now)
                 .authProvider(provider)

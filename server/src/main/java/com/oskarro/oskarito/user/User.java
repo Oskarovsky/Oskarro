@@ -47,6 +47,12 @@ public class User {
     /** Null keeps accounts created before activation able to sign in. */
     private Boolean activated;
 
+    /**
+     * False when nobody has proven the address yet (signed up while e-mail activation was off);
+     * true after the mail link or a Google/Facebook sign-in; null for accounts older than this flag.
+     */
+    private Boolean emailVerified;
+
     /** Registration time; null for accounts created before 2026-10-17. */
     private Instant createdAt;
 

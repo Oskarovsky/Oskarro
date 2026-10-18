@@ -61,6 +61,7 @@ public class AccountActivationService {
         User user = users.findById(note.getUserId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Link jest nieważny albo wygasł"));
         user.setActivated(true);
+        user.setEmailVerified(true);
         users.save(user);
         activations.delete(note);
     }

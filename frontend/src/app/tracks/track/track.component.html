@@ -5,14 +5,13 @@
       <div class="cover-plate">
         <app-cover class="cover" [hasCover]="track.hasCover" [src]="coverSrc()" [genre]="track.genre"></app-cover>
         <div class="cover-bar" [class.guest]="!isLoggedIn">
-          <button *ngIf="isLoggedIn" class="vote-mark" [class.on]="mine === 1" [disabled]="voting || mine === -1" type="button" (click)="vote(1)" [attr.aria-label]="'Lubię to' | t:'Like'" [attr.title]="'Lubię to' | t:'Like'">
+          <button *ngIf="isLoggedIn" class="vote-mark" [class.on]="mine === 1" [disabled]="voting" [attr.aria-disabled]="mine === -1 || null" type="button" (click)="vote(1)" [attr.aria-label]="'Lubię to' | t:'Like'" [attr.title]="mine === 1 ? ('Kliknij, żeby cofnąć +1' | t:'Click to take back your +1') : mine === -1 ? ('Najpierw cofnij −1' | t:'Take back your −1 first') : ('Lubię to' | t:'Like')">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 4h2v16h-2zM4 11h16v2H4z"/></svg>
           </button>
           <app-score [value]="score"></app-score>
-          <button *ngIf="isLoggedIn" class="vote-mark down" [class.on]="mine === -1" [disabled]="voting || mine === 1" type="button" (click)="vote(-1)" [attr.aria-label]="'Nie podoba mi się' | t:'Dislike'" [attr.title]="'Nie podoba mi się' | t:'Dislike'">
+          <button *ngIf="isLoggedIn" class="vote-mark down" [class.on]="mine === -1" [disabled]="voting" [attr.aria-disabled]="mine === 1 || null" type="button" (click)="vote(-1)" [attr.aria-label]="'Nie podoba mi się' | t:'Dislike'" [attr.title]="mine === -1 ? ('Kliknij, żeby cofnąć −1' | t:'Click to take back your −1') : mine === 1 ? ('Najpierw cofnij +1' | t:'Take back your +1 first') : ('Nie podoba mi się' | t:'Dislike')">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11h16v2H4z"/></svg>
           </button>
-          <p class="meta vote-hint" *ngIf="isLoggedIn && mine !== 0 && !voteNote">{{ mine === 1 ? ('Dałeś +1. Kliknij jeszcze raz, żeby cofnąć.' | t:'You gave +1. Click again to take it back.') : ('Dałeś −1. Kliknij jeszcze raz, żeby cofnąć.' | t:'You gave −1. Click again to take it back.') }}</p>
           <p class="meta vote-hint vote-error" *ngIf="voteNote" role="alert">{{ voteNote }}</p>
           <p class="meta vote-hint" *ngIf="!isLoggedIn"><a routerLink="/login">{{ 'Zaloguj się' | t:'Sign in' }}</a>{{ lang.en ? ' to vote.' : ', żeby zagłosować.' }}</p>
         </div>

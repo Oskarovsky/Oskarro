@@ -1,71 +1,74 @@
 <div class="auth-wrap">
   <div class="auth-card">
-      <h1 class="display" style="font-size: 2.4rem; margin: 12px 8px 0;">{{ 'Zaloguj się' | t:'Sign in' }}</h1>
-      <p class="lede" style="margin: 8px;">{{ 'Wracaj do nas — Twoje numery, składanki i komentarze już czekają.' | t:'Come back to us — your tracks, playlists and comments are waiting.' }}</p>
-      <p class="alert alert-danger" role="status" *ngIf="sessionExpired && !isLoggedIn" style="margin: 8px;">{{ 'Sesja wygasła. Zaloguj się ponownie.' | t:'Your session expired. Please sign in again.' }}</p>
-      <app-sso-buttons *ngIf="!isLoggedIn" mode="login"></app-sso-buttons>
-      <form
-        *ngIf="!isLoggedIn"
-        name="form"
-        (ngSubmit)="f.form.valid && onSubmit()"
-        #f="ngForm"
-        novalidate>
-        <div class="form-group">
-          <label for="username">{{ 'Nazwa użytkownika' | t:'Username' }}</label>
-          <input
-            type="text"
-            class="form-control"
-            name="username"
-            [(ngModel)]="form.username"
-            required
-            #username="ngModel"/>
-          <div
-            class="alert alert-danger"
-            role="alert"
-            *ngIf="f.submitted && username.invalid">
-            {{ 'Wymagana nazwa użytkownika' | t:'Username is required' }}
-          </div>
+    <header class="auth-head">
+      <h1 class="display">{{ 'Zaloguj się' | t:'Sign in' }}</h1>
+      <p class="lede">{{ 'Wracaj do nas — Twoje numery, składanki i komentarze już czekają.' | t:'Come back to us — your tracks, playlists and comments are waiting.' }}</p>
+    </header>
+    <p class="alert alert-danger auth-error" role="status" *ngIf="sessionExpired && !isLoggedIn">{{ 'Sesja wygasła. Zaloguj się ponownie.' | t:'Your session expired. Please sign in again.' }}</p>
+    <app-sso-buttons *ngIf="!isLoggedIn" mode="login"></app-sso-buttons>
+    <form
+      *ngIf="!isLoggedIn"
+      class="auth-form"
+      name="form"
+      (ngSubmit)="f.form.valid && onSubmit()"
+      #f="ngForm"
+      novalidate>
+      <div class="form-group">
+        <label for="login-username">{{ 'Nazwa użytkownika' | t:'Username' }}</label>
+        <input
+          id="login-username"
+          type="text"
+          class="form-control"
+          name="username"
+          [(ngModel)]="form.username"
+          required
+          autocomplete="username"
+          autocapitalize="none"
+          spellcheck="false"
+          [attr.aria-invalid]="f.submitted && username.invalid"
+          #username="ngModel"/>
+        <div class="alert alert-danger" role="alert" *ngIf="f.submitted && username.invalid">
+          {{ 'Wymagana nazwa użytkownika' | t:'Username is required' }}
         </div>
-        <div class="form-group">
-          <label for="password">{{ 'Hasło' | t:'Password' }}</label>
+      </div>
+      <div class="form-group">
+        <div class="label-row">
+          <label for="login-password">{{ 'Hasło' | t:'Password' }}</label>
+          <a class="meta" routerLink="/przypomnij">{{ 'Nie pamiętasz hasła?' | t:'Forgot your password?' }}</a>
+        </div>
+        <div class="password-field">
           <input
-            type="password"
+            id="login-password"
+            [type]="showPassword ? 'text' : 'password'"
             class="form-control"
             name="password"
             [(ngModel)]="form.password"
             required
             minlength="6"
+            autocomplete="current-password"
+            [attr.aria-invalid]="f.submitted && password.invalid"
             #password="ngModel"/>
-          <div
-            class="alert alert-danger"
-            role="alert"
-            *ngIf="f.submitted && password.invalid">
-            <div *ngIf="password.errors.required">{{ 'Wymagane hasło' | t:'Password is required' }}</div>
-            <div *ngIf="password.errors.minlength">
-              {{ 'Hasło musi zawierać minimum 6 znaków' | t:'The password must be at least 6 characters' }}
-            </div>
-          </div>
-        </div>
-        <div class="form-group">
-          <button class="btn btn-primary btn-block">
-            {{ 'Zaloguj się' | t:'Sign in' }}
+          <button type="button" class="password-toggle" (click)="showPassword = !showPassword" [attr.aria-pressed]="showPassword">
+            {{ showPassword ? ('Ukryj' | t:'Hide') : ('Pokaż' | t:'Show') }}
           </button>
         </div>
-        <div class="form-group">
-          <div
-            class="alert alert-danger"
-            role="alert"
-            *ngIf="f.submitted && isLoginFailed">
-            {{ 'Błąd logowania' | t:'Sign-in failed' }}: {{ errorMessage }}
+        <div class="alert alert-danger" role="alert" *ngIf="f.submitted && password.invalid">
+          <div *ngIf="password.errors?.required">{{ 'Wymagane hasło' | t:'Password is required' }}</div>
+          <div *ngIf="password.errors?.minlength">
+            {{ 'Hasło musi zawierać minimum 6 znaków' | t:'The password must be at least 6 characters' }}
           </div>
         </div>
-      </form>
-
-      <p class="meta auth-links" *ngIf="!isLoggedIn">{{ 'Nie masz konta?' | t:'No account yet?' }} <a routerLink="/register">{{ 'Dołącz' | t:'Join' }}</a></p>
-      <p class="meta auth-links" *ngIf="!isLoggedIn"><a routerLink="/przypomnij">{{ 'Nie pamiętasz hasła?' | t:'Forgot your password?' }}</a></p>
-
-      <div class="alert alert-success" *ngIf="isLoggedIn">
-        {{ lang.en ? 'You signed in as ' + roleLabel() + '.' : 'Zalogowałeś się jako ' + roleLabel() + '.' }}
       </div>
+      <button class="btn btn-primary btn-block auth-submit" type="submit" [disabled]="busy">
+        {{ busy ? ('Loguję…' | t:'Signing in…') : ('Zaloguj się' | t:'Sign in') }}
+      </button>
+      <div class="alert alert-danger auth-error" role="alert" *ngIf="isLoginFailed">{{ errorMessage }}</div>
+    </form>
+
+    <p class="meta auth-links" *ngIf="!isLoggedIn">{{ 'Nie masz konta?' | t:'No account yet?' }} <a routerLink="/register">{{ 'Załóż je za darmo' | t:'Create one for free' }}</a></p>
+
+    <div class="alert alert-success auth-done" role="status" *ngIf="isLoggedIn">
+      {{ lang.en ? 'You signed in as ' + roleLabel() + '.' : 'Zalogowałeś się jako ' + roleLabel() + '.' }}
     </div>
+  </div>
 </div>
