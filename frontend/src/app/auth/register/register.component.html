@@ -46,9 +46,9 @@
       </div>
 
       <div class="form-group">
-        <label>
+        <label class="check-row">
           <input type="checkbox" name="terms" [(ngModel)]="form.terms" required #terms="ngModel">
-          {{ 'Akceptuję' | t:'I accept the' }} <a routerLink="/regulamin" target="_blank">{{ 'regulamin' | t:'terms' }}</a> {{ 'i' | t:'and' }} <a routerLink="/polityka-prywatnosci" target="_blank">{{ 'politykę prywatności' | t:'privacy policy' }}</a>
+          <span>{{ 'Akceptuję' | t:'I accept the' }} <a routerLink="/regulamin" target="_blank">{{ 'regulamin' | t:'terms' }}</a> {{ 'i' | t:'and' }} <a routerLink="/polityka-prywatnosci" target="_blank">{{ 'politykę prywatności' | t:'privacy policy' }}</a></span>
         </label>
         <div class="alert alert-danger" *ngIf="submitted && terms.invalid">
           {{ 'Zaznacz zgodę, żeby założyć konto.' | t:'Tick the agreement to create an account.' }}

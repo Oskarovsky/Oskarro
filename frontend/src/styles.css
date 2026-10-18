@@ -1284,6 +1284,29 @@ select,
   padding: 11px 12px;
 }
 
+input[type="checkbox"],
+input[type="radio"] {
+  width: auto;
+  padding: 0;
+  accent-color: var(--accent);
+}
+
+/* A checkbox with its text alongside, e.g. the terms consent on sign-up. */
+.check-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+  line-height: 1.45;
+}
+
+.check-row input {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin: 2px 0 0;
+}
+
 textarea {
   resize: vertical;
 }
