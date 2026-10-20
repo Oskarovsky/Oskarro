@@ -50,6 +50,26 @@ public class PlaylistController {
         playlistService.unpin(id, trackId);
     }
 
+    /** Playlists the signed-in user may play in the radio. */
+    @GetMapping(value = "/playable")
+    @CrossOrigin(origins = "*", allowedHeaders = "*")
+    public List<PlaylistView> playable() {
+        return playlistService.playable();
+    }
+
+    /** Whether the user may browse everyone's playlists, and from which rank. */
+    @GetMapping(value = "/access")
+    @CrossOrigin(origins = "*", allowedHeaders = "*")
+    public Map<String, Object> access() {
+        return playlistService.access();
+    }
+
+    @PutMapping(value = "/{id}")
+    @CrossOrigin(origins = "*", allowedHeaders = "*")
+    public PlaylistView update(@PathVariable Integer id, @RequestBody PlaylistDraft draft) {
+        return playlistService.update(id, draft);
+    }
+
     @PostMapping(value = "/add")
     @CrossOrigin(origins = "*", allowedHeaders = "*")
     public PlaylistView addPlaylist(@RequestBody PlaylistDraft draft) {

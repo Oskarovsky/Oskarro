@@ -9,6 +9,9 @@ import {GENRES} from '../genres';
 import {PlaybackService, PlayableTrack} from '../playback.service';
 import {Track} from '../track/model/track';
 import {LangService} from '../../lang.service';
+import {PlaylistService} from '../../services/playlist/playlist.service';
+import {Playlist} from '../../playlists/playlist/model/playlist';
+
 
 const THEME_KEY = 'oskarro-radio-themes';
 
@@ -25,10 +28,14 @@ export class RadioComponent implements OnInit, OnDestroy {
   themes = new Set<string>();
   private alive = true;
   private catalogAll: PlayableTrack[] = [];
+  playlists: Playlist[] = [];
+  chosenPlaylist: number | null = null;
+  playlistNote = '';
   private sub: Subscription;
 
   constructor(readonly playback: PlaybackService,
               private tracks: TrackService,
+              private playlistService: PlaylistService,
               private tokenStorage: TokenStorageService,
               private view: ChangeDetectorRef,
               readonly lang: LangService) {}
@@ -37,6 +44,12 @@ export class RadioComponent implements OnInit, OnDestroy {
     this.playback.radioOpen = true;
     this.themes = this.readThemes();
     this.sub = this.playback.changes.subscribe(() => this.view.detectChanges());
+    if (this.loggedIn) {
+      this.playlistService.playable().subscribe(lists => {
+        this.playlists = lists || [];
+        this.chosenPlaylist = this.playback.playlist?.id ?? this.playlists[0]?.id ?? null;
+      });
+    }
     this.loading = !(this.playback.fromRadio && this.playback.track);
     this.tracks.getAllTracks().subscribe({
       next: all => {
@@ -71,6 +84,33 @@ export class RadioComponent implements OnInit, OnDestroy {
     this.playback.setPinned(!this.playback.pinned);
   }
 
+  /** Back from a playlist to the genre radio. */
+  backToGenres() {
+    this.playback.leavePlaylist();
+    this.playback.close();
+    this.retune();
+  }
+
+  playPlaylist(shuffle: boolean) {
+    const chosen = this.playlists.find(list => list.id === Number(this.chosenPlaylist));
+    if (!chosen) {
+      return;
+    }
+    this.playlistNote = '';
+    this.playlistService.getAllTracksFromPlaylist(String(chosen.id)).subscribe({
+      next: tracks => {
+        // Unlike the genre radio, a chosen playlist plays whatever it contains, sets included.
+        const queue = (tracks || []).filter(item => item?.id && item.url && !!audioRef(item.url)) as PlayableTrack[];
+        if (!queue.length) {
+          this.playlistNote = this.lang.t('W tej składance nie ma utworów do odtworzenia.', 'This playlist has no playable tracks.');
+          return;
+        }
+        this.playback.openPlaylist(queue, 0, {id: chosen.id, name: chosen.name}, shuffle);
+      },
+      error: () => this.playlistNote = this.lang.t('Nie udało się wczytać składanki.', 'Could not load the playlist.')
+    });
+  }
+
   toggleTheme(id: string) {
     if (this.themes.has(id)) {
       this.themes.delete(id);
@@ -79,7 +119,7 @@ export class RadioComponent implements OnInit, OnDestroy {
     }
     this.themes = new Set(this.themes);
     this.saveThemes();
-    this.retune();
+    this.leavePlaylistForGenres();
   }
 
   clearThemes() {
@@ -88,6 +128,14 @@ export class RadioComponent implements OnInit, OnDestroy {
     }
     this.themes = new Set();
     this.saveThemes();
+    this.leavePlaylistForGenres();
+  }
+
+  private leavePlaylistForGenres() {
+    if (this.playback.playlist) {
+      this.playback.leavePlaylist();
+      this.playback.close();
+    }
     this.retune();
   }
 
@@ -97,6 +145,10 @@ export class RadioComponent implements OnInit, OnDestroy {
   }
 
   private retune() {
+    if (this.playback.playlist) {
+      // A playlist is playing from the radio or its page: genre themes don't take over.
+      return;
+    }
     const pool = this.pool();
     if (!pool.length) {
       this.empty = !this.playback.track;

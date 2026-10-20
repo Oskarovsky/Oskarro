@@ -39,7 +39,20 @@ export class PlaylistService {
     return this.http.get<Track[]>(PLAYLIST_API + '/' + playlistId + '/tracks');
   }
 
-  addPlaylist(draft: {name: string, description: string}): Observable<Playlist> {
+  /** Playlists the signed-in user may play in the radio. */
+  playable(): Observable<Playlist[]> {
+    return this.http.get<Playlist[]>(PLAYLIST_API + '/playable');
+  }
+
+  access(): Observable<{canBrowseAll: boolean, rank: string, signedIn: boolean}> {
+    return this.http.get<{canBrowseAll: boolean, rank: string, signedIn: boolean}>(PLAYLIST_API + '/access');
+  }
+
+  updatePlaylist(id: number, draft: {name: string, description: string, privatePlaylist?: boolean}): Observable<Playlist> {
+    return this.http.put<Playlist>(PLAYLIST_API + '/' + id, draft);
+  }
+
+  addPlaylist(draft: {name: string, description: string, privatePlaylist?: boolean}): Observable<Playlist> {
     return this.http.post<Playlist>(PLAYLIST_API + '/add', draft);
   }
 

@@ -3092,3 +3092,174 @@ label {
 .auth-done {
   text-align: center;
 }
+
+/* Track page: edit button for the author (24 h) and admins. */
+.track-actions .edit-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.track-actions .edit-link svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
+/* Home: "Recently added" now sits right under the hero, above the growth board. */
+.latest-block {
+  margin: 8px 0 34px;
+}
+
+.latest-block .section-head {
+  margin-top: 0;
+}
+
+/* Bottom player bar: flexible row (prev/next, playlist name) instead of a fixed grid. */
+.now-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.now-bar .now-id {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.now-bar .now-range {
+  flex: 1 1 140px;
+  min-width: 80px;
+}
+
+.now-step {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.now-step svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
+.now-step:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.now-source {
+  flex: 0 1 auto;
+  max-width: 220px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--accent);
+  font-size: 0.82rem;
+  font-weight: 650;
+}
+
+.now-source small {
+  color: var(--muted);
+  font-size: inherit;
+}
+
+@media (max-width: 720px) {
+  .now-bar {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .now-bar .now-id {
+    flex-basis: calc(100% - 60px);
+  }
+
+  .now-source {
+    order: 10;
+    max-width: 100%;
+    flex-basis: 100%;
+  }
+}
+
+/* Playlist page: number doubles as "play from here", current track highlighted. */
+.play-from {
+  position: relative;
+  border: 0;
+  cursor: pointer;
+  min-width: 34px;
+}
+
+.play-from .tri {
+  display: none;
+}
+
+.track-row:hover .play-from .num,
+.track-row.is-playing .play-from .num {
+  display: none;
+}
+
+.track-row:hover .play-from .tri,
+.track-row.is-playing .play-from .tri {
+  display: inline;
+}
+
+.track-row.is-playing {
+  border-color: rgba(228, 255, 74, 0.55);
+  background: linear-gradient(90deg, rgba(228, 255, 74, 0.08), transparent 60%), var(--surface);
+}
+
+/* Playlists page: Mine / All tabs; locked tab stays focusable and explains the rank rule. */
+.playlist-tabs {
+  display: flex;
+  gap: 8px;
+  margin: 18px 0 6px;
+}
+
+.chip.locked {
+  opacity: 0.45;
+  cursor: help;
+}
+
+.tab-note {
+  margin: 4px 0 10px;
+}
+
+.playlist-settings summary {
+  cursor: pointer;
+  font-weight: 650;
+}
+
+.playlist-settings .check-row {
+  margin: 10px 0;
+}
+
+/* Radio: play one of your (or, from rank Bywalec, everyone's) playlists. */
+.radio-playlist {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+  margin: 14px 0 6px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: var(--bg-2);
+}
+
+.radio-playlist p {
+  margin: 0;
+}
+
+.radio-playlist select {
+  width: auto;
+  max-width: 100%;
+  flex: 1 1 220px;
+}

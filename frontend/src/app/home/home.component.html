@@ -38,6 +38,31 @@
     </aside>
   </section>
 
+  <section class="latest-block">
+    <div class="section-head">
+      <h2>{{ 'Ostatnio dodane' | t:'Recently added' }}</h2>
+    </div>
+    <div class="latest-grid" *ngIf="results.length">
+      <a class="track-row" *ngFor="let track of results" [routerLink]="['/track', track.id]">
+        <span class="thumb-col">
+          <span class="thumb-slot">
+          <app-cover [hasCover]="track.hasCover" [src]="cover(track)" [genre]="track.genre"></app-cover>
+          </span>
+          <app-score [value]="track.score"></app-score>
+        </span>
+        <span class="track-lines">
+          <h2>{{ track.title }}<span class="version" *ngIf="track | versionLabel as version"> ({{ version }})</span></h2>
+          <span class="line artist">{{ track.artist }}</span>
+          <span class="line meta"><app-track-facts [track]="track" part="stats"></app-track-facts></span>
+          <span class="line meta added-by">
+            <span *ngIf="track.createdAt">{{ track.createdAt | date:'dd.MM.yyyy HH:mm':'Europe/Warsaw' }}</span>
+            <ng-container *ngIf="track.sharedBy"><span class="dot" *ngIf="track.createdAt">·</span> {{ 'dodał' | t:'added by' }} <app-person [name]="track.sharedBy" [rank]="track.authorRank" [to]="['/profile', track.sharedBy]"></app-person></ng-container>
+          </span>
+        </span>
+      </a>
+    </div>
+  </section>
+
   <app-growth-board></app-growth-board>
 
   <section class="genres-block">
@@ -83,30 +108,5 @@
     <app-ad-slot slot="strona" format="banner"></app-ad-slot>
     <app-ad-slot slot="strona-pole" format="box"></app-ad-slot>
   </div>
-
-  <section>
-    <div class="section-head">
-      <h2>{{ 'Ostatnio dodane' | t:'Recently added' }}</h2>
-    </div>
-    <div class="latest-grid" *ngIf="results.length">
-      <a class="track-row" *ngFor="let track of results" [routerLink]="['/track', track.id]">
-        <span class="thumb-col">
-          <span class="thumb-slot">
-          <app-cover [hasCover]="track.hasCover" [src]="cover(track)" [genre]="track.genre"></app-cover>
-          </span>
-          <app-score [value]="track.score"></app-score>
-        </span>
-        <span class="track-lines">
-          <h2>{{ track.title }}<span class="version" *ngIf="track | versionLabel as version"> ({{ version }})</span></h2>
-          <span class="line artist">{{ track.artist }}</span>
-          <span class="line meta"><app-track-facts [track]="track" part="stats"></app-track-facts></span>
-          <span class="line meta added-by">
-            <span *ngIf="track.createdAt">{{ track.createdAt | date:'dd.MM.yyyy HH:mm':'Europe/Warsaw' }}</span>
-            <ng-container *ngIf="track.sharedBy"><span class="dot" *ngIf="track.createdAt">·</span> {{ 'dodał' | t:'added by' }} <app-person [name]="track.sharedBy" [rank]="track.authorRank" [to]="['/profile', track.sharedBy]"></app-person></ng-container>
-          </span>
-        </span>
-      </a>
-    </div>
-  </section>
 
 </div>

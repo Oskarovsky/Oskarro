@@ -529,7 +529,11 @@ public class TrackSocialService {
         return userRepository.findByUsername(authentication.getName());
     }
 
+    /** The author may edit for 24 hours after adding; an admin may always edit. */
     private boolean canEdit(Track track) {
+        if (isAdmin()) {
+            return true;
+        }
         if (track.getCreatedAt() == null || track.getAuthor() == null) {
             return false;
         }
@@ -540,11 +544,17 @@ public class TrackSocialService {
         return track.getCreatedAt().plus(EDIT_WINDOW).isAfter(Instant.now());
     }
 
+    private boolean isAdmin() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return authentication != null && authentication.getAuthorities().stream()
+                .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
+    }
+
     private void requireEditable(Track track) {
         currentUser();
         if (!canEdit(track)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,
-                    "Utwór może poprawić tylko autor, i tylko przez 24 godziny od dodania");
+                    "Utwór może poprawić autor (przez 24 godziny od dodania) albo administrator");
         }
     }
 }

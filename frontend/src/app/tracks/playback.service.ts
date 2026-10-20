@@ -35,8 +35,14 @@ export class PlaybackService {
   autoplayNext = true;
   peaks: number[] = [];
   audio: HTMLAudioElement;
+  /** Set while a playlist plays from the bottom bar (from its page or the radio). */
+  playlist: {id: number, name: string} | null = null;
+  /** Playlist in order (true) or shuffled like the genre radio (false). */
+  sequential = false;
 
   private generation = 0;
+  private history: PlayableTrack[] = [];
+  private goingBack = false;
   private radioPick: number = null;
   private notedGeneration = -1;
   private sourceTries = 0;
@@ -50,6 +56,18 @@ export class PlaybackService {
               private tokenStorage: TokenStorageService,
               private zone: NgZone) {
     this.audio = this.makeAudio();
+    // One sound at a time: any <audio>/<video> on the page that starts playing silences the others,
+    // including this service's own player (which lives outside the DOM).
+    document.addEventListener('play', event => {
+      const target = event.target;
+      if (!(target instanceof HTMLMediaElement) || target === this.audio) {
+        return;
+      }
+      this.silenceOthers(target);
+      if (!this.audio.paused) {
+        this.audio.pause();
+      }
+    }, true);
     try {
       this.pinned = sessionStorage.getItem(PIN_KEY) === '1';
     } catch {
@@ -80,6 +98,9 @@ export class PlaybackService {
   }
 
   close() {
+    this.playlist = null;
+    this.sequential = false;
+    this.history = [];
     this.skipFailures = false;
     this.pause();
     this.haltStandby();
@@ -136,6 +157,14 @@ export class PlaybackService {
     this.changes.next();
   }
 
+  private silenceOthers(keep: HTMLMediaElement) {
+    document.querySelectorAll('audio, video').forEach(media => {
+      if (media !== keep && media instanceof HTMLMediaElement && !media.paused) {
+        media.pause();
+      }
+    });
+  }
+
   private makeAudio() {
     const audio = new Audio();
     audio.preload = 'auto';
@@ -163,6 +192,7 @@ export class PlaybackService {
       if (audio !== this.audio) {
         return;
       }
+      this.silenceOthers(audio);
       if (this.pendingStandby) {
         this.startStandby(this.pendingStandby);
       }
@@ -231,10 +261,77 @@ export class PlaybackService {
     }
     this.skipFailures = false;
     this.fromRadio = asRadio;
+    this.playlist = null;
+    this.sequential = false;
     this.start(track, queue);
   }
 
+  /**
+   * Plays a whole playlist from the bottom bar: it keeps going across pages, track after track
+   * (or shuffled), with previous/next. Guests still get only the one track they opened.
+   */
+  openPlaylist(tracks: PlayableTrack[], startIndex: number, info: {id: number, name: string}, shuffle = false) {
+    const queue = (tracks || []).filter(item => item?.id && item.url);
+    if (!queue.length) {
+      return;
+    }
+    const first = shuffle
+      ? queue[Math.floor(Math.random() * queue.length)]
+      : queue[Math.max(0, Math.min(startIndex || 0, queue.length - 1))];
+    if (!this.allows(first.id)) {
+      this.holdNext = true;
+      this.changes.next();
+      return;
+    }
+    this.skipFailures = false;
+    this.fromRadio = true;
+    this.playlist = info;
+    this.sequential = !shuffle;
+    this.history = [];
+    this.setPinned(true);
+    if (this.track?.id === first.id) {
+      this.track = null;
+    }
+    this.start(first, queue);
+  }
+
+  /** Back to the genre radio (or nothing) after a playlist. */
+  leavePlaylist() {
+    this.playlist = null;
+    this.sequential = false;
+    this.changes.next();
+  }
+
+  get hasPrevious() {
+    if (this.history.length) {
+      return true;
+    }
+    return this.sequential && this.queue.findIndex(item => item.id === this.track?.id) > 0;
+  }
+
+  previous() {
+    if (!this.tokenStorage.getToken()) {
+      return;
+    }
+    let target = this.history.pop() || null;
+    if (!target && this.sequential) {
+      const index = this.queue.findIndex(item => item.id === this.track?.id);
+      target = index > 0 ? this.queue[index - 1] : null;
+    }
+    if (!target) {
+      return;
+    }
+    this.skipFailures = true;
+    this.goingBack = true;
+    try {
+      this.start(target, this.queue);
+    } finally {
+      this.goingBack = false;
+    }
+  }
+
   private start(track: PlayableTrack, queue: PlayableTrack[]) {
+    this.remember(track);
     this.queue = (queue || []).filter(item => item?.id && item.url);
     if (!this.queue.some(item => item.id === track.id)) {
       this.queue = [track, ...this.queue];
@@ -380,7 +477,7 @@ export class PlaybackService {
       return;
     }
     const radioQueue = this.fromRadio && (this.pinned || this.radioOpen);
-    if (!radioQueue || !this.autoplayNext) {
+    if (!radioQueue || (!this.autoplayNext && !this.playlist)) {
       this.haltStandby();
       this.changes.next();
       return;
@@ -412,7 +509,18 @@ export class PlaybackService {
     });
   }
 
+  private remember(next: PlayableTrack) {
+    if (this.goingBack || !this.track || this.track.id === next?.id) {
+      return;
+    }
+    this.history.push(this.track);
+    if (this.history.length > 50) {
+      this.history.shift();
+    }
+  }
+
   private startPrimed(track: PlayableTrack) {
+    this.remember(track);
     const ready = this.primed;
     this.primed = null;
     this.track = track;
@@ -537,7 +645,7 @@ export class PlaybackService {
   }
 
   private following() {
-    if (this.fromRadio) {
+    if (this.fromRadio && !this.sequential) {
       return this.randomFollowing();
     }
     let index = this.queue.findIndex(item => item.id === this.track?.id);

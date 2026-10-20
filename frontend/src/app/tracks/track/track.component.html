@@ -56,7 +56,7 @@
       <p class="meta" *ngIf="!isLoggedIn && playable && ownsPlayback"><a routerLink="/login">{{ 'Zaloguj się' | t:'Sign in' }}</a>{{ lang.en ? ' to download the file. The button appears after a rating or a comment.' : ', żeby pobrać plik. Przycisk pojawia się po ocenie albo komentarzu.' }}</p>
       <div class="track-actions">
         <button class="btn-ghost" type="button" (click)="share()">{{ shared ? ('Link skopiowany' | t:'Link copied') : ('Udostępnij' | t:'Share') }}</button>
-        <span class="save-wrap" *ngIf="isLoggedIn">
+        <span class="save-wrap" *ngIf="isLoggedIn" #saveWrap>
           <button class="btn-ghost" type="button" (click)="toggleSave()">{{ 'Zapisz do składanki' | t:'Save to a playlist' }}</button>
           <span class="save-pop" *ngIf="saveOpen">
             <button type="button" *ngFor="let list of playlists" (click)="pin(list)">{{ list.name }}</button>
@@ -64,16 +64,16 @@
           </span>
         </span>
         <a class="btn-ghost" *ngIf="!isLoggedIn" routerLink="/login">{{ 'Zapisz po zalogowaniu' | t:'Save after you sign in' }}</a>
+        <a class="btn-ghost edit-link" *ngIf="track.editable" [routerLink]="['/track', track.id, 'edit']"
+           [attr.title]="isAdmin ? ('Edycja jako administrator' | t:'Editing as an administrator') : (lang.en ? 'You can edit until ' : 'Możesz poprawiać do ') + (track.editableUntil | date:'dd.MM.yyyy HH:mm')">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 17.2V20h2.8l8.3-8.3-2.8-2.8L4 17.2zm13.7-7.6a1 1 0 0 0 0-1.4l-1.9-1.9a1 1 0 0 0-1.4 0l-1.5 1.5 2.8 2.8 2-1z"/></svg>
+          {{ 'Edytuj' | t:'Edit' }}
+        </a>
         <a class="report-link" routerLink="/zglos-naruszenie" [queryParams]="{utwor: track.id}">{{ 'Zgłoś' | t:'Report' }}</a>
       </div>
       <p class="meta track-note" *ngIf="saved">{{ lang.en ? 'Saved in “' + saved + '”.' : 'Zapisane w „' + saved + '”.' }}</p>
       <p class="meta track-note" *ngIf="shareUrl">{{ lang.en ? 'Copy the link: ' + shareUrl : 'Skopiuj link: ' + shareUrl }}</p>
 
-      <p class="meta" *ngIf="track.editable">
-        <a [routerLink]="['/track', track.id, 'edit']">{{ 'Popraw utwór' | t:'Edit track' }}</a>
-        <ng-container *ngIf="!lang.en"> — autor może to zrobić do {{ track.editableUntil | date:'dd.MM.yyyy HH:mm' }}.</ng-container>
-        <ng-container *ngIf="lang.en"> — the author can do this until {{ track.editableUntil | date:'dd.MM.yyyy HH:mm' }}.</ng-container>
-      </p>
       <app-ad-slot slot="utwor" format="banner"></app-ad-slot>
     </div>
   </div>

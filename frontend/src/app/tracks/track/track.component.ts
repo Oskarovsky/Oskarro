@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import {ChangeDetectorRef, Component, OnDestroy, OnInit, ElementRef, HostListener, ViewChild} from '@angular/core';
 import {RefreshAfterHttpDirective} from '../../services/ui-refresh';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
@@ -136,6 +136,46 @@ export class TrackComponent implements OnInit, OnDestroy {
         this.startPlayback(track);
       }
     });
+  }
+
+  @ViewChild('saveWrap') saveWrap?: ElementRef<HTMLElement>;
+
+  get isAdmin() {
+    return (this.tokenStorage.getUser()?.roles || []).includes('ROLE_ADMIN');
+  }
+
+  /** Like the main menu: the playlist list closes once the mouse wanders well away from it. */
+  @HostListener('document:pointermove', ['$event'])
+  closeSaveWhenFar(event: PointerEvent) {
+    if (!this.saveOpen || (event.pointerType && event.pointerType !== 'mouse')) {
+      return;
+    }
+    const wrap = this.saveWrap?.nativeElement;
+    if (!wrap) {
+      return;
+    }
+    const boxes = [wrap.getBoundingClientRect()];
+    const pop = wrap.querySelector('.save-pop');
+    if (pop instanceof HTMLElement) {
+      boxes.push(pop.getBoundingClientRect());
+    }
+    const reach = 72;
+    const far = event.clientX < Math.min(...boxes.map(b => b.left)) - reach
+      || event.clientX > Math.max(...boxes.map(b => b.right)) + reach
+      || event.clientY < Math.min(...boxes.map(b => b.top)) - reach
+      || event.clientY > Math.max(...boxes.map(b => b.bottom)) + reach;
+    if (far) {
+      this.saveOpen = false;
+      this.view.detectChanges();
+    }
+  }
+
+  @HostListener('document:click', ['$event'])
+  closeSaveOnOutsideClick(event: MouseEvent) {
+    const wrap = this.saveWrap?.nativeElement;
+    if (this.saveOpen && wrap && !wrap.contains(event.target as Node)) {
+      this.saveOpen = false;
+    }
   }
 
   toggleSave() {

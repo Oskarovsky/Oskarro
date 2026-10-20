@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, OnInit, ChangeDetectorRef, OnDestroy} from '@angular/core';
 import {RefreshAfterHttpDirective} from '../../services/ui-refresh';
 import {Playlist} from "../playlist/model/playlist";
 import {PlaylistService} from "../../services/playlist/playlist.service";
@@ -10,7 +10,6 @@ import {audioRef} from "../../services/audio-hosts";
 import {TokenStorageService} from "../../services/auth/token-storage.service";
 import {SeoService} from "../../seo.service";
 import {PlaybackService} from "../../tracks/playback.service";
-import {Router} from "@angular/router";
 
 @Component({
   selector: 'app-playlist-details',
@@ -19,7 +18,7 @@ import {Router} from "@angular/router";
   standalone: false,
   hostDirectives: [RefreshAfterHttpDirective]
 })
-export class PlaylistDetailsComponent implements OnInit {
+export class PlaylistDetailsComponent implements OnInit, OnDestroy {
 
   playlist: Playlist;
 
@@ -34,20 +33,45 @@ export class PlaylistDetailsComponent implements OnInit {
               private route: ActivatedRoute,
               private tokenStorage: TokenStorageService,
               private seo: SeoService,
-              private playback: PlaybackService,
-              private router: Router) { }
+              readonly playback: PlaybackService,
+              private view: ChangeDetectorRef) { }
 
-  playAll() {
-    const queue = (this.tracks || []).filter(track => !!audioRef(track?.url));
-    if (!queue.length) {
-      return;
-    }
-    this.playback.open(queue[0], queue);
-    this.router.navigate(['/track', queue[0].id], {queryParams: {lista: this.playlist?.id}});
+  missing = false;
+  private playbackSub: Subscription;
+
+  get playable(): Track[] {
+    return (this.tracks || []).filter(track => !!audioRef(track?.url));
   }
 
-  showPlayer(url: string) {
-    return this.isLoggedIn && !!audioRef(url);
+  get nowPlayingHere() {
+    return !!this.playlist && this.playback.playlist?.id === this.playlist.id && !!this.playback.track;
+  }
+
+  canPlay(track: Track) {
+    return !!audioRef(track?.url);
+  }
+
+  isCurrent(track: Track) {
+    return this.nowPlayingHere && this.playback.track?.id === track.id;
+  }
+
+  /** Whole playlist on the bottom bar, in order (or shuffled) — keeps playing while the user browses. */
+  playAll(shuffle = false) {
+    const queue = this.playable;
+    if (!queue.length || !this.playlist) {
+      return;
+    }
+    this.playback.openPlaylist(queue as any, 0, {id: this.playlist.id, name: this.playlist.name}, shuffle);
+  }
+
+  playFrom(track: Track) {
+    if (this.isCurrent(track)) {
+      this.playback.toggle();
+      return;
+    }
+    const queue = this.playable;
+    const index = queue.findIndex(item => item.id === track.id);
+    this.playback.openPlaylist(queue as any, Math.max(0, index), {id: this.playlist.id, name: this.playlist.name});
   }
 
   get canEdit() {
@@ -55,22 +79,18 @@ export class PlaylistDetailsComponent implements OnInit {
     return this.isLoggedIn && !!user?.username && user.username === this.playlist?.owner;
   }
 
+  ngOnDestroy() {
+    this.playbackSub?.unsubscribe();
+    this.sub?.unsubscribe();
+  }
+
   ngOnInit() {
+    this.playbackSub = this.playback.changes.subscribe(() => this.view.detectChanges());
     this.isLoggedIn = !!this.tokenStorage.getToken();
     this.getPlaylistById();
     this.getAllTracksFromPlaylist();
   }
 
-  public getAllTracks() {
-    this.trackService.getAllTracks().subscribe(
-      result => {
-        this.tracks = result;
-      },
-      error => {
-        alert('An error has occurred while downloading tracks')
-      }
-    );
-  }
 
   public getAllTracksFromPlaylist() {
     this.sub = this.route.params.subscribe(params => {
@@ -80,9 +100,7 @@ export class PlaylistDetailsComponent implements OnInit {
           response => {
             this.tracks = response;
           },
-          error => {
-            alert('An error with fetching tracks has occurred')
-          }
+          () => this.missing = true
         );
       }
     });
@@ -97,9 +115,7 @@ export class PlaylistDetailsComponent implements OnInit {
             this.playlist = response;
             this.seo.playlist(response);
           },
-          error => {
-            alert('An error with fetching playlist has occurred')
-          });
+          () => this.missing = true);
       }
     });
   }

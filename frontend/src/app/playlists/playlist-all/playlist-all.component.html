@@ -6,16 +6,32 @@
   </div>
   <p class="lede">{{ 'Składanki od ludzi z Oskarro na siłownię, do auta i na imprezę — posłuchaj albo złóż z nami własną.' | t:'Playlists by people on Oskarro for the gym, the car and the party — listen, or build your own with us.' }}</p>
 
-  <label class="find">
+  <div class="playlist-tabs" role="tablist" [attr.aria-label]="'Które składanki' | t:'Which playlists'">
+    <button class="chip" type="button" role="tab" [class.on]="tab === 'mine'" [attr.aria-selected]="tab === 'mine'"
+            [attr.aria-disabled]="!loggedIn" [class.locked]="!loggedIn" (click)="show('mine')"
+            [attr.title]="loggedIn ? null : ('Zaloguj się, żeby zobaczyć swoje składanki' | t:'Sign in to see your playlists')">
+      {{ 'Moje' | t:'Mine' }}
+    </button>
+    <button class="chip" type="button" role="tab" [class.on]="tab === 'all'" [attr.aria-selected]="tab === 'all'"
+            [attr.aria-disabled]="!canBrowseAll" [class.locked]="!canBrowseAll" (click)="show('all')"
+            [attr.title]="canBrowseAll ? null : lockedNote">
+      {{ 'Wszystkie' | t:'All' }}<span class="lock" *ngIf="!canBrowseAll" aria-hidden="true"> 🔒</span>
+    </button>
+  </div>
+  <p class="meta tab-note" *ngIf="note" role="status">{{ note }}</p>
+
+  <label class="find" *ngIf="playlists.length">
     <input [(ngModel)]="searchText" type="search" [placeholder]="'Szukaj składanki' | t:'Search playlists'">
   </label>
 
   <div class="stack" *ngIf="visible.length">
     <a class="playlist-card" *ngFor="let playlist of visible" [routerLink]="['/playlist', playlist.id, 'details']">
-      <strong>{{ playlist.name }}</strong>
+      <strong>{{ playlist.privatePlaylist ? '🔒 ' : '' }}{{ playlist.name }}</strong>
       <span>{{ playlist.description || ('Bez opisu' | t:'No description') }}</span>
       <em>{{ playlist.owner || 'Oskarro' }} · {{ playlist.tracks || 0 }} {{ trackWord(playlist.tracks) }}</em>
     </a>
   </div>
-  <p class="lede" *ngIf="loaded && !visible.length">{{ 'Nie ma składanki o takiej nazwie.' | t:'No playlist has that name.' }}</p>
+  <p class="lede" *ngIf="loaded && playlists.length && !visible.length">{{ 'Nie ma składanki o takiej nazwie.' | t:'No playlist has that name.' }}</p>
+  <p class="lede" *ngIf="loaded && !playlists.length && tab === 'mine' && loggedIn">{{ 'Nie masz jeszcze żadnej składanki.' | t:'You have no playlists yet.' }} <a routerLink="/playlist/add">{{ 'Załóż pierwszą' | t:'Create your first one' }}</a></p>
+  <p class="lede" *ngIf="!loggedIn"><a routerLink="/login">{{ 'Zaloguj się' | t:'Sign in' }}</a>{{ ', żeby zobaczyć swoje składanki i tworzyć nowe.' | t:' to see your playlists and create new ones.' }}</p>
 </div>

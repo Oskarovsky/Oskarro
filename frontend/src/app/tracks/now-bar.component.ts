@@ -29,7 +29,21 @@ import {environment} from '../../environments/environment';
       <input class="now-range" type="range" min="0" [max]="playback.duration || 0" step="0.1"
              [value]="playback.current" [attr.aria-label]="'Pozycja utworu' | t:'Track position'" (input)="seek($event)">
       <a class="now-next" *ngIf="!loggedIn" routerLink="/login">{{ 'Losowy po zalogowaniu' | t:'Random after you sign in' }}</a>
-      <button class="btn-ghost now-next" *ngIf="loggedIn" type="button" (click)="playback.next()" [disabled]="!playback.hasNext">{{ 'Losowy' | t:'Random' }}</button>
+      <ng-container *ngIf="loggedIn">
+        <button class="now-step" type="button" (click)="playback.previous()" [disabled]="!playback.hasPrevious"
+                [attr.aria-label]="'Poprzedni utwór' | t:'Previous track'" [attr.title]="'Poprzedni' | t:'Previous'">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6h2v12H6zM9.5 12 18 6v12z"/></svg>
+        </button>
+        <button class="now-step" type="button" (click)="playback.next()" [disabled]="!playback.hasNext"
+                [attr.aria-label]="playback.sequential ? ('Następny utwór' | t:'Next track') : ('Losowy utwór' | t:'Random track')"
+                [attr.title]="playback.sequential ? ('Następny' | t:'Next') : ('Losowy' | t:'Random')">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 6h2v12h-2zM6 6l8.5 6L6 18z"/></svg>
+        </button>
+      </ng-container>
+      <a class="now-source" *ngIf="playback.playlist" [routerLink]="['/playlist', playback.playlist.id, 'details']"
+         [attr.title]="'Słuchasz składanki' | t:'Playing a playlist'">
+        ♫ {{ playback.playlist.name }}<small *ngIf="position"> · {{ position }}</small>
+      </a>
       <button class="now-close" type="button" (click)="playback.close()" [attr.aria-label]="'Zamknij odtwarzacz' | t:'Close the player'">×</button>
     </aside>
   `
@@ -69,6 +83,15 @@ export class NowBarComponent implements OnInit, OnDestroy {
       return;
     }
     this.playback.pause();
+  }
+
+  /** "3/12" while a playlist plays in order. */
+  get position() {
+    if (!this.playback.sequential || !this.playback.track) {
+      return '';
+    }
+    const index = this.playback.queue.findIndex(item => item.id === this.playback.track.id);
+    return index >= 0 ? (index + 1) + '/' + this.playback.queue.length : '';
   }
 
   get loggedIn() {
