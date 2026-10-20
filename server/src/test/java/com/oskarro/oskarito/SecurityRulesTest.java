@@ -52,6 +52,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /** Regression tests for the access-control holes found in the October 2026 review. */
@@ -572,6 +573,37 @@ class SecurityRulesTest {
         mvc.perform(put("/api/tracks/" + track.getId()).header("Authorization", admin)
                 .contentType(MediaType.APPLICATION_JSON).content(change)).andExpect(status().isOk());
         assertThat(tracks.findById(track.getId()).orElseThrow().getTitle()).isEqualTo("Poprawiony");
+    }
+
+    @Test
+    void pagesAreServerRenderedForSearchEngines() throws Exception {
+        User owner = user(RoleName.ROLE_USER);
+        Track track = tracks.save(Track.builder().artist("Lost <Kings>").title("You").version("Extended Mix")
+                .url("https://hostuje.net/file.php?id=" + "d".repeat(32)).genre("CLUB").points(0)
+                .createdAt(Instant.now()).author(owner).build());
+        String page = mvc.perform(get("/api/seo/page/track/" + track.getId()))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        assertThat(page)
+                .contains("<title>Lost &lt;Kings&gt; – You (Extended Mix) | Oskarro</title>")
+                .contains("<link rel=\"canonical\" href=\"https://oskarro.com/track/" + track.getId() + "\">")
+                .contains("\"@type\":\"MusicRecording\"").contains("\"@type\":\"BreadcrumbList\"")
+                .contains("<h1>You (Extended Mix)</h1>").contains("href=\"/tracklist/club\"")
+                .doesNotContain("<Kings>");
+        assertThat(page.split("<title>", -1)).hasSize(2);
+
+        mvc.perform(get("/api/seo/page/track/999999")).andExpect(status().isNotFound())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("noindex")));
+        mvc.perform(get("/api/seo/page/tracklist/nie-ma")).andExpect(status().isNotFound());
+        assertThat(mvc.perform(get("/api/seo/page/tracklist/club")).andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString()).contains("Muzyka klubowa").contains("/track/" + track.getId());
+        assertThat(mvc.perform(get("/api/seo/page")).andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString()).contains("\"@type\":\"WebSite\"");
+        assertThat(mvc.perform(get("/api/seo/page/login")).andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString()).contains("noindex").doesNotContain("rel=\"canonical\"");
+
+        Playlist secret = playlists.save(Playlist.builder().name("Tajna SEO").user(owner).privatePlaylist(true).build());
+        mvc.perform(get("/api/seo/page/playlist/" + secret.getId() + "/details")).andExpect(status().isNotFound())
+                .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("Tajna SEO"))));
     }
 
     private User user(RoleName role) {

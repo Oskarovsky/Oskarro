@@ -6,7 +6,7 @@ import {LangService} from './lang.service';
 
 const ORIGIN = 'https://oskarro.com';
 const LOGO = ORIGIN + '/assets/logo.jpg';
-const HOME_TITLE = 'Słuchaj z nami | Oskarro';
+const HOME_TITLE = 'Muzyka klubowa, vixa i disco polo za darmo — słuchaj z nami | Oskarro';
 const HOME_DESCRIPTION = 'Oskarro.com — słuchaj z nami muzyki klubowej za darmo: club, vixa, trance, hands up i disco polo. Oceniaj, komentuj i dodawaj swoje numery.';
 const HOME_DESCRIPTION_EN = 'Oskarro.com — listen with us to club music for free: club, vixa, trance, hands up and disco polo. Vote, comment and share your own tracks.';
 
@@ -114,18 +114,24 @@ export class SeoService {
     this.set('Oskarro', this.lang.t(HOME_DESCRIPTION, HOME_DESCRIPTION_EN), path, !this.privatePath(path));
   }
 
-  track(track: {id: number; title: string; artist: string; genre: string; hasCover?: boolean}) {
-    const name = (track.title || this.lang.t('Utwór', 'Track')).trim();
+  /** Same title and description as the server-rendered page (SeoPageController). */
+  track(track: {id: number; title: string; artist: string; genre: string; version?: string; kind?: string; hasCover?: boolean}) {
+    const name = (track.title || this.lang.t('Bez tytułu', 'Untitled')).trim();
     const artist = (track.artist || this.lang.t('Nieznany wykonawca', 'Unknown artist')).trim();
+    const version = (track.version || '').trim() ? ' (' + track.version.trim() + ')' : '';
     const genre = genreLabel(track.genre);
     const path = '/track/' + track.id;
-    const description = name + ' — ' + artist + '. ' + genre + this.lang.t(' na Oskarro, muzyka na imprezę.', ' on Oskarro, party music.');
+    const full = artist + ' – ' + name + version;
+    const set = (track.kind || '').toLowerCase() === 'set';
+    const description = this.lang.en
+      ? 'Listen for free: ' + full + '. ' + genre + ' on Oskarro. Vote, comment and save it to your playlist.'
+      : (set ? 'Posłuchaj seta za darmo: ' : 'Posłuchaj za darmo: ') + full + '. ' + genre + ' na Oskarro. Oceniaj, komentuj i zapisz do swojej składanki.';
     const image = track.hasCover ? ORIGIN + '/api/tracks/' + track.id + '/cover' : LOGO;
-    this.set(name + ' — ' + artist + ' | Oskarro', description, path, true, image);
+    this.set(full + ' | Oskarro', description, path, true, image);
     this.jsonLd({
       '@context': 'https://schema.org',
       '@type': 'MusicRecording',
-      name,
+      name: name + version,
       byArtist: {'@type': 'MusicGroup', name: artist},
       genre,
       url: ORIGIN + path,
