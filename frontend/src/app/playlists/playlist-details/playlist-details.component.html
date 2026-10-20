@@ -5,7 +5,7 @@
   <h1 class="display">{{ playlist?.name }}</h1>
   <p class="lede" *ngIf="playlist?.description">{{ playlist.description }}</p>
   <p class="meta" *ngIf="playlist?.privatePlaylist">🔒 {{ 'Prywatna — widzisz ją tylko Ty.' | t:'Private — only you can see it.' }}</p>
-  <p class="track-actions" *ngIf="isLoggedIn && playable.length">
+  <p class="track-actions playlist-play" *ngIf="isLoggedIn && playable.length">
     <button class="btn-accent" type="button" (click)="playAll()">▶ {{ nowPlayingHere ? ('Od początku' | t:'From the start') : ('Odsłuchaj składankę' | t:'Play the playlist') }}</button>
     <button class="btn-ghost" type="button" (click)="playAll(true)">⤨ {{ 'Losowo' | t:'Shuffle' }}</button>
     <span class="meta" *ngIf="nowPlayingHere">{{ 'Gra na pasku na dole — możesz przejść na inną stronę.' | t:'Playing on the bottom bar — you can browse other pages.' }}</span>
