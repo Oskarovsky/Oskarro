@@ -231,6 +231,24 @@ public class ProfileService {
         return viewOf(user, viewer.getId().equals(user.getId()));
     }
 
+    /**
+     * Browsing and playing other people's playlists is a perk from the second rank (Bywalec, 500 points).
+     * Staff and users with a special rank granted by an admin get it too. Private playlists stay owner-only.
+     */
+    public boolean hasPlaylistAccess(User user) {
+        if (user == null) {
+            return false;
+        }
+        boolean staff = user.getRoles().stream()
+                .anyMatch(role -> role.getName() == RoleName.ROLE_ADMIN || role.getName() == RoleName.ROLE_MODERATOR);
+        boolean special = user.getRankOverride() != null && !user.getRankOverride().isBlank();
+        return staff || special || scoreOf(user.getId()) >= RANK_SCORES[1];
+    }
+
+    public String playlistAccessRank() {
+        return RANK_NAMES[1];
+    }
+
     public String badge(User user) {
         if (user == null) {
             return null;

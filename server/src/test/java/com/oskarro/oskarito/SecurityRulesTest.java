@@ -507,6 +507,73 @@ class SecurityRulesTest {
                 .contains("https://oskarro.com/tracklist/hands-up").contains("https://oskarro.com/sety/kluby");
     }
 
+    @Test
+    void privatePlaylistsStayWithTheirOwnerAndBrowsingAllNeedsRank() throws Exception {
+        User owner = user(RoleName.ROLE_USER);
+        Playlist secret = playlists.save(Playlist.builder().name("Tajna").user(owner).privatePlaylist(true).build());
+        Playlist open = playlists.save(Playlist.builder().name("Jawna").user(owner).build());
+        Track track = track(owner);
+        for (Playlist list : List.of(secret, open)) {
+            PlaylistEntry entry = new PlaylistEntry();
+            entry.setPlaylist(list);
+            entry.setTrack(track);
+            entries.save(entry);
+        }
+        String ownerToken = bearer(owner);
+        String plain = bearer(user(RoleName.ROLE_USER));
+        String admin = bearer(user(RoleName.ROLE_ADMIN));
+
+        // the owner sees and plays both
+        mvc.perform(get("/api/playlist/" + secret.getId() + "/tracks").header("Authorization", ownerToken)).andExpect(status().isOk());
+        assertThat(mvc.perform(get("/api/playlist/playable").header("Authorization", ownerToken))
+                .andReturn().getResponse().getContentAsString()).contains("Tajna").contains("Jawna");
+
+        // nobody else sees the private one — not even an admin
+        for (String other : List.of(plain, admin)) {
+            mvc.perform(get("/api/playlist/" + secret.getId()).header("Authorization", other)).andExpect(status().isNotFound());
+            mvc.perform(get("/api/playlist/" + secret.getId() + "/tracks").header("Authorization", other)).andExpect(status().isNotFound());
+            assertThat(mvc.perform(get("/api/playlist/all/" + owner.getUsername()).header("Authorization", other))
+                    .andReturn().getResponse().getContentAsString()).doesNotContain("Tajna").contains("Jawna");
+        }
+        mvc.perform(get("/api/playlist/" + secret.getId())).andExpect(status().isNotFound());
+
+        // browsing everyone's playlists: low rank refused, staff allowed (still without private ones)
+        mvc.perform(get("/api/playlist/findAll")).andExpect(status().isUnauthorized());
+        mvc.perform(get("/api/playlist/findAll").header("Authorization", plain)).andExpect(status().isForbidden());
+        assertThat(mvc.perform(get("/api/playlist/access").header("Authorization", plain))
+                .andReturn().getResponse().getContentAsString()).contains("\"canBrowseAll\":false").contains("Bywalec");
+        String all = mvc.perform(get("/api/playlist/findAll").header("Authorization", admin))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        assertThat(all).contains("Jawna").doesNotContain("Tajna");
+        assertThat(mvc.perform(get("/api/playlist/playable").header("Authorization", plain))
+                .andReturn().getResponse().getContentAsString()).doesNotContain("Jawna");
+        assertThat(mvc.perform(get("/api/playlist/playable").header("Authorization", admin))
+                .andReturn().getResponse().getContentAsString()).contains("Jawna").doesNotContain("Tajna");
+
+        // only the owner renames or hides it
+        String rename = json.writeValueAsString(Map.of("name", "Nowa nazwa", "description", "", "privatePlaylist", true));
+        mvc.perform(put("/api/playlist/" + open.getId()).header("Authorization", plain)
+                .contentType(MediaType.APPLICATION_JSON).content(rename)).andExpect(status().isForbidden());
+        mvc.perform(put("/api/playlist/" + open.getId()).header("Authorization", ownerToken)
+                .contentType(MediaType.APPLICATION_JSON).content(rename)).andExpect(status().isOk());
+        mvc.perform(get("/api/playlist/" + open.getId()).header("Authorization", admin)).andExpect(status().isNotFound());
+    }
+
+    @Test
+    void adminCanEditAnyTrackOthersOnlyTheirOwnFor24Hours() throws Exception {
+        Track track = track(user(RoleName.ROLE_USER));
+        String change = json.writeValueAsString(Map.of("artist", "Artist", "title", "Poprawiony", "version", "",
+                "genre", "club", "url", "https://hostuje.net/file.php?id=" + "c".repeat(32)));
+        mvc.perform(put("/api/tracks/" + track.getId()).header("Authorization", bearer(user(RoleName.ROLE_USER)))
+                .contentType(MediaType.APPLICATION_JSON).content(change)).andExpect(status().isForbidden());
+        String admin = bearer(user(RoleName.ROLE_ADMIN));
+        assertThat(json.readTree(mvc.perform(get("/api/tracks/id/" + track.getId()).header("Authorization", admin))
+                .andReturn().getResponse().getContentAsString()).get("editable").asBoolean()).isTrue();
+        mvc.perform(put("/api/tracks/" + track.getId()).header("Authorization", admin)
+                .contentType(MediaType.APPLICATION_JSON).content(change)).andExpect(status().isOk());
+        assertThat(tracks.findById(track.getId()).orElseThrow().getTitle()).isEqualTo("Poprawiony");
+    }
+
     private User user(RoleName role) {
         String name = "user" + SEQ.incrementAndGet();
         return users.save(User.builder()

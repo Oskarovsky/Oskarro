@@ -32,4 +32,8 @@ public class Playlist {
 
     private Integer points;
 
+    /** Private playlists are visible and playable only by their owner — whatever anyone else's rank. */
+    @Column(name = "is_private")
+    private Boolean privatePlaylist;
+
 }

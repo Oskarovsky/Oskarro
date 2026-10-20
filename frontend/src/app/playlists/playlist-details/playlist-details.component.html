@@ -4,17 +4,24 @@
   <p class="kicker">{{ playlist?.owner }}</p>
   <h1 class="display">{{ playlist?.name }}</h1>
   <p class="lede" *ngIf="playlist?.description">{{ playlist.description }}</p>
-  <p class="track-actions" *ngIf="isLoggedIn && tracks.length">
-    <button class="btn-accent" type="button" (click)="playAll()">{{ 'Puść składankę' | t:'Play the playlist' }}</button>
+  <p class="meta" *ngIf="playlist?.privatePlaylist">🔒 {{ 'Prywatna — widzisz ją tylko Ty.' | t:'Private — only you can see it.' }}</p>
+  <p class="track-actions playlist-play" *ngIf="isLoggedIn && playable.length">
+    <button class="btn-accent" type="button" (click)="playAll()">▶ {{ nowPlayingHere ? ('Od początku' | t:'From the start') : ('Odsłuchaj składankę' | t:'Play the playlist') }}</button>
+    <button class="btn-ghost" type="button" (click)="playAll(true)">⤨ {{ 'Losowo' | t:'Shuffle' }}</button>
+    <span class="meta" *ngIf="nowPlayingHere">{{ 'Gra na pasku na dole — możesz przejść na inną stronę.' | t:'Playing on the bottom bar — you can browse other pages.' }}</span>
   </p>
   <p *ngIf="!isLoggedIn"><a routerLink="/login">{{ 'Zaloguj się' | t:'Sign in' }}</a>{{ ', żeby puścić całą składankę. Jeden numer z linku można odsłuchać bez konta.' | t:' to play the whole playlist. One track opened from a link can be heard without an account.' }}</p>
-
+  <p class="alert" *ngIf="missing" role="alert">{{ 'Tej składanki nie ma albo jest prywatna.' | t:'This playlist does not exist or is private.' }}</p>
 
   <p *ngIf="tracks.length === 0">{{ 'Nie ma żadnych utworów w tej składance.' | t:'There are no tracks in this playlist.' }}</p>
 
   <div class="latest-grid" *ngIf="tracks.length">
-    <article class="track-row" *ngFor="let track of tracks; index as i">
-      <span class="pill">{{ i + 1 }}</span>
+    <article class="track-row" *ngFor="let track of tracks; index as i" [class.is-playing]="isCurrent(track)">
+      <button class="pill play-from" type="button" *ngIf="isLoggedIn && canPlay(track); else plainNumber" (click)="playFrom(track)"
+              [attr.aria-label]="('Graj od utworu ' | t:'Play from track ') + (i + 1)" [attr.title]="'Graj od tego utworu' | t:'Play from this track'">
+        <span class="num">{{ i + 1 }}</span><span class="tri" aria-hidden="true">{{ isCurrent(track) && playback.playing ? '❚❚' : '▶' }}</span>
+      </button>
+      <ng-template #plainNumber><span class="pill">{{ i + 1 }}</span></ng-template>
       <span class="track-lines">
         <h2><a [routerLink]="['/track', track.id]" [queryParams]="{lista: playlist?.id}">{{ track.title }}<span class="version" *ngIf="track | versionLabel as version"> ({{ version }})</span></a></h2>
         <span class="line artist">{{ track.artist }}</span>
@@ -24,7 +31,6 @@
           <ng-container *ngIf="track.sharedBy"><span class="dot" *ngIf="track.createdAt">·</span> {{ 'dodał' | t:'added by' }} <app-person [name]="track.sharedBy" [rank]="track.authorRank" [to]="['/profile', track.sharedBy]"></app-person></ng-container>
         </span>
       </span>
-      <app-track-player *ngIf="showPlayer(track.url)" [url]="track.url"></app-track-player>
     </article>
   </div>
 

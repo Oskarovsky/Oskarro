@@ -17,6 +17,10 @@
     <label>{{ 'Po co ta składanka' | t:'What this playlist is for' }}
       <textarea [(ngModel)]="description" name="description" maxlength="280" rows="4" [placeholder]="'Na imprezę, do auta, na rozgrzewkę.' | t:'For a party, the car, a warm-up.'"></textarea>
     </label>
+    <label class="check-row">
+      <input type="checkbox" [(ngModel)]="privatePlaylist" name="privatePlaylist">
+      <span>{{ 'Prywatna — tylko dla mnie (nikt inny jej nie zobaczy ani nie odsłucha, także w radiu)' | t:'Private — just for me (no one else can see or play it, not even in the radio)' }}</span>
+    </label>
     <p class="meta">{{ description.length }}/280</p>
     <p class="warn" *ngIf="error">{{ error | t }}</p>
     <button class="btn-accent" type="submit" [disabled]="busy">{{ 'Utwórz składankę' | t:'Create playlist' }}</button>

@@ -4,6 +4,24 @@
   <p class="kicker">{{ 'Twoja składanka' | t:'Your playlist' }}</p>
   <h1 class="display">{{ playlist?.name }}</h1>
   <p class="lede" *ngIf="playlist?.description">{{ playlist.description }}</p>
+  <details class="composer playlist-settings" *ngIf="playlist">
+    <summary>{{ 'Ustawienia składanki' | t:'Playlist settings' }}{{ playlist.privatePlaylist ? ' · 🔒' : '' }}</summary>
+    <div class="form-grid">
+      <label>{{ 'Nazwa' | t:'Name' }}
+        <input type="text" [(ngModel)]="settings.name" name="settingsName" maxlength="80">
+      </label>
+      <label class="wide">{{ 'Opis' | t:'Description' }}
+        <textarea [(ngModel)]="settings.description" name="settingsDescription" maxlength="280" rows="3"></textarea>
+      </label>
+    </div>
+    <label class="check-row">
+      <input type="checkbox" [(ngModel)]="settings.privatePlaylist" name="settingsPrivate">
+      <span>{{ 'Prywatna — tylko dla mnie (nikt inny jej nie zobaczy ani nie odsłucha, także w radiu)' | t:'Private — just for me (no one else can see or play it, not even in the radio)' }}</span>
+    </label>
+    <button class="btn-accent" type="button" (click)="saveSettings()">{{ 'Zapisz ustawienia' | t:'Save settings' }}</button>
+    <span class="meta" *ngIf="settingsNote"> {{ settingsNote }}</span>
+  </details>
+
   <p class="lede" *ngIf="tracks.length === 0">{{ 'Dodaj pierwszy utwór. Wybierz hostuje.net albo soundfiles.eu i wklej link do pliku.' | t:'Add the first track. Choose hostuje.net or soundfiles.eu and paste the file link.' }}</p>
 
   <div class="stack" *ngIf="tracks.length">

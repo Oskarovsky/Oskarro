@@ -49,6 +49,7 @@ export class PlaylistEditComponent implements OnInit {
       if (id) {
         this.playlistService.getPlaylist(id).subscribe((playlist: any) => {
           this.playlist = playlist;
+          this.settings = {name: playlist.name || '', description: playlist.description || '', privatePlaylist: !!playlist.privatePlaylist};
         });
       }
     });
@@ -89,17 +90,24 @@ export class PlaylistEditComponent implements OnInit {
     );
   }
 
-  updatePlaylist(updatedPlaylist: Playlist) {
-    updatedPlaylist.id = this.playlist_id;
-    this.playlistService.addPlaylist(updatedPlaylist).subscribe(
-      result => {
+  settings = {name: '', description: '', privatePlaylist: false};
+  settingsNote = '';
 
+  saveSettings() {
+    this.settingsNote = '';
+    this.playlistService.updatePlaylist(this.playlist.id, {
+      name: this.settings.name.trim(),
+      description: this.settings.description.trim(),
+      privatePlaylist: this.settings.privatePlaylist
+    }).subscribe({
+      next: saved => {
+        this.playlist = saved;
+        this.settingsNote = this.lang.t('Zapisane.', 'Saved.');
       },
-      error => {
-        alert('An error with updating playlists has occurred');
-      }
-    );
+      error: err => this.settingsNote = err?.error?.message || this.lang.t('Nie udało się zapisać.', 'Could not save.')
+    });
   }
+
 
   public getPlaylistById() {
     this.sub = this.route.params.subscribe(params => {

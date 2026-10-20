@@ -17,6 +17,7 @@ export class PlaylistAddComponent implements OnInit {
   busy = false;
   error = '';
   name = '';
+  privatePlaylist = false;
   description = '';
 
   constructor(private playlistService: PlaylistService,
@@ -36,7 +37,7 @@ export class PlaylistAddComponent implements OnInit {
     }
     this.busy = true;
     this.error = '';
-    this.playlistService.addPlaylist({name, description}).subscribe({
+    this.playlistService.addPlaylist({name, description, privatePlaylist: this.privatePlaylist}).subscribe({
       next: saved => this.router.navigate(['/playlist', saved.id, 'edit']),
       error: () => {
         this.busy = false;

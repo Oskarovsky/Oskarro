@@ -2,6 +2,7 @@ package com.oskarro.oskarito.playlist;
 
 import com.oskarro.oskarito.track.Track;
 import com.oskarro.oskarito.track.TrackRepository;
+import com.oskarro.oskarito.user.ProfileService;
 import com.oskarro.oskarito.user.User;
 import com.oskarro.oskarito.user.UserRepository;
 import org.springframework.http.HttpStatus;
@@ -13,8 +14,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -26,15 +29,18 @@ public class PlaylistServiceImpl implements PlaylistService {
     private final TrackRepository trackRepository;
     private final PlaylistEntryRepository entryRepository;
     private final UserRepository userRepository;
+    private final ProfileService profileService;
 
     public PlaylistServiceImpl(PlaylistRepository playlistRepository,
                                TrackRepository trackRepository,
                                PlaylistEntryRepository entryRepository,
-                               UserRepository userRepository) {
+                               UserRepository userRepository,
+                               ProfileService profileService) {
         this.playlistRepository = playlistRepository;
         this.trackRepository = trackRepository;
         this.entryRepository = entryRepository;
         this.userRepository = userRepository;
+        this.profileService = profileService;
     }
 
     @Override
@@ -51,22 +57,76 @@ public class PlaylistServiceImpl implements PlaylistService {
         playlist.setName(name);
         playlist.setDescription(description.isEmpty() ? null : description);
         playlist.setUser(currentUser());
+        playlist.setPrivatePlaylist(draft.privatePlaylist() != null && draft.privatePlaylist());
         return toView(playlistRepository.save(playlist));
     }
 
     @Override
     public PlaylistView view(Integer id) {
-        return toView(require(id));
+        return toView(requireVisible(id));
     }
 
+    /** Everyone's playlists: a perk from rank Bywalec (or staff); others' private playlists are never listed. */
     @Override
     public List<PlaylistView> listAll() {
-        return playlistRepository.findAll().stream().map(this::toView).toList();
+        User viewer = currentUserOptional().orElseThrow(() ->
+                new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Zaloguj się, żeby przeglądać składanki"));
+        if (!profileService.hasPlaylistAccess(viewer)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "Wszystkie składanki są dostępne od rangi " + profileService.playlistAccessRank());
+        }
+        return playlistRepository.findAll().stream().filter(p -> visibleTo(p, viewer)).map(this::toView).toList();
     }
 
     @Override
     public List<PlaylistView> listByUsername(String username) {
-        return playlistRepository.findAllByUserUsername(username).stream().map(this::toView).toList();
+        User viewer = currentUserOptional().orElse(null);
+        return playlistRepository.findAllByUserUsername(username).stream()
+                .filter(p -> visibleTo(p, viewer)).map(this::toView).toList();
+    }
+
+    /** What the signed-in user may play in the radio: own playlists, plus everyone's public ones with enough rank. */
+    @Override
+    public List<PlaylistView> playable() {
+        User viewer = currentUser();
+        boolean wide = profileService.hasPlaylistAccess(viewer);
+        return playlistRepository.findAll().stream()
+                .filter(p -> isOwner(p, viewer) || (wide && !isPrivate(p)))
+                .map(this::toView)
+                .filter(view -> view.tracks() > 0)
+                .sorted(Comparator.comparing(PlaylistView::mine).reversed()
+                        .thenComparing(PlaylistView::name, String.CASE_INSENSITIVE_ORDER))
+                .toList();
+    }
+
+    @Override
+    public Map<String, Object> access() {
+        User viewer = currentUserOptional().orElse(null);
+        return Map.of("canBrowseAll", profileService.hasPlaylistAccess(viewer),
+                "rank", profileService.playlistAccessRank(),
+                "signedIn", viewer != null);
+    }
+
+    @Override
+    public PlaylistView update(Integer id, PlaylistDraft draft) {
+        Playlist playlist = require(id);
+        if (!isOwner(playlist, currentUser())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Składankę zmienia tylko jej autor");
+        }
+        String name = draft == null || draft.name() == null ? "" : draft.name().trim();
+        if (name.length() < 2 || name.length() > 80) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nazwa składanki ma mieć od 2 do 80 znaków");
+        }
+        String description = draft.description() == null ? "" : draft.description().trim();
+        if (description.length() > 280) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Opis może mieć najwyżej 280 znaków");
+        }
+        playlist.setName(name);
+        playlist.setDescription(description.isEmpty() ? null : description);
+        if (draft.privatePlaylist() != null) {
+            playlist.setPrivatePlaylist(draft.privatePlaylist());
+        }
+        return toView(playlistRepository.save(playlist));
     }
 
     @Override
@@ -84,7 +144,7 @@ public class PlaylistServiceImpl implements PlaylistService {
 
     @Override
     public List<Track> tracks(Integer playlistId) {
-        require(playlistId);
+        requireVisible(playlistId);
         List<Track> tracks = new ArrayList<>(trackRepository.findTracksByPlaylistId(playlistId));
         Set<Integer> seen = new HashSet<>();
         for (Track track : tracks) {
@@ -156,7 +216,39 @@ public class PlaylistServiceImpl implements PlaylistService {
         String owner = playlist.getUser() == null ? "" : playlist.getUser().getUsername();
         int tracks = trackRepository.findTracksByPlaylistId(playlist.getId()).size()
                 + (int) entryRepository.countByPlaylist_Id(playlist.getId());
-        return new PlaylistView(playlist.getId(), playlist.getName(), playlist.getDescription(), owner, tracks);
+        boolean mine = currentUserOptional().map(viewer -> isOwner(playlist, viewer)).orElse(false);
+        return new PlaylistView(playlist.getId(), playlist.getName(), playlist.getDescription(), owner, tracks,
+                isPrivate(playlist), mine);
+    }
+
+    /** Private playlists exist only for their owner: everyone else gets a plain 404. */
+    private Playlist requireVisible(Integer id) {
+        Playlist playlist = require(id);
+        if (!visibleTo(playlist, currentUserOptional().orElse(null))) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Nie ma takiej składanki");
+        }
+        return playlist;
+    }
+
+    private static boolean isPrivate(Playlist playlist) {
+        return Boolean.TRUE.equals(playlist.getPrivatePlaylist());
+    }
+
+    private static boolean isOwner(Playlist playlist, User user) {
+        return user != null && playlist.getUser() != null && playlist.getUser().getId().equals(user.getId());
+    }
+
+    private static boolean visibleTo(Playlist playlist, User viewer) {
+        return !isPrivate(playlist) || isOwner(playlist, viewer);
+    }
+
+    private Optional<User> currentUserOptional() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()
+                || authentication instanceof AnonymousAuthenticationToken) {
+            return Optional.empty();
+        }
+        return userRepository.findByUsername(authentication.getName());
     }
 
     private User currentUser() {

@@ -13,6 +13,28 @@
     </button>
   </div>
 
+  <section class="radio-playlist" *ngIf="loggedIn">
+    <ng-container *ngIf="playback.playlist">
+      <p class="meta">♫ {{ 'Grasz składankę' | t:'Playing the playlist' }} <a [routerLink]="['/playlist', playback.playlist.id, 'details']"><strong>{{ playback.playlist.name }}</strong></a>
+        · {{ playback.sequential ? ('po kolei' | t:'in order') : ('losowo' | t:'shuffled') }}</p>
+      <button class="btn-ghost" type="button" (click)="backToGenres()">{{ 'Wróć do radia gatunków' | t:'Back to the genre radio' }}</button>
+    </ng-container>
+    <ng-container *ngIf="!playback.playlist">
+      <label class="meta vote-label" for="radio-playlist">{{ 'Albo posłuchaj składanki' | t:'Or play a playlist' }}</label>
+      <ng-container *ngIf="playlists.length; else noPlaylists">
+        <select id="radio-playlist" [(ngModel)]="chosenPlaylist">
+          <option *ngFor="let list of playlists" [ngValue]="list.id">{{ list.mine ? '★ ' : '' }}{{ list.privatePlaylist ? '🔒 ' : '' }}{{ list.name }} — {{ list.owner }} ({{ list.tracks }})</option>
+        </select>
+        <button class="btn-accent" type="button" (click)="playPlaylist(false)">▶ {{ 'Po kolei' | t:'In order' }}</button>
+        <button class="btn-ghost" type="button" (click)="playPlaylist(true)">⤨ {{ 'Losowo' | t:'Shuffle' }}</button>
+      </ng-container>
+      <ng-template #noPlaylists>
+        <span class="meta">{{ 'Nie masz jeszcze składanki z utworami.' | t:'You have no playlist with tracks yet.' }} <a routerLink="/playlist/add">{{ 'Załóż składankę' | t:'Create a playlist' }}</a></span>
+      </ng-template>
+    </ng-container>
+    <p class="meta" *ngIf="playlistNote" role="alert">{{ playlistNote }}</p>
+  </section>
+
   <div class="radio-themes" role="group" [attr.aria-label]="'Tematyka radia' | t:'Radio themes'">
     <span class="meta vote-label">{{ 'Tematyka' | t:'Themes' }}</span>
     <button class="like" type="button" [class.on]="!themes.size" (click)="clearThemes()" [attr.aria-pressed]="!themes.size">{{ 'Wszystko' | t:'Everything' }}</button>

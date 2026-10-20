@@ -35,4 +35,10 @@ public interface PlaylistService {
 
 
     void unpin(Integer playlistId, Integer trackId);
+
+    List<PlaylistView> playable();
+
+    java.util.Map<String, Object> access();
+
+    PlaylistView update(Integer id, PlaylistDraft draft);
 }
