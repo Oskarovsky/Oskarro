@@ -322,7 +322,7 @@ public class ProfileService {
                 commentsOnTracks,
                 commentsWritten,
                 activityCount,
-                activityCount * 10,
+                user.getDownloadCredits() == null ? 0 : user.getDownloadCredits(),
                 isAdmin(),
                 !Boolean.FALSE.equals(user.getAutoplayNext()),
                 shared,

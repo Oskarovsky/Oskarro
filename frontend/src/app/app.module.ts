@@ -49,6 +49,7 @@ import { LegalComponent } from './legal/legal.component';
 import { ReportComponent } from './legal/report.component';
 import { CookieNoticeComponent } from './legal/cookie-notice.component';
 import { SsoButtonsComponent } from './auth/sso-buttons.component';
+import { LikeButtonComponent } from './shared-like-button.component';
 import { SsoDoneComponent } from './auth/sso-done.component';
 import { SetListComponent } from './tracks/set-list/set-list.component';
 import { AdminLayoutComponent } from './admin/admin-layout.component';
@@ -116,6 +117,7 @@ import { ActivateAccountComponent } from './auth/activate.component';
     ReportComponent,
     CookieNoticeComponent,
     SsoButtonsComponent,
+    LikeButtonComponent,
     SsoDoneComponent,
     SetListComponent,
     AdminLayoutComponent,

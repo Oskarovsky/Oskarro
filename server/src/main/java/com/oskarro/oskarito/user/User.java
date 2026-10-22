@@ -53,6 +53,9 @@ public class User {
      */
     private Boolean emailVerified;
 
+    /** Downloads left before the next activity; see DownloadAllowanceService. Null counts as 0. */
+    private Integer downloadCredits;
+
     /** Registration time; null for accounts created before 2026-10-17. */
     private Instant createdAt;
 
