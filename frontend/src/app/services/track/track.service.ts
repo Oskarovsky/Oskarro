@@ -79,6 +79,11 @@ export class TrackService {
     return this.http.get<{likes: number, dislikes: number, score: number, mine: number}>(TRACK_API + '/' + id + '/likes');
   }
 
+  /** Spends a download credit the first time; the answer holds the file link and what is left. */
+  download(id: string) {
+    return this.http.post<{url: string, creditsLeft: number}>(TRACK_API + '/' + id + '/download', {});
+  }
+
   vote(id: string, vote: number) {
     return this.http.post<{likes: number, dislikes: number, score: number, mine: number}>(
       TRACK_API + '/' + id + '/vote', {vote});

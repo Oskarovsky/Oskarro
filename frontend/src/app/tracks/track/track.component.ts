@@ -32,6 +32,8 @@ export class TrackComponent implements OnInit, OnDestroy {
   mine = 0;
   voting = false;
   voteNote = '';
+  downloading = false;
+  downloadNote = '';
   isLoggedIn = false;
   draft = '';
   genrePath = 'club';
@@ -373,6 +375,52 @@ export class TrackComponent implements OnInit, OnDestroy {
         this.voteNote = error?.status === 401
           ? this.lang.t('Sesja wygasła. Zaloguj się ponownie, żeby zagłosować.', 'Your session expired. Sign in again to vote.')
           : (error?.error?.message || this.lang.t('Nie udało się zapisać oceny.', 'Could not save your vote.'));
+      }
+    });
+  }
+
+  get credits(): number {
+    return this.track?.downloadCredits || 0;
+  }
+
+  get canDownload(): boolean {
+    return !!this.track?.downloadUnlocked || this.credits > 0;
+  }
+
+  downloadWord(count: number): string {
+    if (count === 1) {
+      return 'pobranie';
+    }
+    const tens = count % 100;
+    return count % 10 >= 2 && count % 10 <= 4 && (tens < 12 || tens > 14) ? 'pobrania' : 'pobrań';
+  }
+
+  download() {
+    if (this.downloading || !this.track.id) {
+      return;
+    }
+    this.downloading = true;
+    this.downloadNote = '';
+    // Opened right away, inside the click, so pop-up blockers let it through; filled once the server answers.
+    const tab = window.open('', '_blank');
+    this.trackService.download(this.track.id).subscribe({
+      next: result => {
+        this.downloading = false;
+        if (tab) {
+          tab.opener = null;
+          tab.location.href = result.url;
+        } else {
+          window.location.href = result.url;
+        }
+        this.track = {...this.track, downloadUnlocked: true, downloadCredits: result.creditsLeft};
+      },
+      error: error => {
+        this.downloading = false;
+        tab?.close();
+        this.downloadNote = error?.status === 401
+          ? this.lang.t('Sesja wygasła. Zaloguj się ponownie.', 'Your session expired. Sign in again.')
+          : (error?.error?.message || this.lang.t('Nie udało się pobrać pliku. Spróbuj za chwilę.', 'The download did not start. Try again in a moment.'));
+        this.loadTrack(this.track.id);
       }
     });
   }

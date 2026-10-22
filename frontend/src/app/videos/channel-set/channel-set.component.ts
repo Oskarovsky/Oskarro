@@ -19,6 +19,7 @@ export class ChannelSetComponent implements OnInit {
   views = '';
   embed: SafeResourceUrl;
   watch = '';
+  videoId = '';
 
   constructor(private route: ActivatedRoute,
               private videos: VideoService,
@@ -28,6 +29,7 @@ export class ChannelSetComponent implements OnInit {
   ngOnInit() {
     this.route.paramMap.subscribe(params => {
       const id = params.get('id') || '';
+      this.videoId = /^[A-Za-z0-9_-]{11}$/.test(id) ? id : '';
       if (!/^[A-Za-z0-9_-]{11}$/.test(id)) {
         return;
       }

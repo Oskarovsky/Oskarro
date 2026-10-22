@@ -20,7 +20,7 @@ public record ProfileView(
         int commentsOnTracks,
         int commentsWritten,
         int activity,
-        int downloadSlots,
+        int downloadCredits,
         boolean canGrant,
         boolean autoplayNext,
         List<ProfileTrack> shared,

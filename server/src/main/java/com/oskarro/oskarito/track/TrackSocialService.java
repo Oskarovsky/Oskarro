@@ -55,6 +55,7 @@ public class TrackSocialService {
     private final TrackViewRepository viewRepository;
     private final PlaylistEntryRepository entryRepository;
     private final TrackFileRepository fileRepository;
+    private final DownloadAllowanceService downloads;
     private static final ZoneId WARSAW = ZoneId.of("Europe/Warsaw");
 
     public TrackSocialService(TrackRepository trackRepository,
@@ -65,7 +66,8 @@ public class TrackSocialService {
                               CoverStorage coverStorage,
                               TrackViewRepository viewRepository,
                               PlaylistEntryRepository entryRepository,
-                              TrackFileRepository fileRepository) {
+                              TrackFileRepository fileRepository,
+                              DownloadAllowanceService downloads) {
         this.trackRepository = trackRepository;
         this.commentRepository = commentRepository;
         this.likeRepository = likeRepository;
@@ -75,6 +77,7 @@ public class TrackSocialService {
         this.viewRepository = viewRepository;
         this.entryRepository = entryRepository;
         this.fileRepository = fileRepository;
+        this.downloads = downloads;
     }
 
     public List<Track> listByGenre(String genre, String sort) {
@@ -171,8 +174,9 @@ public class TrackSocialService {
         Map<Integer, Integer> viewsYear = viewCounts(ids, yearStart());
         Map<Integer, Integer> viewsAll = viewCounts(ids, null);
         Map<Integer, Integer> comments = commentCounts(ids);
-        Set<Integer> downloadable = downloadableIds();
-        int slots = downloadSlots();
+        User viewer = currentUserOptional().orElse(null);
+        Set<Integer> unlocked = downloads.unlockedAmong(viewer, ids);
+        int credits = downloads.credits(viewer);
         Map<Integer, String> ranks = new HashMap<>();
         for (Track track : tracks) {
             if (track.getAuthor() != null) {
@@ -188,9 +192,9 @@ public class TrackSocialService {
             track.setViewsAll(viewsAll.getOrDefault(track.getId(), 0));
             track.setCommentCount(comments.getOrDefault(track.getId(), 0));
             track.setHasCover(coverStorage.exists(track.getId()));
-            String file = downloadLink(track.getUrl());
-            track.setDownloadUrl(file != null && downloadable.contains(track.getId()) ? file : null);
-            track.setDownloadSlots(slots);
+            track.setDownloadable(downloadLink(track.getUrl()) != null);
+            track.setDownloadUnlocked(unlocked.contains(track.getId()));
+            track.setDownloadCredits(credits);
             if (track.getCreatedAt() != null) {
                 track.setEditableUntil(track.getCreatedAt().plus(EDIT_WINDOW).toString());
             }
@@ -224,7 +228,9 @@ public class TrackSocialService {
                 .author(currentUser())
                 .build();
         applySetFields(track, incoming);
-        return decorate(trackRepository.save(track));
+        Track saved = trackRepository.save(track);
+        downloads.grant(saved.getAuthor(), DownloadAllowanceService.Activity.TRACK, "track:" + saved.getId());
+        return decorate(saved);
     }
 
     public Track update(Integer trackId, Track incoming) {
@@ -294,6 +300,9 @@ public class TrackSocialService {
         comment.setTrack(track);
         comment.setAuthor(currentUser());
         TrackComment saved = commentRepository.save(comment);
+        if (track.getAuthor() == null || !track.getAuthor().getId().equals(saved.getAuthor().getId())) {
+            downloads.grant(saved.getAuthor(), DownloadAllowanceService.Activity.COMMENT, "track:" + trackId);
+        }
         return new CommentView(saved.getId(), saved.getText(), saved.getAuthor().getUsername(), saved.getCreatedAt().toString());
     }
 
@@ -336,6 +345,10 @@ public class TrackSocialService {
             } catch (DataIntegrityViolationException ex) {
                 // A second click raced the first one; the first vote stands.
                 throw new ResponseStatusException(HttpStatus.CONFLICT, "Twój głos jest już zapisany");
+            }
+            // Rating your own track gives nothing, or anyone could unlock downloads alone.
+            if (track.getAuthor() == null || !track.getAuthor().getId().equals(user.getId())) {
+                downloads.grant(user, DownloadAllowanceService.Activity.LIKE, "track:" + trackId);
             }
         }
         LikeState state = likes(trackId);
@@ -399,32 +412,19 @@ public class TrackSocialService {
         return totals;
     }
 
-    private Set<Integer> downloadableIds() {
-        Optional<User> user = currentUserOptional();
-        if (user.isEmpty()) {
-            return Set.of();
+    /** The file link for the current user; the first download of a track spends one credit. */
+    public DownloadView download(Integer trackId) {
+        Track track = requireTrack(trackId);
+        User user = currentUser();
+        String file = downloadLink(track.getUrl());
+        if (file == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Tego utworu nie da się pobrać");
         }
-        int slots = profileService.activityOf(user.get().getId()) * 10;
-        if (slots <= 0) {
-            return Set.of();
+        if (!downloads.redeem(user, trackId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "Nie masz już pobrań. Polub coś, skomentuj albo dodaj utwór, żeby dostać kolejne.");
         }
-        Set<Integer> ids = new HashSet<>();
-        for (Object[] row : trackRepository.communityIdsAndUrls()) {
-            if (ids.size() >= slots) {
-                break;
-            }
-            String url = row[1] == null ? "" : row[1].toString();
-            if (downloadLink(url) != null) {
-                ids.add(((Number) row[0]).intValue());
-            }
-        }
-        return ids;
-    }
-
-    private int downloadSlots() {
-        return currentUserOptional()
-                .map(user -> profileService.activityOf(user.getId()) * 10)
-                .orElse(0);
+        return new DownloadView(file, downloads.credits(user));
     }
 
     static String hostujeFile(String url) {

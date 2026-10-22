@@ -3268,3 +3268,71 @@ label {
   justify-content: flex-start;
   align-items: center;
 }
+
+/* Download credits on the track page. */
+.download-box {
+  margin: 16px 0 0;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.download-box.empty {
+  border-style: dashed;
+  border-color: rgba(228, 255, 74, 0.4);
+  background: rgba(228, 255, 74, 0.06);
+}
+
+.download-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+}
+
+.download-status {
+  margin: 0;
+}
+
+.download-box .alert {
+  margin: 10px 0 0;
+}
+
+.download-rules {
+  margin-top: 10px;
+}
+
+.download-rules summary {
+  cursor: pointer;
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.download-rules ul {
+  margin: 8px 0 6px;
+  padding-left: 18px;
+}
+
+.download-rules li strong {
+  display: inline-block;
+  min-width: 1.4em;
+  color: var(--accent);
+}
+
+/* Like button for playlists and video sets. */
+.like-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.like-btn.on {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.like-btn .like-count {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}

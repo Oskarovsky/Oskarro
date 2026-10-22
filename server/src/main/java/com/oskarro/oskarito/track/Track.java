@@ -105,11 +105,17 @@ public class Track {
     @Transient
     private Boolean hasCover;
 
+    /** The file can be downloaded at all (a hostuje.net or soundfiles.eu link). */
     @Transient
-    private String downloadUrl;
+    private Boolean downloadable;
 
+    /** The current user has already spent a credit on this track, so downloading is free. */
     @Transient
-    private Integer downloadSlots;
+    private Boolean downloadUnlocked;
+
+    /** Credits the current user has left. */
+    @Transient
+    private Integer downloadCredits;
 
     @Transient
     private Boolean editable;

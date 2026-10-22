@@ -4,6 +4,9 @@
   <p class="kicker">{{ playlist?.owner }}</p>
   <h1 class="display">{{ playlist?.name }}</h1>
   <p class="lede" *ngIf="playlist?.description">{{ playlist.description }}</p>
+  <p class="track-actions" *ngIf="playlist?.id && !playlist?.privatePlaylist">
+    <app-like-button kind="playlist" [key]="'' + playlist.id"></app-like-button>
+  </p>
   <p class="meta" *ngIf="playlist?.privatePlaylist">🔒 {{ 'Prywatna — widzisz ją tylko Ty.' | t:'Private — only you can see it.' }}</p>
   <p class="track-actions playlist-play" *ngIf="isLoggedIn && playable.length">
     <button class="btn-accent" type="button" (click)="playAll()">▶ {{ nowPlayingHere ? ('Od początku' | t:'From the start') : ('Odsłuchaj składankę' | t:'Play the playlist') }}</button>
