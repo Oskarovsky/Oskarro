@@ -247,18 +247,20 @@ export class ProfileComponent implements OnInit {
     });
   }
 
+  /**
+   * The picture is loaded by the browser straight from its URL. Reading the blob with a FileReader finished after
+   * the post-HTTP view refresh, so the photo never appeared. The version query skips the 10-minute cache after an upload.
+   */
   private getImageFromService() {
     if (!this.profile) {
       return;
     }
-    this.uploadService.getFile(this.profile.username).subscribe({
-      next: data => {
-        const reader = new FileReader();
-        reader.addEventListener('load', () => this.imageToShow = reader.result);
-        reader.readAsDataURL(data);
-      },
-      error: () => this.imageToShow = null
-    });
+    this.imageToShow = environment.serverUrl + '/storage/' + encodeURIComponent(this.profile.username)
+      + '/avatar?v=' + Date.now();
+  }
+
+  noAvatar() {
+    this.imageToShow = null;
   }
 
 }

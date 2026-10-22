@@ -1,7 +1,7 @@
 <div class="page" *ngIf="profile; else empty">
   <p class="kicker">{{ 'Profil' | t:'Profile' }}</p>
   <div class="profile-head">
-    <img class="avatar" [src]="imageToShow || ''" alt="" *ngIf="imageToShow">
+    <img class="avatar" [src]="imageToShow" alt="" *ngIf="imageToShow" (error)="noAvatar()">
     <span class="avatar" *ngIf="!imageToShow"></span>
     <div>
       <h1 class="display"><app-person [name]="profile.username" [rank]="profile.rank"></app-person></h1>
@@ -67,7 +67,7 @@
       </label>
     </div>
     <div class="photo-field">
-      <img class="avatar" [src]="imageToShow" alt="" *ngIf="imageToShow">
+      <img class="avatar" [src]="imageToShow" alt="" *ngIf="imageToShow" (error)="noAvatar()">
       <span class="avatar" *ngIf="!imageToShow"></span>
       <div>
         <p class="meta">{{ 'Zdjęcie profilowe' | t:'Profile photo' }}</p>
