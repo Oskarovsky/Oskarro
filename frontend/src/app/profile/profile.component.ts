@@ -34,9 +34,6 @@ export class ProfileComponent implements OnInit {
   website = '';
   favorite = new Set<string>();
   genres = GENRES;
-  currentPassword = '';
-  nextPassword = '';
-  confirmPassword = '';
   grantTitle = '';
   grantUser = '';
   message = '';
@@ -139,25 +136,6 @@ export class ProfileComponent implements OnInit {
         this.message = 'Zapisane.';
       },
       error: () => this.message = 'Nie udało się zapisać opisu.'
-    });
-  }
-
-  savePassword() {
-    if (this.nextPassword.length < 6 || this.nextPassword !== this.confirmPassword) {
-      this.message = 'Hasło musi mieć od 6 znaków i być powtórzone tak samo.';
-      return;
-    }
-    this.http.post(environment.serverUrl + '/profile/password', {
-      current: this.currentPassword,
-      next: this.nextPassword
-    }).subscribe({
-      next: () => {
-        this.currentPassword = '';
-        this.nextPassword = '';
-        this.confirmPassword = '';
-        this.message = 'Hasło zmienione.';
-      },
-      error: () => this.message = 'Nie udało się zmienić hasła.'
     });
   }
 

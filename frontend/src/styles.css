@@ -3365,3 +3365,226 @@ label {
   font-weight: 680;
   line-height: 1;
 }
+
+/* Profile: figures with an explanation on hover or tap. */
+.profile-figures {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+}
+
+.profile-figures strong {
+  color: var(--text);
+}
+
+.hint {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  margin-left: 4px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-style: italic;
+  font-weight: 650;
+  cursor: help;
+  vertical-align: 1px;
+}
+
+.hint:hover,
+.hint:focus {
+  color: var(--accent);
+  border-color: var(--accent);
+  outline: none;
+}
+
+.hint::after {
+  content: attr(data-tip);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  z-index: 20;
+  width: max-content;
+  max-width: min(280px, 80vw);
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #2b2720;
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  color: var(--text);
+  font-size: 0.82rem;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.45;
+  text-align: left;
+  white-space: normal;
+  transform: translateX(-50%);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
+.hint:hover::after,
+.hint:focus::after {
+  opacity: 1;
+  visibility: visible;
+}
+
+.profile-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0 0;
+}
+
+.photo-field {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 14px;
+}
+
+.photo-field .avatar {
+  flex: none;
+  width: 72px;
+  height: 72px;
+  border-radius: 18px;
+}
+
+.photo-field .meta {
+  margin: 0 0 6px;
+}
+
+.photo-field input[type="file"] {
+  width: auto;
+  max-width: 100%;
+  padding: 6px;
+}
+
+.photo-field button {
+  margin-top: 8px;
+}
+
+/* "Moja aktywność" tabs and comment list. */
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 18px 0;
+}
+
+.tabs button {
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--text);
+  font-weight: 500;
+}
+
+.tabs button.on {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
+.tab-count {
+  margin-left: 8px;
+  opacity: 0.7;
+  font-variant-numeric: tabular-nums;
+}
+
+.comment-list {
+  display: grid;
+  gap: 10px;
+}
+
+.my-comment {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 4px 12px;
+  color: var(--text);
+}
+
+.my-comment:hover {
+  border-color: rgba(228, 255, 74, 0.4);
+}
+
+.my-comment-track {
+  font-weight: 650;
+}
+
+.my-comment-text {
+  grid-column: 1 / -1;
+  overflow-wrap: anywhere;
+}
+
+/* Look-alike tracks above the "add a track" form. */
+.lookalikes {
+  margin: 18px 0 0;
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px dashed rgba(228, 255, 74, 0.45);
+  background: rgba(228, 255, 74, 0.06);
+}
+
+.lookalikes h2 {
+  margin: 0 0 4px;
+  font-size: 1.15rem;
+}
+
+.lookalikes > .meta {
+  margin: 0 0 10px;
+}
+
+.lookalike {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  border-radius: 12px;
+  color: var(--text);
+}
+
+.lookalike + .lookalike {
+  margin-top: 4px;
+}
+
+.lookalike:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.lookalike .thumb-slot {
+  width: 44px;
+  height: 44px;
+}
+
+.lookalike-lines {
+  display: grid;
+  min-width: 0;
+}
+
+.lookalike-lines strong,
+.lookalike-lines .meta {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lookalike-tag {
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.lookalike.same .lookalike-tag {
+  border-color: var(--danger);
+  color: var(--danger);
+}

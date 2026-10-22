@@ -34,6 +34,8 @@ import { PlaylistFilterPipe } from './services/playlist/playlist-filter.pipe';
 import { LoginComponent } from './auth/login/login.component';
 import { RegisterComponent } from './auth/register/register.component';
 import { ProfileComponent } from './profile/profile.component';
+import { PasswordChangeComponent } from './account/password-change.component';
+import { MyActivityComponent } from './account/my-activity.component';
 import { VideoComponent } from './videos/video/video.component';
 import { ChannelSetComponent } from './videos/channel-set/channel-set.component';
 import { VideoAddComponent } from './videos/video-add/video-add.component';
@@ -103,6 +105,8 @@ import { ActivateAccountComponent } from './auth/activate.component';
     LoginComponent,
     RegisterComponent,
     ProfileComponent,
+    PasswordChangeComponent,
+    MyActivityComponent,
     VideoComponent,
     ChannelSetComponent,
     VideoAddComponent,

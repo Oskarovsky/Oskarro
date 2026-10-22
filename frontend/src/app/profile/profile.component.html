@@ -7,18 +7,28 @@
       <h1 class="display"><app-person [name]="profile.username" [rank]="profile.rank"></app-person></h1>
       <p class="meta" *ngIf="profile.firstName || profile.lastName">{{ profile.firstName }} {{ profile.lastName }}</p>
       <p class="meta" *ngIf="profile.website"><a [href]="profile.website" target="_blank" rel="noopener">{{ profile.website }}</a></p>
-      <p class="meta" *ngIf="likedGenres().length">{{ 'Lubiane gatunki' | t:'Favourite genres' }}: {{ likedNames() }}</p>
+      <p class="meta" *ngIf="likedGenres().length">{{ 'Ulubione gatunki' | t:'Favourite genres' }}: {{ likedNames() }}</p>
       <p class="meta" *ngIf="profile.granted">
         <ng-container *ngIf="!lang.en">Przyznana przez admina. Z aktywności: {{ profile.activityRank }}, {{ profile.score }} pkt.</ng-container>
         <ng-container *ngIf="lang.en">Set by an admin. From activity: {{ profile.activityRank | t }}, {{ profile.score }} pts.</ng-container>
       </p>
-      <p class="meta" *ngIf="!profile.granted">
-        <ng-container *ngIf="!lang.en">{{ profile.score }} pkt. Utwór daje 5, komentarz 2, a polubienie przy Twoim utworze 1.</ng-container>
-        <ng-container *ngIf="lang.en">{{ profile.score }} pts. A track is worth 5, a comment 2, and a like on your track 1.</ng-container>
+      <p class="meta profile-figures">
+        <span class="figure" *ngIf="!profile.granted">
+          {{ 'Punkty rangi' | t:'Rank points' }}: <strong>{{ profile.score }}</strong>
+          <span class="hint" tabindex="0" role="note"
+                [attr.data-tip]="'Utwór daje 5 pkt, komentarz 2, a polubienie przy Twoim utworze 1. Od punktów zależy ranga.' | t:'A track is worth 5 points, a comment 2, and a like on your track 1. Points decide your rank.'"
+                [attr.aria-label]="'Jak liczymy punkty' | t:'How points are counted'">i</span>
+        </span>
+        <span class="figure" *ngIf="self">
+          {{ 'Twoje żetony' | t:'Your tokens' }}: <strong>{{ profile.downloadCredits }}</strong>
+          <span class="hint" tabindex="0" role="note"
+                [attr.data-tip]="'Żetony są na pobieranie plików. Polubienie daje 3, komentarz 5, nowy utwór 7. Nie sumują się — zostaje Ci większa liczba.' | t:'Tokens are for downloading files. A like gives 3, a comment 5, a new track 7. They do not add up — you keep the bigger number.'"
+                [attr.aria-label]="'Jak działają żetony' | t:'How tokens work'">i</span>
+        </span>
       </p>
-      <p class="meta" *ngIf="self">
-        <ng-container *ngIf="!lang.en">Żetony na pobrania: {{ profile.downloadCredits }}. Polubienie daje 3, komentarz 5, nowy utwór 7. Żetony się nie sumują — zostaje Ci większa liczba.</ng-container>
-        <ng-container *ngIf="lang.en">Download tokens: {{ profile.downloadCredits }}. A like gives 3, a comment 5, a new track 7. Tokens do not add up — you keep the bigger number.</ng-container>
+      <p class="profile-links" *ngIf="self">
+        <a class="btn-ghost" routerLink="/moja-aktywnosc">{{ 'Moja aktywność' | t:'My activity' }}</a>
+        <a class="btn-ghost" routerLink="/konto/haslo" *ngIf="!externalAccount">{{ 'Zmień hasło' | t:'Change password' }}</a>
       </p>
     </div>
   </div>
@@ -56,28 +66,21 @@
         <input [(ngModel)]="website" name="website" type="url" maxlength="120" placeholder="https://">
       </label>
     </div>
-    <p class="meta" style="margin-top: 14px;">{{ 'Lubiane gatunki' | t:'Favourite genres' }}</p>
+    <div class="photo-field">
+      <img class="avatar" [src]="imageToShow" alt="" *ngIf="imageToShow">
+      <span class="avatar" *ngIf="!imageToShow"></span>
+      <div>
+        <p class="meta">{{ 'Zdjęcie profilowe' | t:'Profile photo' }}</p>
+        <input type="file" accept="image/*" (change)="selectFile($event)">
+        <button class="btn-ghost" type="button" [disabled]="!selectedFile" (click)="upload()">{{ 'Wgraj zdjęcie' | t:'Upload photo' }}</button>
+      </div>
+    </div>
+    <p class="meta" style="margin-top: 14px;">{{ 'Ulubione gatunki' | t:'Favourite genres' }}</p>
     <div class="votes">
       <button class="like" type="button" *ngFor="let genre of genres" [class.on]="favorite.has(genre.id)" (click)="toggleGenre(genre.id)">{{ genre.label }}</button>
     </div>
     <textarea [(ngModel)]="bio" name="bio" rows="4" maxlength="280" [placeholder]="'Krótko o sobie, do 280 znaków.' | t:'A short note about you, up to 280 characters.'"></textarea>
     <button class="btn-accent" type="button" style="margin-top: 12px;" (click)="saveBio()">{{ 'Zapisz profil' | t:'Save profile' }}</button>
-    <h2 style="margin-top: 28px;">{{ 'Hasło' | t:'Password' }}</h2>
-    <div class="form-grid">
-      <label>{{ 'Obecne hasło' | t:'Current password' }}
-        <input [(ngModel)]="currentPassword" name="currentPassword" type="password" autocomplete="current-password">
-      </label>
-      <label>{{ 'Nowe hasło' | t:'New password' }}
-        <input [(ngModel)]="nextPassword" name="nextPassword" type="password" autocomplete="new-password" minlength="6">
-      </label>
-      <label>{{ 'Powtórz hasło' | t:'Repeat the password' }}
-        <input [(ngModel)]="confirmPassword" name="confirmPassword" type="password" autocomplete="new-password">
-      </label>
-    </div>
-    <button class="btn-ghost" type="button" style="margin-top: 12px;" (click)="savePassword()">{{ 'Zmień hasło' | t:'Change password' }}</button>
-    <p class="meta" style="margin-top: 18px;">{{ 'Zdjęcie profilowe' | t:'Profile photo' }}</p>
-    <input type="file" accept="image/*" (change)="selectFile($event)">
-    <button class="btn-ghost" type="button" style="margin-top: 12px;" [disabled]="!selectedFile" (click)="upload()">{{ 'Wgraj zdjęcie' | t:'Upload photo' }}</button>
     <p class="meta" *ngIf="message">{{ message | t }}</p>
   </section>
 
