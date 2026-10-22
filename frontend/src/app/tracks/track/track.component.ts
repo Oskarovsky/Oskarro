@@ -25,7 +25,7 @@ export class TrackComponent implements OnInit, OnDestroy {
 
   track: any = {};
   tracks: Track[] = [];
-  comments: Array<{id: number, text: string, author: string, createdAt: string}> = [];
+  comments: Array<{id: number, text: string, author: string, createdAt: string, avatar?: boolean}> = [];
   likes = 0;
   dislikes = 0;
   score = 0;

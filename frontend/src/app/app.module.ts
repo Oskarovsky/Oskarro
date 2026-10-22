@@ -71,6 +71,7 @@ import { SearchComponent } from './search/search.component';
 import { VersionLabelPipe } from './tracks/version-label.pipe';
 import { RankMarkPipe } from './tracks/rank-mark.pipe';
 import { PersonComponent } from './tracks/person.component';
+import { AvatarComponent } from './tracks/avatar.component';
 import { CoverArtComponent } from './tracks/cover-art.component';
 import { ScoreBadgeComponent } from './tracks/score-badge/score-badge.component';
 import { AdSlotComponent } from './ads/ad-slot.component';
@@ -137,6 +138,7 @@ import { ActivateAccountComponent } from './auth/activate.component';
     VersionLabelPipe,
     RankMarkPipe,
     PersonComponent,
+    AvatarComponent,
     CoverArtComponent,
     ScoreBadgeComponent,
     AdSlotComponent,

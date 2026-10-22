@@ -3336,3 +3336,32 @@ label {
   color: var(--muted);
   font-variant-numeric: tabular-nums;
 }
+
+/* Comments with the author's picture. */
+.comment {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.comment-body {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.avatar-mini {
+  display: block;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #14130f;
+}
+
+.avatar-letter {
+  display: grid;
+  place-items: center;
+  color: var(--accent-ink);
+  font-family: var(--display);
+  font-weight: 680;
+  line-height: 1;
+}

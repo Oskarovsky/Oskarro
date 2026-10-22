@@ -122,9 +122,14 @@
     <h2>{{ 'Komentarze' | t:'Comments' }}</h2>
     <p class="meta" *ngIf="comments.length === 0">{{ 'Jeszcze nikt nie zostawił zdania. Pierwszy komentarz zostaje na stronie.' | t:'Nobody has left a note yet. The first comment stays on the page.' }}</p>
     <article class="comment" *ngFor="let comment of comments">
-      <strong><app-person [name]="comment.author" [to]="['/profile', comment.author]"></app-person></strong>
-      <time>{{ comment.createdAt | date:'dd.MM.yyyy HH:mm' }}</time>
-      <div>{{ comment.text }}</div>
+      <a class="comment-avatar" [routerLink]="['/profile', comment.author]" tabindex="-1" aria-hidden="true">
+        <app-avatar [name]="comment.author" [has]="comment.avatar"></app-avatar>
+      </a>
+      <div class="comment-body">
+        <strong><app-person [name]="comment.author" [to]="['/profile', comment.author]"></app-person></strong>
+        <time>{{ comment.createdAt | date:'dd.MM.yyyy HH:mm' }}</time>
+        <div>{{ comment.text }}</div>
+      </div>
     </article>
 
     <form class="composer" *ngIf="isLoggedIn" (submit)="$event.preventDefault(); addComment()">
