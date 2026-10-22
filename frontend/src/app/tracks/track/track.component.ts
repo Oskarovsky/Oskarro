@@ -25,7 +25,7 @@ export class TrackComponent implements OnInit, OnDestroy {
 
   track: any = {};
   tracks: Track[] = [];
-  comments: Array<{id: number, text: string, author: string, createdAt: string}> = [];
+  comments: Array<{id: number, text: string, author: string, createdAt: string, avatar?: boolean}> = [];
   likes = 0;
   dislikes = 0;
   score = 0;
@@ -383,16 +383,21 @@ export class TrackComponent implements OnInit, OnDestroy {
     return this.track?.downloadCredits || 0;
   }
 
+  get isOwnTrack(): boolean {
+    const me = this.tokenStorage.getUser()?.username;
+    return !!me && this.track?.sharedBy === me;
+  }
+
   get canDownload(): boolean {
     return !!this.track?.downloadUnlocked || this.credits > 0;
   }
 
-  downloadWord(count: number): string {
+  tokenWord(count: number): string {
     if (count === 1) {
-      return 'pobranie';
+      return 'żeton';
     }
     const tens = count % 100;
-    return count % 10 >= 2 && count % 10 <= 4 && (tens < 12 || tens > 14) ? 'pobrania' : 'pobrań';
+    return count % 10 >= 2 && count % 10 <= 4 && (tens < 12 || tens > 14) ? 'żetony' : 'żetonów';
   }
 
   download() {

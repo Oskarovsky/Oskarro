@@ -1,6 +1,7 @@
 package com.oskarro.oskarito.track;
 
 import com.oskarro.oskarito.playlist.PlaylistEntryRepository;
+import com.oskarro.oskarito.storage.ImageRepository;
 import com.oskarro.oskarito.user.ProfileService;
 import com.oskarro.oskarito.user.User;
 import com.oskarro.oskarito.user.UserRepository;
@@ -56,6 +57,7 @@ public class TrackSocialService {
     private final PlaylistEntryRepository entryRepository;
     private final TrackFileRepository fileRepository;
     private final DownloadAllowanceService downloads;
+    private final ImageRepository imageRepository;
     private static final ZoneId WARSAW = ZoneId.of("Europe/Warsaw");
 
     public TrackSocialService(TrackRepository trackRepository,
@@ -67,7 +69,8 @@ public class TrackSocialService {
                               TrackViewRepository viewRepository,
                               PlaylistEntryRepository entryRepository,
                               TrackFileRepository fileRepository,
-                              DownloadAllowanceService downloads) {
+                              DownloadAllowanceService downloads,
+                              ImageRepository imageRepository) {
         this.trackRepository = trackRepository;
         this.commentRepository = commentRepository;
         this.likeRepository = likeRepository;
@@ -78,6 +81,7 @@ public class TrackSocialService {
         this.entryRepository = entryRepository;
         this.fileRepository = fileRepository;
         this.downloads = downloads;
+        this.imageRepository = imageRepository;
     }
 
     public List<Track> listByGenre(String genre, String sort) {
@@ -193,7 +197,8 @@ public class TrackSocialService {
             track.setCommentCount(comments.getOrDefault(track.getId(), 0));
             track.setHasCover(coverStorage.exists(track.getId()));
             track.setDownloadable(downloadLink(track.getUrl()) != null);
-            track.setDownloadUnlocked(unlocked.contains(track.getId()));
+            boolean own = viewer != null && track.getAuthor() != null && viewer.getId().equals(track.getAuthor().getId());
+            track.setDownloadUnlocked(own || unlocked.contains(track.getId()));
             track.setDownloadCredits(credits);
             if (track.getCreatedAt() != null) {
                 track.setEditableUntil(track.getCreatedAt().plus(EDIT_WINDOW).toString());
@@ -285,8 +290,13 @@ public class TrackSocialService {
                         comment.getId(),
                         comment.getText(),
                         comment.getAuthor().getUsername(),
-                        comment.getCreatedAt().toString()))
+                        comment.getCreatedAt().toString(),
+                        hasAvatar(comment.getAuthor())))
                 .toList();
+    }
+
+    private boolean hasAvatar(User user) {
+        return user != null && Boolean.TRUE.equals(imageRepository.existsByUserId(user.getId()));
     }
 
     public CommentView addComment(Integer trackId, String text) {
@@ -303,7 +313,8 @@ public class TrackSocialService {
         if (track.getAuthor() == null || !track.getAuthor().getId().equals(saved.getAuthor().getId())) {
             downloads.grant(saved.getAuthor(), DownloadAllowanceService.Activity.COMMENT, "track:" + trackId);
         }
-        return new CommentView(saved.getId(), saved.getText(), saved.getAuthor().getUsername(), saved.getCreatedAt().toString());
+        return new CommentView(saved.getId(), saved.getText(), saved.getAuthor().getUsername(), saved.getCreatedAt().toString(),
+                hasAvatar(saved.getAuthor()));
     }
 
     public LikeState likes(Integer trackId) {
@@ -420,9 +431,11 @@ public class TrackSocialService {
         if (file == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Tego utworu nie da się pobrać");
         }
-        if (!downloads.redeem(user, trackId)) {
+        // Your own tracks are always free to download.
+        boolean own = track.getAuthor() != null && track.getAuthor().getId().equals(user.getId());
+        if (!own && !downloads.redeem(user, trackId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,
-                    "Nie masz już pobrań. Polub coś, skomentuj albo dodaj utwór, żeby dostać kolejne.");
+                    "Brak żetonów. Polub coś, skomentuj albo dodaj utwór, żeby je zdobyć.");
         }
         return new DownloadView(file, downloads.credits(user));
     }

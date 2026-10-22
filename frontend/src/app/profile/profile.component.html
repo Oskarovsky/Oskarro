@@ -17,8 +17,8 @@
         <ng-container *ngIf="lang.en">{{ profile.score }} pts. A track is worth 5, a comment 2, and a like on your track 1.</ng-container>
       </p>
       <p class="meta" *ngIf="self">
-        <ng-container *ngIf="!lang.en">Pobrania do wykorzystania: {{ profile.downloadCredits }}. Polubienie daje 3, komentarz 5, nowy utwór 7 — bierzesz większą wartość, nie sumę.</ng-container>
-        <ng-container *ngIf="lang.en">Downloads left: {{ profile.downloadCredits }}. A like gives 3, a comment 5, a new track 7 — you get the larger value, not the sum.</ng-container>
+        <ng-container *ngIf="!lang.en">Żetony na pobrania: {{ profile.downloadCredits }}. Polubienie daje 3, komentarz 5, nowy utwór 7. Żetony się nie sumują — zostaje Ci większa liczba.</ng-container>
+        <ng-container *ngIf="lang.en">Download tokens: {{ profile.downloadCredits }}. A like gives 3, a comment 5, a new track 7. Tokens do not add up — you keep the bigger number.</ng-container>
       </p>
     </div>
   </div>

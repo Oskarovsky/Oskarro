@@ -135,6 +135,10 @@ class DownloadCreditsTest {
                                 "url", "https://hostuje.net/file.php?id=" + "e".repeat(32)))))
                 .andExpect(status().isOk());
         assertThat(credits(author)).isEqualTo(7);
+
+        // Downloading your own track is free.
+        mvc.perform(post("/api/tracks/" + own.getId() + "/download").header("Authorization", auth)).andExpect(status().isOk());
+        assertThat(credits(author)).isEqualTo(7);
     }
 
     @Test
