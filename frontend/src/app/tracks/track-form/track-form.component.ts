@@ -1,4 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import {Subject, Subscription, of} from 'rxjs';
+import {catchError, debounceTime, switchMap} from 'rxjs/operators';
 import {RefreshAfterHttpDirective} from '../../services/ui-refresh';
 import {ActivatedRoute, Router} from '@angular/router';
 import {TrackService} from '../../services/track/track.service';
@@ -14,7 +16,12 @@ import {SET_CATEGORIES, setCategoryById, setCategoryBySlug} from '../sets';
   standalone: false,
   hostDirectives: [RefreshAfterHttpDirective]
 })
-export class TrackFormComponent implements OnInit {
+export class TrackFormComponent implements OnInit, OnDestroy {
+
+  /** Look-alikes of what is being typed, shown above the form to avoid adding the same track twice. */
+  similar: Array<{track: any, sameFile: boolean, match: number}> = [];
+  private typed = new Subject<void>();
+  private similarSub: Subscription;
 
   genres = GENRES;
   loggedIn = false;
@@ -36,7 +43,32 @@ export class TrackFormComponent implements OnInit {
               private trackService: TrackService,
               private tokenStorage: TokenStorageService) { }
 
+  ngOnDestroy() {
+    this.similarSub?.unsubscribe();
+  }
+
+  /** Called on every change of title, artist or link. */
+  lookAlike() {
+    this.typed.next();
+  }
+
+  coverOf(track: any) {
+    return this.trackService.coverUrl(track.id);
+  }
+
   ngOnInit() {
+    this.similarSub = this.typed.pipe(
+      debounceTime(400),
+      switchMap(() => {
+        const title = (this.draft.title || '').trim();
+        const artist = (this.draft.artist || '').trim();
+        const url = (this.draft.url || '').trim();
+        if (title.length < 3 && artist.length < 3 && url.length < 12) {
+          return of([]);
+        }
+        return this.trackService.similar({title, artist, url, except: this.trackId}).pipe(catchError(() => of([])));
+      })
+    ).subscribe(list => this.similar = list || []);
     this.route.params.subscribe(params => {
       this.loggedIn = !!this.tokenStorage.getToken();
       this.editing = !!params.id;

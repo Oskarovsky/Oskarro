@@ -79,6 +79,17 @@ export class TrackService {
     return this.http.get<{likes: number, dislikes: number, score: number, mine: number}>(TRACK_API + '/' + id + '/likes');
   }
 
+  /** Existing tracks that look like the one being added (same words or the same file). */
+  similar(fields: {artist?: string, title?: string, url?: string, except?: number}) {
+    const params: Record<string, string> = {};
+    Object.entries(fields).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && String(value).trim()) {
+        params[key] = String(value).trim();
+      }
+    });
+    return this.http.get<Array<{track: any, sameFile: boolean, match: number}>>(TRACK_API + '/similar', {params});
+  }
+
   /** The signed-in user's own tracks, liked tracks and comments (for "Moja aktywność"). */
   mine() {
     return this.http.get<any[]>(TRACK_API + '/mine');

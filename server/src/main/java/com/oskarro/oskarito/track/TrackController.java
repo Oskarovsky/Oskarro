@@ -163,6 +163,15 @@ public class TrackController {
         trackSocialService.recordView(id, realIp == null || realIp.isBlank() ? request.getRemoteAddr() : realIp);
     }
 
+    /** Existing tracks that look like the one being added, so nobody shares the same track twice. */
+    @GetMapping(value = "/similar")
+    List<SimilarTrack> similar(@RequestParam(required = false) String artist,
+                               @RequestParam(required = false) String title,
+                               @RequestParam(required = false) String url,
+                               @RequestParam(required = false) Integer except) {
+        return trackQueryService.similar(artist, title, url, except, 5);
+    }
+
     @GetMapping(value = "/mine")
     List<Track> mine() {
         return trackSocialService.mine();

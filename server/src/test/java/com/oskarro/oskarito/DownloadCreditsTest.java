@@ -195,6 +195,29 @@ class DownloadCreditsTest {
         mvc.perform(get("/api/tracks/my-comments")).andExpect(status().isUnauthorized());
     }
 
+    @Test
+    void similarTracksAreFoundByWordsOrBySameFile() throws Exception {
+        User author = user();
+        tracks.save(Track.builder().artist("Zenek Martyniuk").title("Przez Twe Oczy Zielone").version("")
+                .url("https://hostuje.net/file.php?id=" + "f".repeat(32)).genre("DISCO_POLO").points(0)
+                .createdAt(Instant.now()).author(author).build());
+
+        String byWords = mvc.perform(get("/api/tracks/similar").param("artist", "zenek martyniuk feat. ktoś")
+                        .param("title", "przez twe oczy zielone (remix)"))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        assertThat(json.readTree(byWords).get(0).at("/track/title").asText()).isEqualTo("Przez Twe Oczy Zielone");
+        assertThat(json.readTree(byWords).get(0).get("sameFile").asBoolean()).isFalse();
+
+        String byFile = mvc.perform(get("/api/tracks/similar").param("title", "cos zupelnie innego")
+                        .param("url", "hostuje.net/file.php?id=" + "F".repeat(32)))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        assertThat(json.readTree(byFile).get(0).get("sameFile").asBoolean()).isTrue();
+
+        String nothing = mvc.perform(get("/api/tracks/similar").param("title", "Całkiem Nowy Numer Xyz"))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        assertThat(nothing).doesNotContain("Przez Twe Oczy");
+    }
+
     private int credits(User user) {
         Integer value = users.findById(user.getId()).orElseThrow().getDownloadCredits();
         return value == null ? 0 : value;

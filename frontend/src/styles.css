@@ -3522,3 +3522,69 @@ label {
   grid-column: 1 / -1;
   overflow-wrap: anywhere;
 }
+
+/* Look-alike tracks above the "add a track" form. */
+.lookalikes {
+  margin: 18px 0 0;
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px dashed rgba(228, 255, 74, 0.45);
+  background: rgba(228, 255, 74, 0.06);
+}
+
+.lookalikes h2 {
+  margin: 0 0 4px;
+  font-size: 1.15rem;
+}
+
+.lookalikes > .meta {
+  margin: 0 0 10px;
+}
+
+.lookalike {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  border-radius: 12px;
+  color: var(--text);
+}
+
+.lookalike + .lookalike {
+  margin-top: 4px;
+}
+
+.lookalike:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.lookalike .thumb-slot {
+  width: 44px;
+  height: 44px;
+}
+
+.lookalike-lines {
+  display: grid;
+  min-width: 0;
+}
+
+.lookalike-lines strong,
+.lookalike-lines .meta {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lookalike-tag {
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.lookalike.same .lookalike-tag {
+  border-color: var(--danger);
+  color: var(--danger);
+}

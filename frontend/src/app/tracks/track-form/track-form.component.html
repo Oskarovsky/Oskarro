@@ -18,6 +18,19 @@
   <p class="lede" *ngIf="!editing">{{ 'Po zapisaniu autor może jeszcze poprawić dane przez 24 godziny. Potem utwór zostaje w tej postaci.' | t:'After saving, the author can still edit the details for 24 hours. Then the track stays as it is.' }}</p>
   <p class="lede" *ngIf="editing && editableUntil">{{ 'Możesz poprawiać do' | t:'You can edit until' }} {{ editableUntil | date:'dd.MM.yyyy HH:mm' }}.</p>
 
+  <section class="lookalikes" *ngIf="similar.length" aria-live="polite">
+    <h2>{{ similar[0].sameFile ? ('Ten plik już jest na stronie' | t:'This file is already on the site') : ('Podobne utwory już są na stronie' | t:'Similar tracks are already on the site') }}</h2>
+    <p class="meta">{{ similar[0].sameFile ? ('Ktoś dodał już utwór z tym samym linkiem — sprawdź, zanim dodasz go drugi raz.' | t:'Someone already shared a track with this exact link — check it before adding it again.') : ('Sprawdź, czy Twojego numeru nie ma już na liście. Jeśli to inna wersja, wpisz ją w polu „Remixer lub wersja”.' | t:'Check that your track is not on the list already. If it is a different version, put it in the "Remixer or version" field.') }}</p>
+    <a class="lookalike" *ngFor="let item of similar" [routerLink]="['/track', item.track.id]" target="_blank" [class.same]="item.sameFile">
+      <span class="thumb-slot"><app-cover [hasCover]="item.track.hasCover" [src]="item.track.hasCover ? coverOf(item.track) : ''" [genre]="item.track.genre"></app-cover></span>
+      <span class="lookalike-lines">
+        <strong>{{ item.track.title }}<span class="version" *ngIf="item.track | versionLabel as version"> ({{ version }})</span></strong>
+        <span class="meta">{{ item.track.artist }} · {{ 'dodał' | t:'added by' }} {{ item.track.sharedBy }}</span>
+      </span>
+      <span class="lookalike-tag">{{ item.sameFile ? ('ten sam plik' | t:'same file') : ('podobny' | t:'similar') }}</span>
+    </a>
+  </section>
+
   <form class="composer" (submit)="$event.preventDefault(); save()">
     <div class="kind-switch" role="radiogroup" [attr.aria-label]="'Co dodajesz' | t:'What are you adding'">
       <button type="button" class="chip" [class.on]="!isSet" (click)="draft.kind = 'track'" role="radio" [attr.aria-checked]="!isSet">{{ 'Utwór' | t:'Track' }}</button>
@@ -33,10 +46,10 @@
         <input [(ngModel)]="draft.eventName" name="eventName" type="text" maxlength="120">
       </label>
       <label>{{ 'Tytuł' | t:'Title' }}
-        <input [(ngModel)]="draft.title" name="title" type="text" maxlength="80" required>
+        <input [(ngModel)]="draft.title" (ngModelChange)="lookAlike()" name="title" type="text" maxlength="80" required>
       </label>
       <label>{{ isSet ? ('DJ / wykonawca' | t:'DJ / artist') : ('Wykonawca' | t:'Artist') }}
-        <input [(ngModel)]="draft.artist" name="artist" type="text" maxlength="80" required>
+        <input [(ngModel)]="draft.artist" (ngModelChange)="lookAlike()" name="artist" type="text" maxlength="80" required>
       </label>
       <label *ngIf="!isSet">{{ 'Remixer lub wersja' | t:'Remixer or version' }}
         <input [(ngModel)]="draft.version" name="version" type="text" maxlength="80" [placeholder]="'np. Extended Mix, Remix by…' | t:'e.g. Extended Mix, Remix by…'">
@@ -53,7 +66,7 @@
         </select>
       </label>
       <label class="wide">{{ 'Link do pliku' | t:'File link' }}
-        <input [(ngModel)]="draft.url" name="url" type="text"
+        <input [(ngModel)]="draft.url" (ngModelChange)="lookAlike()" name="url" type="text"
                [placeholder]="source === 'hostuje' ? 'https://hostuje.net/file.php?id=...' : 'https://soundfiles.eu/QN9mExDZG6dW/file'"
                required>
       </label>
