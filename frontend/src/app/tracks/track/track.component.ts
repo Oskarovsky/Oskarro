@@ -387,12 +387,12 @@ export class TrackComponent implements OnInit, OnDestroy {
     return !!this.track?.downloadUnlocked || this.credits > 0;
   }
 
-  downloadWord(count: number): string {
+  tokenWord(count: number): string {
     if (count === 1) {
-      return 'pobranie';
+      return 'żeton';
     }
     const tens = count % 100;
-    return count % 10 >= 2 && count % 10 <= 4 && (tens < 12 || tens > 14) ? 'pobrania' : 'pobrań';
+    return count % 10 >= 2 && count % 10 <= 4 && (tens < 12 || tens > 14) ? 'żetony' : 'żetonów';
   }
 
   download() {

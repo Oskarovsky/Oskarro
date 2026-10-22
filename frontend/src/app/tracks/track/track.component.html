@@ -48,22 +48,22 @@
           <button class="btn-accent" type="button" *ngIf="isLoggedIn && canDownload" (click)="download()" [disabled]="downloading">
             ⬇ {{ downloading ? ('Otwieram plik…' | t:'Opening the file…') : ('Pobierz' | t:'Download') }}
           </button>
-          <p class="download-status" *ngIf="isLoggedIn && track.downloadUnlocked">{{ 'Ten utwór już pobrałeś — kolejne pobranie jest za darmo.' | t:'You have downloaded this track before — downloading it again is free.' }}</p>
+          <p class="download-status" *ngIf="isLoggedIn && track.downloadUnlocked">{{ 'Ten utwór już masz — pobierasz go ponownie za darmo.' | t:'You already have this track — downloading it again is free.' }}</p>
           <p class="download-status" *ngIf="isLoggedIn && !track.downloadUnlocked && credits > 0">
-            {{ lang.en ? ('You have ' + credits + ' download' + (credits === 1 ? '' : 's') + ' left. This one uses one.') : ('Masz jeszcze ' + credits + ' ' + downloadWord(credits) + '. To pobranie zużyje jedno.') }}
+            {{ lang.en ? ('You have ' + credits + ' token' + (credits === 1 ? '' : 's') + '. This download costs 1.') : ('Masz ' + credits + ' ' + tokenWord(credits) + '. To pobranie kosztuje 1 żeton.') }}
           </p>
-          <p class="download-status" *ngIf="isLoggedIn && !canDownload"><strong>{{ 'Nie masz teraz pobrań.' | t:'You have no downloads right now.' }}</strong></p>
+          <p class="download-status" *ngIf="isLoggedIn && !canDownload"><strong>{{ 'Brak żetonów' | t:'No tokens left' }}</strong> — {{ 'zdobądź je, żeby pobrać ten utwór.' | t:'earn some to download this track.' }}</p>
           <p class="download-status" *ngIf="!isLoggedIn"><a routerLink="/login">{{ 'Zaloguj się' | t:'Sign in' }}</a>{{ lang.en ? ' to download the file.' : ', żeby pobrać plik.' }}</p>
         </div>
         <p class="alert alert-danger" role="alert" *ngIf="downloadNote">{{ downloadNote }}</p>
         <details class="download-rules" [open]="isLoggedIn && !canDownload">
-          <summary>{{ 'Jak dostać pobrania?' | t:'How do I get downloads?' }}</summary>
+          <summary>{{ 'Jak zdobyć żetony?' | t:'How do I earn tokens?' }}</summary>
           <ul>
-            <li><strong>3</strong> {{ 'za polubienie utworu, składanki albo wideo' | t:'for liking a track, a playlist or a video' }}</li>
-            <li><strong>5</strong> {{ 'za komentarz pod utworem' | t:'for a comment on a track' }}</li>
-            <li><strong>7</strong> {{ 'za dodanie własnego utworu' | t:'for sharing your own track' }}</li>
+            <li><strong>3</strong> {{ 'żetony za polubienie utworu, składanki albo wideo' | t:'tokens for liking a track, a playlist or a video' }}</li>
+            <li><strong>5</strong> {{ 'żetonów za komentarz pod utworem' | t:'tokens for a comment on a track' }}</li>
+            <li><strong>7</strong> {{ 'żetonów za dodanie własnego utworu' | t:'tokens for sharing your own track' }}</li>
           </ul>
-          <p class="meta">{{ 'Pobrania się nie sumują: po aktywności masz tyle, ile daje, albo zostaje Ci więcej, jeśli miałeś więcej. Za swoje utwory i składanki nic nie dostajesz, a ta sama aktywność liczy się raz.' | t:'Downloads do not add up: after an activity you have what it gives, or you keep more if you had more. Your own tracks and playlists give nothing, and the same activity counts once.' }}</p>
+          <p class="meta">{{ 'Jeden żeton to jedno pobranie nowego utworu. Żetony się nie sumują: po aktywności masz tyle, ile daje, albo zostaje Ci więcej, jeśli miałeś więcej. Za swoje utwory i składanki nic nie dostajesz, a ta sama aktywność liczy się raz.' | t:'One token is one download of a new track. Tokens do not add up: after an activity you have what it gives, or you keep more if you had more. Your own tracks and playlists give nothing, and the same activity counts once.' }}</p>
         </details>
       </section>
       <div class="track-actions">

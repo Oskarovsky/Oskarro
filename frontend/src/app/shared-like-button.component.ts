@@ -63,8 +63,8 @@ export class LikeButtonComponent implements OnChanges {
         this.apply(view);
         if (view.liked && view.downloadCredits > before) {
           const n = view.downloadCredits;
-          const pl = n === 1 ? 'pobranie' : (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? 'pobrania' : 'pobrań');
-          this.note = this.lang.en ? `You now have ${n} download${n === 1 ? '' : 's'}.` : `Masz teraz ${n} ${pl}.`;
+          const pl = n === 1 ? 'żeton' : (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? 'żetony' : 'żetonów');
+          this.note = this.lang.en ? `You now have ${n} token${n === 1 ? '' : 's'} for downloads.` : `Masz teraz ${n} ${pl} na pobrania.`;
         }
       },
       error: () => {

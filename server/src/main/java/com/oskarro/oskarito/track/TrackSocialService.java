@@ -422,7 +422,7 @@ public class TrackSocialService {
         }
         if (!downloads.redeem(user, trackId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,
-                    "Nie masz już pobrań. Polub coś, skomentuj albo dodaj utwór, żeby dostać kolejne.");
+                    "Brak żetonów. Polub coś, skomentuj albo dodaj utwór, żeby je zdobyć.");
         }
         return new DownloadView(file, downloads.credits(user));
     }
