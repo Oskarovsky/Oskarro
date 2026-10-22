@@ -193,7 +193,8 @@ public class TrackSocialService {
             track.setCommentCount(comments.getOrDefault(track.getId(), 0));
             track.setHasCover(coverStorage.exists(track.getId()));
             track.setDownloadable(downloadLink(track.getUrl()) != null);
-            track.setDownloadUnlocked(unlocked.contains(track.getId()));
+            boolean own = viewer != null && track.getAuthor() != null && viewer.getId().equals(track.getAuthor().getId());
+            track.setDownloadUnlocked(own || unlocked.contains(track.getId()));
             track.setDownloadCredits(credits);
             if (track.getCreatedAt() != null) {
                 track.setEditableUntil(track.getCreatedAt().plus(EDIT_WINDOW).toString());
@@ -420,7 +421,9 @@ public class TrackSocialService {
         if (file == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Tego utworu nie da się pobrać");
         }
-        if (!downloads.redeem(user, trackId)) {
+        // Your own tracks are always free to download.
+        boolean own = track.getAuthor() != null && track.getAuthor().getId().equals(user.getId());
+        if (!own && !downloads.redeem(user, trackId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,
                     "Brak żetonów. Polub coś, skomentuj albo dodaj utwór, żeby je zdobyć.");
         }

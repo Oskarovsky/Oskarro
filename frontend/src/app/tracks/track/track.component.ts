@@ -383,6 +383,11 @@ export class TrackComponent implements OnInit, OnDestroy {
     return this.track?.downloadCredits || 0;
   }
 
+  get isOwnTrack(): boolean {
+    const me = this.tokenStorage.getUser()?.username;
+    return !!me && this.track?.sharedBy === me;
+  }
+
   get canDownload(): boolean {
     return !!this.track?.downloadUnlocked || this.credits > 0;
   }
