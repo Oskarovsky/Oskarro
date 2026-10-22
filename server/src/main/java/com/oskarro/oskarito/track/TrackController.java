@@ -163,6 +163,21 @@ public class TrackController {
         trackSocialService.recordView(id, realIp == null || realIp.isBlank() ? request.getRemoteAddr() : realIp);
     }
 
+    @GetMapping(value = "/mine")
+    List<Track> mine() {
+        return trackSocialService.mine();
+    }
+
+    @GetMapping(value = "/liked")
+    List<Track> liked() {
+        return trackSocialService.liked();
+    }
+
+    @GetMapping(value = "/my-comments")
+    List<MyCommentView> myComments() {
+        return trackSocialService.myComments();
+    }
+
     @PostMapping(value = "/{id}/download")
     @CrossOrigin(origins = "*", allowedHeaders = "*")
     DownloadView download(@PathVariable Integer id) {

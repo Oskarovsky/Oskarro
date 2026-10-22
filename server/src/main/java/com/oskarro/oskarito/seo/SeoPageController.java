@@ -67,7 +67,7 @@ public class SeoPageController {
 
     /** Pages users reach only signed in, or that make no sense in search results. */
     private static final Pattern PRIVATE = Pattern.compile(
-            "^/(login|register|przypomnij|haslo|aktywuj|logowanie/.*|profile(/.*)?|admin(/.*)?|mod(/.*)?|user(/.*)?|toplist(/.*)?|szukaj|zglos-naruszenie)$|.*/(add|edit)$");
+            "^/(login|register|przypomnij|haslo|aktywuj|logowanie/.*|profile(/.*)?|konto(/.*)?|moja-aktywnosc|admin(/.*)?|mod(/.*)?|user(/.*)?|toplist(/.*)?|szukaj|zglos-naruszenie)$|.*/(add|edit)$");
     private static final Pattern TRACK = Pattern.compile("^/track/(\\d{1,9})$");
     private static final Pattern GENRE = Pattern.compile("^/tracklist/([a-z0-9-]{1,30})$");
     private static final Pattern SETS = Pattern.compile("^/sety(?:/([a-z0-9-]{1,30}))?$");

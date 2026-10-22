@@ -295,6 +295,29 @@ public class TrackSocialService {
                 .toList();
     }
 
+    /** Every track the current user has shared, newest first. */
+    public List<Track> mine() {
+        return decorateAll(new ArrayList<>(trackRepository.findByAuthor_IdOrderByIdDesc(currentUser().getId())));
+    }
+
+    /** Tracks the current user gave +1, most recent vote first. */
+    public List<Track> liked() {
+        List<Track> tracks = likeRepository.findByUser_Id(currentUser().getId()).stream()
+                .filter(like -> like.getVote() == null || like.getVote() > 0)
+                .sorted(Comparator.comparing(TrackLike::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder())))
+                .map(TrackLike::getTrack)
+                .toList();
+        return decorateAll(new ArrayList<>(tracks));
+    }
+
+    /** Every comment the current user has written, newest first. */
+    public List<MyCommentView> myComments() {
+        return commentRepository.findByAuthor_IdOrderByCreatedAtDesc(currentUser().getId()).stream()
+                .map(comment -> new MyCommentView(comment.getId(), comment.getText(), comment.getCreatedAt().toString(),
+                        comment.getTrack().getId(), comment.getTrack().getTitle(), comment.getTrack().getArtist()))
+                .toList();
+    }
+
     private boolean hasAvatar(User user) {
         return user != null && Boolean.TRUE.equals(imageRepository.existsByUserId(user.getId()));
     }

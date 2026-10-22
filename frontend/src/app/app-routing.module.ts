@@ -31,6 +31,8 @@ import {VideoDetailsComponent} from './videos/video-details/video-details.compon
 import {VideoEditComponent} from './videos/video-edit/video-edit.component';
 import {PlaylistAllComponent} from './playlists/playlist-all/playlist-all.component';
 import {ProfileComponent} from './profile/profile.component';
+import {PasswordChangeComponent} from './account/password-change.component';
+import {MyActivityComponent} from './account/my-activity.component';
 import {HomeComponent} from './home/home.component';
 import {TrackFormComponent} from './tracks/track-form/track-form.component';
 import {RankingComponent} from './ranking/ranking.component';
@@ -70,6 +72,8 @@ const routes: Routes = [
   { path: 'radio', component: RadioComponent },
   { path: 'szukaj', component: SearchComponent },
   { path: 'profile', component: ProfileComponent },
+  { path: 'konto/haslo', component: PasswordChangeComponent },
+  { path: 'moja-aktywnosc', component: MyActivityComponent },
   { path: 'profile/:username', component: ProfileComponent },
   {
     path: 'admin',

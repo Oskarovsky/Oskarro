@@ -79,6 +79,19 @@ export class TrackService {
     return this.http.get<{likes: number, dislikes: number, score: number, mine: number}>(TRACK_API + '/' + id + '/likes');
   }
 
+  /** The signed-in user's own tracks, liked tracks and comments (for "Moja aktywność"). */
+  mine() {
+    return this.http.get<any[]>(TRACK_API + '/mine');
+  }
+
+  liked() {
+    return this.http.get<any[]>(TRACK_API + '/liked');
+  }
+
+  myComments() {
+    return this.http.get<Array<{id: number, text: string, createdAt: string, trackId: number, trackTitle: string, trackArtist: string}>>(TRACK_API + '/my-comments');
+  }
+
   /** Spends a download credit the first time; the answer holds the file link and what is left. */
   download(id: string) {
     return this.http.post<{url: string, creditsLeft: number}>(TRACK_API + '/' + id + '/download', {});

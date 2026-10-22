@@ -167,6 +167,34 @@ class DownloadCreditsTest {
         assertThat(credits(owner)).isZero();
     }
 
+    @Test
+    void myActivityListsOwnTracksCommentsAndLikesOnlyForTheSignedInUser() throws Exception {
+        User me = user();
+        User other = user();
+        String auth = bearer(me);
+        Track mine = track(me);
+        Track theirs = track(other);
+        vote(auth, theirs, 1);
+        comment(auth, theirs);
+
+        String tracksBody = mvc.perform(get("/api/tracks/mine").header("Authorization", auth))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        assertThat(json.readTree(tracksBody).size()).isEqualTo(1);
+        assertThat(json.readTree(tracksBody).get(0).get("id").asInt()).isEqualTo(mine.getId());
+
+        String likedBody = mvc.perform(get("/api/tracks/liked").header("Authorization", auth))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        assertThat(json.readTree(likedBody).get(0).get("id").asInt()).isEqualTo(theirs.getId());
+
+        String commentsBody = mvc.perform(get("/api/tracks/my-comments").header("Authorization", auth))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        assertThat(json.readTree(commentsBody).get(0).get("trackId").asInt()).isEqualTo(theirs.getId());
+        assertThat(json.readTree(commentsBody).get(0).get("text").asText()).isEqualTo("Petarda");
+
+        mvc.perform(get("/api/tracks/mine")).andExpect(status().isUnauthorized());
+        mvc.perform(get("/api/tracks/my-comments")).andExpect(status().isUnauthorized());
+    }
+
     private int credits(User user) {
         Integer value = users.findById(user.getId()).orElseThrow().getDownloadCredits();
         return value == null ? 0 : value;
