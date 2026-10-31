@@ -3652,3 +3652,19 @@ label {
   justify-content: flex-start;
   margin: 12px 0 0;
 }
+
+/* Warning next to the hostuje.net source on the add-track form. */
+.source-warning {
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 141, 122, 0.5);
+  background: rgba(255, 141, 122, 0.08);
+}
+
+.source-warning strong {
+  color: var(--danger);
+}
+
+.source-warning p {
+  margin: 6px 0 0;
+}
