@@ -44,3 +44,11 @@ uploads/
 
 ### Angular cache ###
 frontend/.angular/
+
+# Sekrety — trzymaj tylko lokalnie
+frontend/ssl/*.key
+frontend/ssl/*.pem
+server/src/main/resources/keystore/*.p12
+server/src/main/resources/keystore/*.jks
+*.local.env
+.env.*
