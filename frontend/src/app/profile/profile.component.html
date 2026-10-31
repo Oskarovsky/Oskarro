@@ -52,6 +52,20 @@
     </label>
   </section>
 
+  <section class="composer" *ngIf="self && profile.email">
+    <h2>{{ 'Powiadomienia mailem' | t:'E-mail notifications' }}</h2>
+    <label class="check-row mail-pref">
+      <input type="checkbox" [checked]="profile.notifyActivity !== false" (change)="saveMailPref('notifyActivity', $event)">
+      <span><strong>{{ 'Komentarze i polubienia' | t:'Comments and likes' }}</strong><br>
+        <span class="meta">{{ 'Mail, gdy ktoś skomentuje albo polubi Twój utwór (polubienia najwyżej raz na 12 godzin).' | t:'A mail when someone comments on or likes your track (likes at most once every 12 hours).' }}</span></span>
+    </label>
+    <label class="check-row mail-pref">
+      <input type="checkbox" [checked]="profile.digestOptIn === true" (change)="saveMailPref('digestOptIn', $event)">
+      <span><strong>{{ 'Nowości tygodnia' | t:'New this week' }}</strong><br>
+        <span class="meta">{{ 'W poniedziałek rano lista nowych numerów z Twoich ulubionych gatunków.' | t:'On Monday morning, a list of new tracks in your favourite genres.' }}</span></span>
+    </label>
+  </section>
+
   <section class="composer" *ngIf="self">
     <h2>{{ 'O mnie' | t:'About me' }}</h2>
     <p class="meta" *ngIf="profile.email">{{ profile.email }}</p>

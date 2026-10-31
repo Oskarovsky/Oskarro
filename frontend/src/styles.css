@@ -3588,3 +3588,67 @@ label {
   border-color: var(--danger);
   color: var(--danger);
 }
+
+/* Share bar: send a track, playlist or set to a friend. */
+.share-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 14px 0 0;
+}
+
+.share-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  color: var(--text);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.share-btn:hover {
+  border-color: rgba(228, 255, 74, 0.5);
+  color: var(--text);
+}
+
+.share-messenger { background: rgba(0, 132, 255, 0.14); }
+.share-whatsapp { background: rgba(37, 211, 102, 0.14); }
+.share-facebook { background: rgba(24, 119, 242, 0.14); }
+
+/* Invitation for guests at the play limit. */
+.join-invite {
+  margin: 16px 0 0;
+  padding: 18px;
+  border-radius: 16px;
+  border: 1px solid rgba(228, 255, 74, 0.45);
+  background: linear-gradient(135deg, rgba(228, 255, 74, 0.12), rgba(233, 64, 87, 0.08));
+}
+
+.join-title {
+  margin: 0 0 4px;
+  font-family: var(--display);
+  font-size: 1.35rem;
+}
+
+.join-invite .meta {
+  margin: 0;
+}
+
+.join-perks {
+  margin: 10px 0 14px;
+  padding-left: 18px;
+  color: var(--text);
+}
+
+.join-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.mail-pref {
+  justify-content: flex-start;
+  margin: 12px 0 0;
+}

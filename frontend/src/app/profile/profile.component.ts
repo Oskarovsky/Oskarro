@@ -77,6 +77,20 @@ export class ProfileComponent implements OnInit {
     this.trackPage = page;
   }
 
+  saveMailPref(key: 'notifyActivity' | 'digestOptIn', event: Event) {
+    const on = (event.target as HTMLInputElement).checked;
+    this.http.put<any>(environment.serverUrl + '/profile/me', {[key]: on}).subscribe({
+      next: profile => {
+        this.profile = profile;
+        this.message = 'Ustawienie zapisane.';
+      },
+      error: () => {
+        (event.target as HTMLInputElement).checked = !on;
+        this.message = 'Nie udało się zapisać ustawienia.';
+      }
+    });
+  }
+
   saveAutoplay(event: Event) {
     const input = event.target as HTMLInputElement;
     const on = input.checked;

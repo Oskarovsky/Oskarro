@@ -7,6 +7,7 @@
   <p class="track-actions" *ngIf="playlist?.id && !playlist?.privatePlaylist">
     <app-like-button kind="playlist" [key]="'' + playlist.id"></app-like-button>
   </p>
+  <app-share-buttons *ngIf="playlist?.id && !playlist?.privatePlaylist" [url]="'https://oskarro.com/playlist/' + playlist.id + '/details'" [title]="playlist.name"></app-share-buttons>
   <p class="meta" *ngIf="playlist?.privatePlaylist">🔒 {{ 'Prywatna — widzisz ją tylko Ty.' | t:'Private — only you can see it.' }}</p>
   <p class="track-actions playlist-play" *ngIf="isLoggedIn && playable.length">
     <button class="btn-accent" type="button" (click)="playAll()">▶ {{ nowPlayingHere ? ('Od początku' | t:'From the start') : ('Odsłuchaj składankę' | t:'Play the playlist') }}</button>

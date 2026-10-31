@@ -64,8 +64,6 @@ export class TrackComponent implements OnInit, OnDestroy {
   playlists: Array<{id: number, name: string}> = [];
   saveOpen = false;
   saved = '';
-  shared = false;
-  shareUrl = '';
   lista = '';
   besideRadio = false;
   file: {bytes: number, bitrate: number, sampleRate: number, channels: number, bitDepth: number, bpm: number, format: string} | null = null;
@@ -131,8 +129,6 @@ export class TrackComponent implements OnInit, OnDestroy {
       this.seo.track(track);
       if (changed) {
         this.saved = '';
-        this.shared = false;
-        this.shareUrl = '';
         this.saveOpen = false;
         this.loadFile(track);
         this.startPlayback(track);
@@ -201,30 +197,6 @@ export class TrackComponent implements OnInit, OnDestroy {
         this.saveOpen = false;
       }
     });
-  }
-
-  async share() {
-    const url = 'https://oskarro.com/track/' + this.track.id;
-    const data = {title: this.track.title, text: this.track.artist, url};
-    if (navigator.share) {
-      try {
-        await navigator.share(data);
-        this.shared = true;
-        this.shareUrl = '';
-        return;
-      } catch (error: any) {
-        if (error?.name === 'AbortError') {
-          return;
-        }
-      }
-    }
-    try {
-      await navigator.clipboard.writeText(url);
-      this.shared = true;
-      this.shareUrl = '';
-    } catch {
-      this.shareUrl = url;
-    }
   }
 
   private startPlayback(track: PlayableTrack) {

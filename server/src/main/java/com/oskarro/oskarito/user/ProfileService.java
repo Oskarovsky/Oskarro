@@ -133,6 +133,12 @@ public class ProfileService {
         if (body.containsKey("website")) {
             user.setWebsite(website(body.get("website")));
         }
+        if (body.containsKey("notifyActivity")) {
+            user.setNotifyActivity(asBoolean(body.get("notifyActivity")));
+        }
+        if (body.containsKey("digestOptIn")) {
+            user.setDigestOptIn(asBoolean(body.get("digestOptIn")));
+        }
         if (body.containsKey("favoriteGenres")) {
             user.setFavoriteGenres(genres(body.get("favoriteGenres")));
         }
@@ -326,7 +332,9 @@ public class ProfileService {
                 isAdmin(),
                 !Boolean.FALSE.equals(user.getAutoplayNext()),
                 shared,
-                includeEmail ? (user.getAuthProvider() == null ? "password" : user.getAuthProvider()) : null);
+                includeEmail ? (user.getAuthProvider() == null ? "password" : user.getAuthProvider()) : null,
+                includeEmail ? !Boolean.FALSE.equals(user.getNotifyActivity()) : null,
+                includeEmail ? Boolean.TRUE.equals(user.getDigestOptIn()) : null);
     }
 
     private Map<Integer, int[]> voteTotals(List<Integer> ids) {

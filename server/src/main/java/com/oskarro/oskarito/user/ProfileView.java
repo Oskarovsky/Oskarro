@@ -25,6 +25,10 @@ public record ProfileView(
         boolean autoplayNext,
         List<ProfileTrack> shared,
         /** Only for the owner: "password", "google" or "facebook". */
-        String signInMethod
+        String signInMethod,
+        /** Only for the owner: mails about comments and likes on own tracks. */
+        Boolean notifyActivity,
+        /** Only for the owner: the opt-in weekly digest. */
+        Boolean digestOptIn
 ) {
 }
