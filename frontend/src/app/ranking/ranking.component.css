@@ -4,15 +4,23 @@
 }
 
 .chart-filters {
-  display: grid;
-  gap: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
   margin: 16px 0 6px;
 }
 
-.chip-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+.chart-filters label {
+  display: grid;
+  gap: 6px;
+  flex: 0 1 240px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 650;
+}
+
+.chart-filters select {
+  width: 100%;
 }
 
 .chart-title {

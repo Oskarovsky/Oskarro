@@ -51,16 +51,16 @@
     <p class="lede">{{ 'Osobno dla każdego gatunku i dla setów. Punkty: głos na plus to 5 pkt (na minus −5), każde odsłuchanie 1 pkt.' | t:'Separate for each genre and for sets. Points: an upvote is 5 (a downvote −5), each play is 1.' }}</p>
 
     <div class="chart-filters">
-      <div class="chip-row" role="group" [attr.aria-label]="'Okres' | t:'Period'">
-        <button class="chip" type="button" *ngFor="let p of periods" [class.on]="period === p.id" [attr.aria-pressed]="period === p.id" (click)="choose(p.id, category)">
-          {{ p.label | t:p.labelEn }}
-        </button>
-      </div>
-      <div class="chip-row" role="group" [attr.aria-label]="'Gatunek' | t:'Genre'">
-        <button class="chip" type="button" *ngFor="let c of categories" [class.on]="category === c.slug" [attr.aria-pressed]="category === c.slug" (click)="choose(period, c.slug)">
-          {{ c.label }}
-        </button>
-      </div>
+      <label>{{ 'Okres' | t:'Period' }}
+        <select [ngModel]="period" (ngModelChange)="choose($event, category)">
+          <option *ngFor="let p of periods" [ngValue]="p.id">{{ p.label | t:p.labelEn }}</option>
+        </select>
+      </label>
+      <label>{{ 'Gatunek' | t:'Genre' }}
+        <select [ngModel]="category" (ngModelChange)="choose(period, $event)">
+          <option *ngFor="let c of categories" [ngValue]="c.slug">{{ c.label }}</option>
+        </select>
+      </label>
     </div>
 
     <h3 class="chart-title">{{ chartTitle() }}</h3>
