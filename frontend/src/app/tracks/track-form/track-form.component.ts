@@ -34,7 +34,8 @@ export class TrackFormComponent implements OnInit, OnDestroy {
   notice = '';
   previewUrl = '';
   coverFile: File = null;
-  source: AudioHost = 'hostuje';
+  /** soundfiles.eu is the default: hostuje.net files only play in hostuje's own frame and are being phased out. */
+  source: AudioHost = 'soundfiles';
   draft = {artist: '', title: '', version: '', url: '', genre: 'CLUB', kind: 'track', setCategory: 'USERS', eventName: '', tracklist: ''};
   readonly setCategories = SET_CATEGORIES;
 
@@ -79,7 +80,7 @@ export class TrackFormComponent implements OnInit, OnDestroy {
       this.previewUrl = '';
       const requested = (this.route.snapshot.queryParamMap.get('genre') || 'club').trim().toLowerCase();
       const known = GENRES.find(genre => genre.slug === requested || genre.id.toLowerCase() === requested.replace(/-/g, '_'));
-      this.source = 'hostuje';
+      this.source = 'soundfiles';
       const query = this.route.snapshot.queryParamMap;
       const category = setCategoryBySlug(query.get('kategoria') || '');
       this.draft = {artist: '', title: '', version: '', url: '', genre: known ? known.id : 'CLUB',

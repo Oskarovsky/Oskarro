@@ -61,8 +61,8 @@
       </label>
       <label>{{ 'Gdzie jest plik' | t:'Where the file is' }}
         <select [(ngModel)]="source" name="source">
-          <option value="hostuje">hostuje.net</option>
-          <option value="soundfiles">soundfiles.eu</option>
+          <option value="soundfiles">soundfiles.eu — {{ 'zalecane' | t:'recommended' }}</option>
+          <option value="hostuje">hostuje.net — {{ 'wycofywane' | t:'being phased out' }}</option>
         </select>
       </label>
       <label class="wide">{{ 'Link do pliku' | t:'File link' }}
@@ -70,7 +70,12 @@
                [placeholder]="source === 'hostuje' ? 'https://hostuje.net/file.php?id=...' : 'https://soundfiles.eu/QN9mExDZG6dW/file'"
                required>
       </label>
-      <p class="meta wide">{{ 'hostuje.net ma 32 znaki po' | t:'hostuje.net has 32 characters after' }} <span class="meta">id=</span>. {{ 'soundfiles.eu ma 12 znaków w adresie pliku.' | t:'soundfiles.eu has 12 characters in the file address.' }}</p>
+      <p class="meta wide" *ngIf="source === 'soundfiles'">{{ 'Wrzuć plik na soundfiles.eu i wklej link do niego (12 znaków w adresie pliku). Utwór zagra w naszym odtwarzaczu, trafi do radia i składanek.' | t:'Upload the file to soundfiles.eu and paste its link (12 characters in the file address). The track plays in our player and goes to the radio and playlists.' }}</p>
+      <div class="source-warning wide" *ngIf="source === 'hostuje'" role="note">
+        <strong>{{ 'hostuje.net jest wycofywane' | t:'hostuje.net is being phased out' }}</strong>
+        <p>{{ 'Utwory z hostuje.net grają tylko w małym odtwarzaczu hostuje: bez fali dźwiękowej i dolnego paska, nie trafiają do radia ani do odtwarzania całych składanek, a pierwsze kliknięcie otwiera kartę hostuje. Planujemy całkiem zakończyć obsługę hostuje.net, więc jeśli możesz, wrzuć plik na soundfiles.eu.' | t:'Tracks from hostuje.net only play in hostuje’s small player: no waveform or bottom bar, not in the radio or whole-playlist playback, and the first click opens a hostuje tab. We plan to drop hostuje.net support entirely, so please upload the file to soundfiles.eu if you can.' }}</p>
+        <p class="meta">{{ 'Link hostuje.net ma 32 znaki po' | t:'A hostuje.net link has 32 characters after' }} id=.</p>
+      </div>
       <label class="wide" *ngIf="isSet">{{ 'Tracklista (opcjonalnie, jeden utwór w linii)' | t:'Tracklist (optional, one track per line)' }}
         <textarea [(ngModel)]="draft.tracklist" name="tracklist" rows="8" maxlength="5000" [placeholder]="'00:00 Artist – Title&#10;04:30 Artist – Title' | t"></textarea>
       </label>
