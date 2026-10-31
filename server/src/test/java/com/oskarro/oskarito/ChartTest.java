@@ -97,6 +97,12 @@ class ChartTest {
             assertThat(row.get("points").asInt()).isEqualTo(5 * row.get("votes").asInt() + row.get("plays").asInt());
         }
 
+        for (int i = 0; i < 12; i++) {
+            Track tie = track("HOUSE", null, "ChartTie" + i);
+            play(tie, Instant.now());
+        }
+        assertThat(chart("week", "house").get("rows")).hasSize(10);
+
         mvc.perform(get("/api/charts").param("period", "year").param("category", "retro")).andExpect(status().isBadRequest());
         mvc.perform(get("/api/charts").param("period", "week").param("category", "nope")).andExpect(status().isBadRequest());
     }

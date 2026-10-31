@@ -19,7 +19,8 @@ import java.util.*;
 public class ChartService {
 
     static final int VOTE_WEIGHT = 5;
-    private static final int SIZE = 50;
+    /** Always ten rows: ties at the end are cut, the order between them is votes, then newest. */
+    private static final int SIZE = 10;
 
     @PersistenceContext
     private EntityManager em;
