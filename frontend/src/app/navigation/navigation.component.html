@@ -17,7 +17,7 @@
     <a routerLink="/playlist/all" routerLinkActive="is-on" (click)="menuOpen = false">{{ 'Playlisty' | t:'Playlists' }}</a>
     <a routerLink="/ranking" routerLinkActive="is-on" (click)="menuOpen = false">Ranking</a>
     <a routerLink="/radio" routerLinkActive="is-on" (click)="menuOpen = false">Radio</a>
-    <button class="nav-plain" type="button" [class.is-on]="searchOpen || onSearchPage" (click)="toggleSearch()">{{ 'Szukaj' | t:'Search' }}</button>
+    <button class="nav-plain search-toggle" type="button" [class.is-on]="searchOpen || onSearchPage" (click)="toggleSearch()">{{ 'Szukaj' | t:'Search' }}</button>
   </nav>
   <form class="search-drawer" [class.open]="searchOpen" (submit)="$event.preventDefault(); onSearch($event)">
     <input #find [(ngModel)]="search.text" name="q" type="search" [placeholder]="'Szukaj utworu' | t:'Search for a track'" autocomplete="off" [attr.aria-label]="'Szukaj utworu' | t:'Search for a track'">
