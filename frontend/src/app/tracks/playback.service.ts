@@ -5,6 +5,14 @@ import {audioRef} from '../services/audio-hosts';
 import {TokenStorageService} from '../services/auth/token-storage.service';
 import {environment} from '../../environments/environment';
 
+/**
+ * hostuje.net serves its files only to its own pages, so our audio element cannot play them:
+ * they get the hostuje embed on their page and stay out of queues, the radio and playlists.
+ */
+export function controllable(track: {url?: string} | null): boolean {
+  return audioRef(track?.url || '')?.host !== 'hostuje';
+}
+
 export interface PlayableTrack {
   id: number;
   title: string;
@@ -133,7 +141,7 @@ export class PlaybackService {
       return;
     }
     const seen = new Set(this.queue.map(item => item.id));
-    const more = (extra || []).filter(item => item?.id && item.url && !seen.has(item.id));
+    const more = (extra || []).filter(item => item?.id && item.url && controllable(item) && !seen.has(item.id));
     if (!more.length) {
       return;
     }
@@ -146,7 +154,7 @@ export class PlaybackService {
   }
 
   setRadioPool(tracks: PlayableTrack[]) {
-    const pool = (tracks || []).filter(item => item?.id && item.url);
+    const pool = (tracks || []).filter(item => item?.id && item.url && controllable(item));
     this.queue = pool;
     this.radioPick = null;
     this.primed = null;
@@ -245,9 +253,10 @@ export class PlaybackService {
   }
 
   open(track: PlayableTrack, queue: PlayableTrack[], asRadio = false) {
-    if (!track?.id || !track.url) {
+    if (!track?.id || !track.url || !controllable(track)) {
       return;
     }
+    queue = (queue || []).filter(controllable);
     if (!asRadio && this.pinned && this.fromRadio) {
       return;
     }
@@ -271,7 +280,7 @@ export class PlaybackService {
    * (or shuffled), with previous/next. Guests still get only the one track they opened.
    */
   openPlaylist(tracks: PlayableTrack[], startIndex: number, info: {id: number, name: string}, shuffle = false) {
-    const queue = (tracks || []).filter(item => item?.id && item.url);
+    const queue = (tracks || []).filter(item => item?.id && item.url && controllable(item));
     if (!queue.length) {
       return;
     }

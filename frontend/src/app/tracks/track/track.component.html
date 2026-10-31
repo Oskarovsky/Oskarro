@@ -37,10 +37,11 @@
       </ol>
     </section>
     <div class="track-play">
-      <app-deck *ngIf="showDeck"></app-deck>
+      <app-hostuje-embed *ngIf="hostujeId" [fileId]="hostujeId" [trackId]="track.id"></app-hostuje-embed>
+      <app-deck *ngIf="showDeck && !hostujeId"></app-deck>
       <p class="meta" *ngIf="besideRadio && radioPinned">{{ 'Radio jest na dolnym pasku. Ten utwór zostaje na stronie.' | t:'The radio is on the bottom bar. This track stays on the page.' }}</p>
-      <button class="btn-accent" type="button" *ngIf="besideRadio && !radioPinned" (click)="playHere()">{{ 'Odtwórz' | t:'Play' }}</button>
-      <app-join-invite *ngIf="playable && !ownsPlayback && !isLoggedIn && !besideRadio"></app-join-invite>
+      <button class="btn-accent" type="button" *ngIf="besideRadio && !radioPinned && !hostujeId" (click)="playHere()">{{ 'Odtwórz' | t:'Play' }}</button>
+      <app-join-invite *ngIf="playable && !hostujeId && !ownsPlayback && !isLoggedIn && !besideRadio"></app-join-invite>
       <app-join-invite *ngIf="ownsPlayback && playback.holdNext && !isLoggedIn"></app-join-invite>
 
       <section class="download-box" *ngIf="track.downloadable && playable" [class.empty]="isLoggedIn && !canDownload">

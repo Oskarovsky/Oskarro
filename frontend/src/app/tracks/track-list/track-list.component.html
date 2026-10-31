@@ -74,7 +74,7 @@
         <h2>{{ track.title }}<span class="version" *ngIf="track | versionLabel as version"> ({{ version }})</span></h2>
         <span class="meta">{{ track.artist }}</span>
       </span>
-      <app-track-player [url]="track.url"></app-track-player>
+      <app-track-player [url]="track.url" [trackId]="track.id"></app-track-player>
     </article>
   </div>
 </div>
