@@ -1,9 +1,12 @@
 <div class="page" *ngIf="community">
   <header class="genre-head">
-    <div class="genre-intro">
-      <p class="kicker">{{ 'Muzyka na imprezę' | t:'Party music' }}</p>
-      <h1 class="display">{{ genreLabel | t }}</h1>
-      <p class="lede">{{ genreAbout }}</p>
+    <div class="genre-intro" [class.genre-hero]="genreId">
+      <app-genre-art class="hero-art" *ngIf="genreId" [id]="genreId" key="hero"></app-genre-art>
+      <div class="hero-text">
+        <p class="kicker">{{ 'Muzyka na imprezę' | t:'Party music' }}</p>
+        <h1 class="display">{{ genreLabel | t }}</h1>
+        <p class="lede">{{ genreAbout }}</p>
+      </div>
     </div>
     <aside class="genre-summary" *ngIf="tracks.length" [attr.aria-label]="'Podsumowanie gatunku' | t:'Genre summary'">
       <div class="figures">
