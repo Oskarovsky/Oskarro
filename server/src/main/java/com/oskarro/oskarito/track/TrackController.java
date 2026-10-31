@@ -215,7 +215,7 @@ public class TrackController {
         String name = blank(track.getTitle()) ? "Utwór" : track.getTitle().trim();
         String artist = blank(track.getArtist()) ? "Nieznany wykonawca" : track.getArtist().trim();
         String heading = name + " — " + artist;
-        String description = heading + ". " + genreWords(track.getGenre()) + " na Oskarro, muzyka na imprezę.";
+        String description = heading + ". " + genreWords(track.getGenre()) + " na VIXA, muzyka na imprezę.";
         String page = "https://oskarro.com/track/" + id;
         String image = Boolean.TRUE.equals(track.getHasCover())
                 ? "https://oskarro.com/api/tracks/" + id + "/cover"
@@ -224,11 +224,11 @@ public class TrackController {
                 <!doctype html>
                 <html lang="pl"><head>
                 <meta charset="utf-8">
-                <title>%s | Oskarro</title>
+                <title>%s | VIXA</title>
                 <meta name="description" content="%s">
                 <link rel="canonical" href="%s">
                 <meta property="og:type" content="music.song">
-                <meta property="og:site_name" content="Oskarro">
+                <meta property="og:site_name" content="VIXA">
                 <meta property="og:locale" content="pl_PL">
                 <meta property="og:title" content="%s">
                 <meta property="og:description" content="%s">

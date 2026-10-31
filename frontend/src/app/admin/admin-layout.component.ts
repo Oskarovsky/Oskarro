@@ -11,7 +11,7 @@ import {TokenStorageService} from '../services/auth/token-storage.service';
       <aside class="adm-side">
         <div class="adm-brand">
           <span class="adm-badge">Admin</span>
-          <strong>Oskarro</strong>
+          <strong>VIXA</strong>
           <span class="adm-muted">{{ me }}</span>
         </div>
         <nav>

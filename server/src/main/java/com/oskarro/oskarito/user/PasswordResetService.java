@@ -48,17 +48,17 @@ public class PasswordResetService {
         String body = """
                 Cześć,
 
-                Otwórz ten link, żeby ustawić nowe hasło na oskarro.com:
+                Otwórz ten link, żeby ustawić nowe hasło w serwisie VIXA:
                 %s
 
                 Link działa dwie godziny.
 
                 Hello,
-                Open this link to set a new password on oskarro.com:
+                Open this link to set a new password on VIXA:
                 %s
                 The link works for two hours.
                 """.formatted(link, link);
-        return mail.send(user.getEmail(), "Nowe hasło na oskarro.com", body);
+        return mail.send(user.getEmail(), "Nowe hasło w serwisie VIXA", body);
     }
 
     @Transactional

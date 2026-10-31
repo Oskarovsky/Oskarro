@@ -123,7 +123,7 @@ import {genreLabel} from '../tracks/genres';
 
           <section class="adm-card">
             <p class="adm-section-title">Ranga specjalna</p>
-            <input class="adm-input" style="width: 100%;" maxlength="32" [(ngModel)]="rank" placeholder="np. Rezydent Oskarro (puste = ranga za aktywność)">
+            <input class="adm-input" style="width: 100%;" maxlength="32" [(ngModel)]="rank" placeholder="np. Rezydent VIXA (puste = ranga za aktywność)">
             <div class="adm-actions">
               <button class="adm-btn" type="button" (click)="change({rankOverride: rank || ''}, 'Ranga zapisana.')">Zapisz rangę</button>
             </div>

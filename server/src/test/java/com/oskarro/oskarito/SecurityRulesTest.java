@@ -584,7 +584,7 @@ class SecurityRulesTest {
         String page = mvc.perform(get("/api/seo/page/track/" + track.getId()))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
         assertThat(page)
-                .contains("<title>Lost &lt;Kings&gt; – You (Extended Mix) | Oskarro</title>")
+                .contains("<title>Lost &lt;Kings&gt; – You (Extended Mix) | VIXA</title>")
                 .contains("<link rel=\"canonical\" href=\"https://oskarro.com/track/" + track.getId() + "\">")
                 .contains("\"@type\":\"MusicRecording\"").contains("\"@type\":\"BreadcrumbList\"")
                 .contains("<h1>You (Extended Mix)</h1>").contains("href=\"/tracklist/club\"")

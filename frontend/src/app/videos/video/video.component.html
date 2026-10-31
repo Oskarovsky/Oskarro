@@ -1,10 +1,10 @@
 <div class="page">
-  <p class="kicker">{{ 'Kanał Oskarro' | t:'Oskarro channel' }}</p>
+  <p class="kicker">{{ 'Kanał VIXA' | t:'VIXA channel' }}</p>
   <div class="section-head">
     <h1 class="display">{{ 'Sety na imprezę' | t:'Party sets' }}</h1>
     <a class="btn-ghost" href="https://www.youtube.com/@Oskarro0" target="_blank" rel="noopener">{{ 'Kanał na YouTube' | t:'YouTube channel' }}</a>
   </div>
-  <p class="lede">{{ 'Sety z kanału Oskarro na YouTube — oglądaj i słuchaj z nami na imprezie, w aucie i na parkiecie.' | t:'Sets from the Oskarro YouTube channel — watch and listen with us at a party, in the car and on the floor.' }}</p>
+  <p class="lede">{{ 'Sety z kanału VIXA na YouTube — oglądaj i słuchaj z nami na imprezie, w aucie i na parkiecie.' | t:'Sets from the VIXA YouTube channel — watch and listen with us at a party, in the car and on the floor.' }}</p>
 
   <app-ad-slot slot="wideo" format="banner"></app-ad-slot>
 
@@ -24,5 +24,5 @@
     </a>
   </div>
   <app-pager *ngIf="videos.length" [page]="currentPage" [count]="pageCount" label="Strony setów" (pageChange)="showPage($event)"></app-pager>
-  <p class="lede" *ngIf="failed">{{ 'Sety chwilowo się nie ładują. Zajrzyj prosto na' | t:'The sets are not loading right now. Go straight to the' }} <a href="https://www.youtube.com/@Oskarro0" target="_blank" rel="noopener">{{ 'kanał Oskarro' | t:'Oskarro channel' }}</a>.</p>
+  <p class="lede" *ngIf="failed">{{ 'Sety chwilowo się nie ładują. Zajrzyj prosto na' | t:'The sets are not loading right now. Go straight to the' }} <a href="https://www.youtube.com/@Oskarro0" target="_blank" rel="noopener">{{ 'kanał VIXA' | t:'VIXA channel' }}</a>.</p>
 </div>

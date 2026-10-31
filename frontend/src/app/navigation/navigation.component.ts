@@ -30,7 +30,7 @@ export class NavigationComponent implements OnInit {
               public search: TrackSearch,
               readonly lang: LangService) {}
 
-  title = 'Oskarro.com';
+  title = 'VIXA';
 
   ngOnInit() {
     this.isLoggedIn = !!this.tokenStorageService.getToken();

@@ -37,17 +37,17 @@ public class AccountActivationService {
         String body = """
                 Cześć,
 
-                Założyłeś konto na oskarro.com. Otwórz ten link, żeby je włączyć:
+                Założyłeś konto w serwisie VIXA. Otwórz ten link, żeby je włączyć:
                 %s
 
                 Link działa 48 godzin. Zanim go otworzysz, logowanie nie zadziała.
 
                 Hello,
-                Open this link to activate your oskarro.com account:
+                Open this link to activate your VIXA account:
                 %s
                 The link works for 48 hours.
                 """.formatted(link, link);
-        return mail.send(user.getEmail(), "Aktywuj konto na oskarro.com", body);
+        return mail.send(user.getEmail(), "Aktywuj konto w serwisie VIXA", body);
     }
 
     @Transactional

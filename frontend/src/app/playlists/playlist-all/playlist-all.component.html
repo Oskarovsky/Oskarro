@@ -4,7 +4,7 @@
     <h1 class="display">{{ 'Playlisty' | t:'Playlists' }}</h1>
     <a class="btn-accent" routerLink="/playlist/add" *ngIf="loggedIn">{{ 'Nowa składanka' | t:'New playlist' }}</a>
   </div>
-  <p class="lede">{{ 'Składanki od ludzi z Oskarro na siłownię, do auta i na imprezę — posłuchaj albo złóż z nami własną.' | t:'Playlists by people on Oskarro for the gym, the car and the party — listen, or build your own with us.' }}</p>
+  <p class="lede">{{ 'Składanki od ludzi z VIXA na siłownię, do auta i na imprezę — posłuchaj albo złóż z nami własną.' | t:'Playlists by people on VIXA for the gym, the car and the party — listen, or build your own with us.' }}</p>
 
   <div class="playlist-tabs" role="tablist" [attr.aria-label]="'Które składanki' | t:'Which playlists'">
     <button class="chip" type="button" role="tab" [class.on]="tab === 'mine'" [attr.aria-selected]="tab === 'mine'"
@@ -28,7 +28,7 @@
     <a class="playlist-card" *ngFor="let playlist of visible" [routerLink]="['/playlist', playlist.id, 'details']">
       <strong>{{ playlist.privatePlaylist ? '🔒 ' : '' }}{{ playlist.name }}</strong>
       <span>{{ playlist.description || ('Bez opisu' | t:'No description') }}</span>
-      <em>{{ playlist.owner || 'Oskarro' }} · {{ playlist.tracks || 0 }} {{ trackWord(playlist.tracks) }}</em>
+      <em>{{ playlist.owner || 'VIXA' }} · {{ playlist.tracks || 0 }} {{ trackWord(playlist.tracks) }}</em>
     </a>
   </div>
   <p class="lede" *ngIf="loaded && playlists.length && !visible.length">{{ 'Nie ma składanki o takiej nazwie.' | t:'No playlist has that name.' }}</p>
