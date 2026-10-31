@@ -4,11 +4,16 @@ import com.oskarro.oskarito.playlist.Playlist;
 import com.oskarro.oskarito.track.CoverStorage;
 import com.oskarro.oskarito.track.SetCategory;
 import com.oskarro.oskarito.track.Track;
+import com.oskarro.oskarito.video.ChannelCatalog;
+import com.oskarro.oskarito.video.ChannelVideo;
+import com.oskarro.oskarito.video.Video;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.CacheControl;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -67,17 +72,25 @@ public class SeoPageController {
 
     /** Pages users reach only signed in, or that make no sense in search results. */
     private static final Pattern PRIVATE = Pattern.compile(
-            "^/(login|register|przypomnij|haslo|aktywuj|logowanie/.*|profile(/.*)?|konto(/.*)?|moja-aktywnosc|admin(/.*)?|mod(/.*)?|user(/.*)?|toplist(/.*)?|szukaj|zglos-naruszenie)$|.*/(add|edit)$");
+            "^/(login|register|przypomnij|haslo|aktywuj|logowanie/.*|profile(/.*)?|konto(/.*)?|moja-aktywnosc|admin(/.*)?|mod(/.*)?|user(/.*)?|toplist(/.*)?|playlist/all/[^/]+|szukaj|zglos-naruszenie)$|.*/(add|edit)$");
     private static final Pattern TRACK = Pattern.compile("^/track/(\\d{1,9})$");
     private static final Pattern GENRE = Pattern.compile("^/tracklist/([a-z0-9-]{1,30})$");
     private static final Pattern SETS = Pattern.compile("^/sety(?:/([a-z0-9-]{1,30}))?$");
     private static final Pattern PLAYLIST = Pattern.compile("^/playlist/(\\d{1,9})/details$");
+    private static final Pattern VIDEO_SET = Pattern.compile("^/video/set/([A-Za-z0-9_-]{11})$");
+    private static final Pattern VIDEO = Pattern.compile("^/video/(\\d{1,9})/details$");
+    private static final Pattern ANY_GENRE = Pattern.compile("^/tracklist/([A-Za-z0-9_-]{1,30})$");
+    /** Old genre slugs Google still knows, mapped to today's ones. */
+    private static final Map<String, String> GENRE_ALIASES = Map.of(
+            "disco", "disco-polo", "discopolo", "disco-polo", "bigroom", "big-room", "handsup", "hands-up",
+            "electro-house", "electro", "set", "/sety", "sets", "/sety");
 
     private static final Map<String, String[]> STATIC_PAGES = Map.of(
             "/ranking", new String[]{"Ranking użytkowników i najlepsze numery | VIXA", "Kto dodaje najwięcej muzyki klubowej na VIXA i które numery biorą najwięcej głosów.", "Ranking"},
             "/radio", new String[]{"Radio z muzyką klubową, vixą i disco polo | VIXA", "Włącz radio VIXA i słuchaj z nami muzyki klubowej na imprezę — wybierz gatunki albo swoją składankę. Kolejny numer startuje sam.", "Radio VIXA"},
             "/video", new String[]{"Sety wideo na imprezę | VIXA", "Sety VIXA na imprezę, do auta i na parkiet. Mixy klubowe z kanału.", "Sety wideo"},
             "/playlist/all", new String[]{"Playlisty i składanki na imprezę | VIXA", "Składanki na imprezę, do auta i na siłownię, ułożone przez ludzi z VIXA.", "Playlisty"},
+            "/tracklist", new String[]{"Wszystkie utwory — club, vixa, trance i disco polo za darmo | VIXA", "Wszystkie numery dodane przez społeczność: club, dance, vixa, trance, hands up, disco polo i więcej. Słuchaj z nami za darmo.", "Wszystkie utwory"},
             "/regulamin", new String[]{"Regulamin | VIXA", "Regulamin serwisu VIXA.", "Regulamin"},
             "/polityka-prywatnosci", new String[]{"Polityka prywatności | VIXA", "Jak VIXA przetwarza dane osobowe.", "Polityka prywatności"},
             "/cookies", new String[]{"Pliki cookies | VIXA", "Jakich plików cookies używa VIXA.", "Pliki cookies"});
@@ -86,14 +99,16 @@ public class SeoPageController {
     private EntityManager em;
 
     private final CoverStorage covers;
+    private final ChannelCatalog channel;
     private final ObjectMapper json;
     private final Path indexFile;
     private volatile String cachedIndex;
     private volatile FileTime cachedAt;
 
-    public SeoPageController(CoverStorage covers, ObjectMapper json,
+    public SeoPageController(CoverStorage covers, ChannelCatalog channel, ObjectMapper json,
                              @Value("${oskarro.web.index:/var/www/oskarro/index.html}") String indexFile) {
         this.covers = covers;
+        this.channel = channel;
         this.json = json;
         this.indexFile = Path.of(indexFile);
     }
@@ -112,11 +127,42 @@ public class SeoPageController {
         if (path.length() > 1 && path.endsWith("/")) {
             path = path.substring(0, path.length() - 1);
         }
+        String moved = movedTo(path);
+        if (moved != null) {
+            return ResponseEntity.status(HttpStatus.MOVED_PERMANENTLY)
+                    .header(HttpHeaders.LOCATION, SITE + moved)
+                    .cacheControl(CacheControl.maxAge(java.time.Duration.ofDays(1)))
+                    .build();
+        }
         Page page = build(path);
         return ResponseEntity.status(page.status())
                 .cacheControl(CacheControl.noCache())
                 .contentType(MediaType.parseMediaType("text/html;charset=UTF-8"))
                 .body(render(page));
+    }
+
+    /** Old addresses that still get visits from search engines: 301 to where the page lives now. */
+    static String movedTo(String path) {
+        Matcher m;
+        if ((m = Pattern.compile("^/tracks/(\\d{1,9})$").matcher(path)).matches()) {
+            return "/track/" + m.group(1);
+        }
+        if (path.startsWith("/video/category/")) {
+            return "/video";
+        }
+        if ((m = ANY_GENRE.matcher(path)).matches()) {
+            String raw = m.group(1);
+            String slug = raw.toLowerCase(Locale.ROOT).replace('_', '-');
+            slug = GENRE_ALIASES.getOrDefault(slug, slug);
+            if (slug.startsWith("/")) {
+                return slug;
+            }
+            String known = slug;
+            if (!slug.equals(raw) && GENRES.stream().anyMatch(g -> g[1].equals(known))) {
+                return "/tracklist/" + slug;
+            }
+        }
+        return null;
     }
 
     Page build(String path) {
@@ -136,10 +182,21 @@ public class SeoPageController {
         if ((m = PLAYLIST.matcher(path)).matches()) {
             return playlist(Integer.parseInt(m.group(1)));
         }
+        if ((m = VIDEO_SET.matcher(path)).matches()) {
+            return videoSet(m.group(1));
+        }
+        if ((m = VIDEO.matcher(path)).matches()) {
+            return video(Integer.parseInt(m.group(1)));
+        }
         String[] known = STATIC_PAGES.get(path);
         if (known != null) {
+            String extra = switch (path) {
+                case "/video" -> videoLinks(null, 60);
+                case "/tracklist" -> trackList(latest(null, false, 60));
+                default -> "";
+            };
             return new Page(200, known[0], known[1], path, true, LOGO, "website", null,
-                    "<h1>" + esc(known[2]) + "</h1><p>" + esc(known[1]) + "</p>" + genreLinks());
+                    "<h1>" + esc(known[2]) + "</h1><p>" + esc(known[1]) + "</p>" + extra + genreLinks());
         }
         if (PRIVATE.matcher(path).matches()) {
             return new Page(200, "VIXA", HOME_DESCRIPTION, path, false, LOGO, "website", null, "");
@@ -319,6 +376,68 @@ public class SeoPageController {
         return new Page(200, name + " — składanka od " + owner + " | VIXA", description, path, true, LOGO, "music.playlist", ld, body);
     }
 
+    private Page videoSet(String id) {
+        String path = "/video/set/" + id;
+        List<ChannelVideo> all = channelVideos();
+        if (all == null) {
+            // YouTube is unreachable for the moment: still a normal page, just without details.
+            return new Page(200, "Set wideo | VIXA", "Set z kanału VIXA na YouTube — muzyka klubowa i vixa na imprezę.",
+                    path, true, "https://i.ytimg.com/vi/" + id + "/hqdefault.jpg", "video.other", null, "<h1>Set wideo</h1>");
+        }
+        ChannelVideo video = all.stream().filter(v -> id.equals(v.id())).findFirst().orElse(null);
+        if (video == null) {
+            return notFound(path, "Nie ma takiego seta");
+        }
+        String title = blank(video.title()) ? "Set wideo" : video.title().trim();
+        String description = cut("Obejrzyj i posłuchaj za darmo: " + title
+                + (blank(video.duration()) ? "" : " (" + video.duration() + ")") + ". Set z kanału na YouTube — muzyka na imprezę z VIXA.", 158);
+        String image = "https://i.ytimg.com/vi/" + id + "/hqdefault.jpg";
+        StringBuilder body = new StringBuilder("<nav aria-label=\"Okruszki\"><a href=\"/\">VIXA</a> › <a href=\"/video\">Sety wideo</a></nav><h1>")
+                .append(esc(title)).append("</h1><p>");
+        List<String> facts = new ArrayList<>();
+        for (String fact : new String[]{video.duration(), video.published(), video.views()}) {
+            if (!blank(fact)) {
+                facts.add(esc(fact));
+            }
+        }
+        body.append(String.join(" · ", facts)).append("</p><p><a href=\"https://www.youtube.com/watch?v=").append(id)
+                .append("\" rel=\"noopener\">Zobacz na YouTube</a></p><h2>Więcej setów</h2>").append(videoLinks(id, 20));
+        return new Page(200, cut(title, 70) + " | VIXA", description, path, true, image, "video.other",
+                breadcrumbs("VIXA", new String[][]{{"Sety wideo", "/video"}, {title, path}}), body.toString());
+    }
+
+    private Page video(Integer id) {
+        Video video = em.find(Video.class, id);
+        if (video == null) {
+            return notFound("/video/" + id + "/details", "Nie ma takiego wideo");
+        }
+        String path = "/video/" + id + "/details";
+        String name = blank(video.getName()) ? "Wideo" : video.getName().trim();
+        String description = cut(name + " — wideo z muzyką na imprezę na VIXA.", 158);
+        return new Page(200, cut(name, 70) + " | VIXA", description, path, true, LOGO, "video.other", null,
+                "<nav aria-label=\"Okruszki\"><a href=\"/\">VIXA</a> › <a href=\"/video\">Wideo</a></nav><h1>" + esc(name) + "</h1>"
+                        + videoLinks(null, 20));
+    }
+
+    private List<ChannelVideo> channelVideos() {
+        try {
+            return channel.videos();
+        } catch (RuntimeException unavailable) {
+            return null;
+        }
+    }
+
+    private String videoLinks(String skip, int limit) {
+        List<ChannelVideo> all = channelVideos();
+        if (all == null || all.isEmpty()) {
+            return "";
+        }
+        StringBuilder out = new StringBuilder("<ul>");
+        all.stream().filter(v -> !v.id().equals(skip)).limit(limit).forEach(v -> out.append("<li><a href=\"/video/set/")
+                .append(v.id()).append("\">").append(esc(blank(v.title()) ? "Set wideo" : v.title().trim())).append("</a></li>"));
+        return out.append("</ul>").toString();
+    }
+
     private Page notFound(String path, String message) {
         return new Page(404, message + " | VIXA", message + ".", path, false, LOGO, "website", null,
                 "<h1>" + esc(message) + "</h1><p><a href=\"/\">Wróć na stronę główną VIXA</a></p>" + genreLinks());
@@ -419,8 +538,12 @@ public class SeoPageController {
     }
 
     private static Map<String, Object> breadcrumbs(String[][] trail) {
+        return breadcrumbs("VIXA", trail);
+    }
+
+    private static Map<String, Object> breadcrumbs(String root, String[][] trail) {
         List<Map<String, Object>> items = new ArrayList<>();
-        items.add(Map.of("@type", "ListItem", "position", 1, "name", "VIXA", "item", SITE + "/"));
+        items.add(Map.of("@type", "ListItem", "position", 1, "name", root, "item", SITE + "/"));
         for (int i = 0; i < trail.length; i++) {
             items.add(Map.of("@type", "ListItem", "position", i + 2, "name", trail[i][0], "item", SITE + trail[i][1]));
         }
