@@ -5,28 +5,6 @@
 
   <p class="rank-status" *ngIf="board.me">{{ statusLine() }}</p>
 
-  <section>
-    <div class="section-head">
-      <h2>{{ 'Hity tygodnia' | t:'Hits of the week' }}</h2>
-    </div>
-    <p class="lede">{{ 'Numery dodane w ostatnich 7 dniach, od najwyższej oceny.' | t:'Tracks added in the last 7 days, from the highest score.' }}</p>
-    <div class="latest-grid" *ngIf="hits.length">
-      <a class="track-row" *ngFor="let track of hits" [routerLink]="['/track', track.id]">
-        <span class="thumb-col">
-          <span class="thumb-slot">
-            <app-cover [hasCover]="track.hasCover" [src]="cover(track)" [genre]="track.genre"></app-cover>
-          </span>
-          <app-score [value]="track.score"></app-score>
-        </span>
-        <span>
-          <h2>{{ track.title }}<span class="version" *ngIf="track | versionLabel as version"> ({{ version }})</span></h2>
-          <span class="meta">{{ track.artist }}<app-track-facts [track]="track"></app-track-facts></span>
-        </span>
-      </a>
-    </div>
-    <p class="meta" *ngIf="hitsReady && !hits.length">{{ 'W tym tygodniu nie doszedł żaden numer.' | t:'No track was added this week.' }}</p>
-  </section>
-
   <div class="boards">
     <section class="board">
       <h2>{{ 'Najwięcej utworów' | t:'Most tracks' }}</h2>
@@ -64,6 +42,49 @@
       </ol>
     </section>
   </div>
+
+
+  <section class="chart" id="hity">
+    <div class="section-head">
+      <h2>{{ 'Ranking hitów' | t:'Hit chart' }}</h2>
+    </div>
+    <p class="lede">{{ 'Osobno dla każdego gatunku i dla setów. Punkty: głos na plus to 5 pkt (na minus −5), każde odsłuchanie 1 pkt.' | t:'Separate for each genre and for sets. Points: an upvote is 5 (a downvote −5), each play is 1.' }}</p>
+
+    <div class="chart-filters">
+      <div class="chip-row" role="group" [attr.aria-label]="'Okres' | t:'Period'">
+        <button class="chip" type="button" *ngFor="let p of periods" [class.on]="period === p.id" [attr.aria-pressed]="period === p.id" (click)="choose(p.id, category)">
+          {{ p.label | t:p.labelEn }}
+        </button>
+      </div>
+      <div class="chip-row" role="group" [attr.aria-label]="'Gatunek' | t:'Genre'">
+        <button class="chip" type="button" *ngFor="let c of categories" [class.on]="category === c.slug" [attr.aria-pressed]="category === c.slug" (click)="choose(period, c.slug)">
+          {{ c.label }}
+        </button>
+      </div>
+    </div>
+
+    <h3 class="chart-title">{{ chartTitle() }}</h3>
+    <ol class="chart-list" *ngIf="rows.length">
+      <li *ngFor="let row of rows" [class.podium]="row.place <= 3">
+        <a class="track-row chart-row" [routerLink]="['/track', row.track.id]">
+          <span class="chart-place" [attr.aria-label]="('Miejsce ' | t:'Place ') + row.place">{{ row.place }}</span>
+          <span class="thumb-slot">
+            <app-cover [hasCover]="row.track.hasCover" [src]="cover(row.track)" [genre]="row.track.genre"></app-cover>
+          </span>
+          <span class="chart-name">
+            <strong>{{ row.track.title }}<span class="version" *ngIf="row.track | versionLabel as version"> ({{ version }})</span></strong>
+            <span class="meta">{{ row.track.artist }}</span>
+          </span>
+          <span class="chart-points">
+            <strong>{{ row.points }}</strong> <small>{{ 'pkt' | t:'pts' }}</small>
+            <span class="meta">{{ votesWord(row.votes) }} · {{ playsWord(row.plays) }}</span>
+          </span>
+        </a>
+      </li>
+    </ol>
+    <p class="meta" *ngIf="ready && !rows.length">{{ emptyLine() }}</p>
+    <p class="meta" *ngIf="!ready">{{ 'Liczę ranking…' | t:'Counting the chart…' }}</p>
+  </section>
 
   <section>
     <div class="section-head">

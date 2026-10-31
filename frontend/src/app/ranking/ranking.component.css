@@ -1,0 +1,104 @@
+/* Hit chart: period and genre tiles, numbered rows, podium for the top three. */
+.chart {
+  margin-top: 34px;
+}
+
+.chart-filters {
+  display: grid;
+  gap: 10px;
+  margin: 16px 0 6px;
+}
+
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chart-title {
+  margin: 18px 0 10px;
+  font-size: 1.05rem;
+  color: var(--muted);
+}
+
+.chart-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.chart-row {
+  grid-template-columns: 3.2rem 56px minmax(0, 1fr) auto;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+}
+
+.chart-place {
+  font: 700 1.6rem/1 var(--display, serif);
+  text-align: center;
+  color: var(--muted);
+}
+
+.podium .chart-place {
+  color: var(--accent);
+  font-size: 2rem;
+}
+
+.podium .chart-row {
+  border-color: rgba(228, 255, 74, 0.35);
+}
+
+.chart-row .thumb-slot {
+  width: 56px;
+  height: 56px;
+}
+
+.chart-name {
+  display: grid;
+  min-width: 0;
+}
+
+.chart-name strong,
+.chart-name .meta {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.chart-points {
+  display: grid;
+  justify-items: end;
+  text-align: right;
+}
+
+.chart-points strong {
+  font-size: 1.25rem;
+}
+
+.chart-points small {
+  color: var(--muted);
+}
+
+@media (max-width: 640px) {
+  .chart-row {
+    grid-template-columns: 2.4rem 44px minmax(0, 1fr);
+  }
+
+  .chart-row .thumb-slot {
+    width: 44px;
+    height: 44px;
+  }
+
+  .chart-points {
+    grid-column: 3;
+    justify-items: start;
+    text-align: left;
+  }
+
+  .chart-points .meta {
+    display: inline;
+  }
+}

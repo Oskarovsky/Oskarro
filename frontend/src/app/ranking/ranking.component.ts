@@ -4,33 +4,102 @@ import { environment } from '../../environments/environment';
 import { RefreshAfterHttpDirective } from '../services/ui-refresh';
 import { TrackService } from '../services/track/track.service';
 import { LangService } from '../lang.service';
+import { ActivatedRoute, Router } from '@angular/router';
+import { GENRES } from '../tracks/genres';
+
+type Period = 'week' | 'month' | 'all';
 
 @Component({
   selector: 'app-ranking',
   templateUrl: './ranking.component.html',
+  styleUrls: ['./ranking.component.css'],
   standalone: false,
   hostDirectives: [RefreshAfterHttpDirective]
 })
 export class RankingComponent implements OnInit {
 
   board: any;
-  hits: Array<any> = [];
-  hitsReady = false;
+  rows: Array<any> = [];
+  ready = false;
+  period: Period = 'week';
+  category = 'club';
+  readonly periods: {id: Period, label: string, labelEn: string}[] = [
+    {id: 'week', label: 'Ten tydzień', labelEn: 'This week'},
+    {id: 'month', label: 'Ten miesiąc', labelEn: 'This month'},
+    {id: 'all', label: 'Ogólny', labelEn: 'All time'}
+  ];
+  /** One chart per genre, plus sets — different worlds are never ranked together. */
+  readonly categories = [...GENRES.map(g => ({slug: g.slug, label: g.label})), {slug: 'sety', label: 'Sety / Mixy'}];
+  private request = 0;
 
   constructor(private http: HttpClient,
               private trackService: TrackService,
+              private route: ActivatedRoute,
+              private router: Router,
               readonly lang: LangService) {}
 
   ngOnInit() {
     this.http.get(environment.serverUrl + '/profile/ranking').subscribe(board => this.board = board);
-    this.trackService.getAllTracks().subscribe(tracks => {
-      const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-      this.hits = (tracks || [])
-        .filter(track => track?.genre && track?.url && track?.createdAt && Date.parse(track.createdAt) >= weekAgo)
-        .sort((a, b) => (b.score || 0) - (a.score || 0) || (b.id || 0) - (a.id || 0))
-        .slice(0, 10);
-      this.hitsReady = true;
+    this.route.queryParamMap.subscribe(params => {
+      const period = params.get('okres');
+      const category = params.get('kategoria');
+      this.period = period === 'miesiac' ? 'month' : period === 'ogolny' ? 'all' : 'week';
+      this.category = this.categories.some(c => c.slug === category) ? category : 'club';
+      this.load();
     });
+  }
+
+  /** The choice goes into the address, so a chart can be shared or bookmarked. */
+  choose(period: Period, category: string) {
+    const okres = period === 'month' ? 'miesiac' : period === 'all' ? 'ogolny' : null;
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {okres, kategoria: category === 'club' ? null : category},
+      replaceUrl: true
+    });
+  }
+
+  private load() {
+    const mine = ++this.request;
+    this.ready = false;
+    this.http.get<any>(environment.serverUrl + '/charts', {params: {period: this.period, category: this.category}}).subscribe({
+      next: chart => {
+        if (mine === this.request) {
+          this.rows = chart?.rows || [];
+          this.ready = true;
+        }
+      },
+      error: () => {
+        if (mine === this.request) {
+          this.rows = [];
+          this.ready = true;
+        }
+      }
+    });
+  }
+
+  chartTitle() {
+    const label = this.categories.find(c => c.slug === this.category)?.label || '';
+    const when = this.period === 'week' ? this.lang.t('ostatnie 7 dni', 'last 7 days')
+      : this.period === 'month' ? this.lang.t('ostatnie 30 dni', 'last 30 days')
+      : this.lang.t('od początku', 'all time');
+    return label + ' — ' + when;
+  }
+
+  emptyLine() {
+    return this.period === 'all'
+      ? this.lang.t('W tej kategorii nie ma jeszcze utworów.', 'There are no tracks in this category yet.')
+      : this.lang.t('W tym okresie nikt nie słuchał ani nie oceniał numerów z tej kategorii. Sprawdź dłuższy okres.',
+        'Nobody played or voted on tracks in this category in this period. Try a longer one.');
+  }
+
+  votesWord(count: number) {
+    const n = count || 0;
+    return (n > 0 ? '+' : '') + n + ' ' + this.lang.plural(Math.abs(n), ['głos', 'głosy', 'głosów'], ['vote', 'votes']);
+  }
+
+  playsWord(count: number) {
+    return (count || 0) + ' ' + this.lang.plural(count || 0, ['odsłuch', 'odsłuchy', 'odsłuchów'], ['play', 'plays']);
   }
 
   cover(track) {
