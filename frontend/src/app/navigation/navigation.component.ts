@@ -1,6 +1,6 @@
 import { Component, ElementRef, HostListener, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Router } from '@angular/router';
+import {Router, NavigationStart} from '@angular/router';
 import { TokenStorageService } from '../services/auth/token-storage.service';
 import { TrackSearch } from '../services/track-search';
 import { GENRES } from '../tracks/genres';
@@ -33,6 +33,12 @@ export class NavigationComponent implements OnInit {
   title = 'VIXA';
 
   ngOnInit() {
+    // Going to another page (also by keyboard or the back button) folds the search drawer away.
+    this.router.events.subscribe(event => {
+      if (event instanceof NavigationStart) {
+        this.searchOpen = false;
+      }
+    });
     this.isLoggedIn = !!this.tokenStorageService.getToken();
 
     if (this.isLoggedIn) {
@@ -121,6 +127,19 @@ export class NavigationComponent implements OnInit {
 
   @HostListener('document:keydown.escape')
   closeSearch() {
+    this.searchOpen = false;
+  }
+
+  /** The open search drawer covers the page, so any click outside it (or its toggle) folds it away. */
+  @HostListener('document:pointerdown', ['$event'])
+  closeSearchOnOutsideClick(event: PointerEvent) {
+    if (!this.searchOpen) {
+      return;
+    }
+    const target = event.target as Element | null;
+    if (target?.closest?.('.search-drawer, .search-toggle')) {
+      return;
+    }
     this.searchOpen = false;
   }
 
