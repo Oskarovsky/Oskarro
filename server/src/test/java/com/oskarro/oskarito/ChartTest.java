@@ -101,7 +101,12 @@ class ChartTest {
             Track tie = track("HOUSE", null, "ChartTie" + i);
             play(tie, Instant.now());
         }
-        assertThat(chart("week", "house").get("rows")).hasSize(10);
+        var house = chart("week", "house").get("rows");
+        assertThat(house).hasSize(10);
+        // Even when all twelve are tied, places run 1..10 with no repeats.
+        for (int i = 0; i < house.size(); i++) {
+            assertThat(house.get(i).get("place").asInt()).isEqualTo(i + 1);
+        }
 
         mvc.perform(get("/api/charts").param("period", "year").param("category", "retro")).andExpect(status().isBadRequest());
         mvc.perform(get("/api/charts").param("period", "week").param("category", "nope")).andExpect(status().isBadRequest());

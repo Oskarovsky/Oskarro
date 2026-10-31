@@ -9,6 +9,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.*;
 
 /**
@@ -19,7 +21,7 @@ import java.util.*;
 public class ChartService {
 
     static final int VOTE_WEIGHT = 5;
-    /** Always ten rows: ties at the end are cut, the order between them is votes, then newest. */
+    /** At most ten rows, numbered 1–10. Tracks with equal points go in a random order fixed for the day; the cut comes after that. */
     private static final int SIZE = 10;
 
     @PersistenceContext
@@ -66,6 +68,13 @@ public class ChartService {
 
         record Entry(Integer id, long votes, long plays, long points) {
         }
+        // Ties go in a random order, but the same one all day, so the list does not jump on every refresh.
+        Map<Integer, Integer> lottery = new HashMap<>();
+        List<Integer> shuffled = new ArrayList<>(ids);
+        Collections.shuffle(shuffled, new Random((LocalDate.now(ZoneId.of("Europe/Warsaw")) + "|" + period + "|" + category).hashCode()));
+        for (int i = 0; i < shuffled.size(); i++) {
+            lottery.put(shuffled.get(i), i);
+        }
         List<Entry> ranked = ids.stream()
                 .map(id -> {
                     long v = votes.getOrDefault(id, 0L);
@@ -75,8 +84,7 @@ public class ChartService {
                 // A weekly or monthly chart lists only what was played or voted on in that time.
                 .filter(e -> since == null || e.votes() != 0 || e.plays() != 0)
                 .sorted(Comparator.comparingLong(Entry::points).reversed()
-                        .thenComparing(Comparator.comparingLong(Entry::votes).reversed())
-                        .thenComparing(Comparator.comparing(Entry::id).reversed()))
+                        .thenComparing(e -> lottery.getOrDefault(e.id(), 0)))
                 .limit(SIZE)
                 .toList();
         if (ranked.isEmpty()) {
@@ -91,21 +99,13 @@ public class ChartService {
         social.decorateAll(new ArrayList<>(tracks));
 
         List<ChartRow> rows = new ArrayList<>();
-        int place = 0;
-        long previous = Long.MIN_VALUE;
-        int index = 0;
         for (Entry e : ranked) {
-            index++;
             Track track = byId.get(e.id());
             if (track == null) {
                 continue;
             }
-            // Equal points share a place (1, 2, 2, 4).
-            if (e.points() != previous) {
-                place = index;
-                previous = e.points();
-            }
-            rows.add(new ChartRow(place, (int) e.points(), e.votes(), e.plays(), track));
+            // Places always run 1, 2, 3 … 10; ties were already ordered above.
+            rows.add(new ChartRow(rows.size() + 1, (int) e.points(), e.votes(), e.plays(), track));
         }
         return new Chart(period, sets ? "sety" : category.toLowerCase(Locale.ROOT), rows);
     }
