@@ -2,6 +2,8 @@ package com.oskarro.oskarito.seo;
 
 import com.oskarro.oskarito.track.Genre;
 import com.oskarro.oskarito.track.SetCategory;
+import com.oskarro.oskarito.video.ChannelCatalog;
+import com.oskarro.oskarito.video.ChannelVideo;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.http.CacheControl;
@@ -29,13 +31,19 @@ public class SitemapController {
     @PersistenceContext
     private EntityManager em;
 
+    private final ChannelCatalog channel;
+
+    public SitemapController(ChannelCatalog channel) {
+        this.channel = channel;
+    }
+
     @GetMapping(value = "/api/seo/sitemap.xml", produces = MediaType.APPLICATION_XML_VALUE)
     @Transactional(readOnly = true)
     public ResponseEntity<String> sitemap() {
         StringBuilder xml = new StringBuilder("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n");
         String today = Instant.now().atOffset(ZoneOffset.UTC).toLocalDate().toString();
         url(xml, "/", today, "daily", "1.0");
-        for (String page : List.of("/sety", "/ranking", "/radio", "/video", "/playlist/all")) {
+        for (String page : List.of("/sety", "/tracklist", "/ranking", "/radio", "/video", "/playlist/all")) {
             url(xml, page, today, "daily", "0.8");
         }
         for (Genre genre : PUBLIC) {
@@ -48,6 +56,13 @@ public class SitemapController {
                 + " and t.url is not null and t.url <> '' order by t.id desc", Object[].class).getResultList()) {
             Instant created = (Instant) row[1];
             url(xml, "/track/" + row[0], created == null ? null : created.atOffset(ZoneOffset.UTC).toLocalDate().toString(), "weekly", "0.6");
+        }
+        try {
+            for (ChannelVideo video : channel.videos()) {
+                url(xml, "/video/set/" + video.id(), null, "monthly", "0.5");
+            }
+        } catch (RuntimeException youtubeUnavailable) {
+            // The sitemap stays valid without the channel sets; they come back on the next fetch.
         }
         for (String page : List.of("/regulamin", "/polityka-prywatnosci", "/cookies")) {
             url(xml, page, null, "yearly", "0.2");

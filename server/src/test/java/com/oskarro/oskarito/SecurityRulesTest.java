@@ -53,6 +53,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /** Regression tests for the access-control holes found in the October 2026 review. */
@@ -66,6 +67,9 @@ class SecurityRulesTest {
 
     @MockitoBean
     DataSeeder dataSeeder;
+
+    @MockitoBean
+    com.oskarro.oskarito.video.ChannelCatalog channel;
 
     @Autowired MockMvc mvc;
     @Autowired ObjectMapper json;
@@ -604,6 +608,41 @@ class SecurityRulesTest {
         Playlist secret = playlists.save(Playlist.builder().name("Tajna SEO").user(owner).privatePlaylist(true).build());
         mvc.perform(get("/api/seo/page/playlist/" + secret.getId() + "/details")).andExpect(status().isNotFound())
                 .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("Tajna SEO"))));
+    }
+
+    @Test
+    void oldAddressesRedirectAndVideoSetsAreRealPages() throws Exception {
+        org.mockito.Mockito.when(channel.videos()).thenReturn(List.of(
+                new com.oskarro.oskarito.video.ChannelVideo("kpI5YGczquw", "RETRO VIXA vol. 4", "34:36", "3 lata temu", "10 tysięcy wyświetleń"),
+                new com.oskarro.oskarito.video.ChannelVideo("19kNr9gMRMA", "Club Mix", "40:00", "rok temu", "")));
+        mvc.perform(get("/api/seo/page/tracks/97")).andExpect(status().isMovedPermanently())
+                .andExpect(header().string("Location", "https://oskarro.com/track/97"));
+        mvc.perform(get("/api/seo/page/video/category/MIX")).andExpect(status().isMovedPermanently())
+                .andExpect(header().string("Location", "https://oskarro.com/video"));
+        mvc.perform(get("/api/seo/page/tracklist/disco")).andExpect(status().isMovedPermanently())
+                .andExpect(header().string("Location", "https://oskarro.com/tracklist/disco-polo"));
+        mvc.perform(get("/api/seo/page/tracklist/CLUB")).andExpect(status().isMovedPermanently())
+                .andExpect(header().string("Location", "https://oskarro.com/tracklist/club"));
+        mvc.perform(get("/api/seo/page/tracklist/club")).andExpect(status().isOk());
+
+        String set = mvc.perform(get("/api/seo/page/video/set/kpI5YGczquw")).andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        assertThat(set).contains("<h1>RETRO VIXA vol. 4</h1>").contains("index, follow")
+                .contains("<link rel=\"canonical\" href=\"https://oskarro.com/video/set/kpI5YGczquw\">")
+                .contains("i.ytimg.com/vi/kpI5YGczquw").contains("/video/set/19kNr9gMRMA");
+        mvc.perform(get("/api/seo/page/video/set/AAAAAAAAAAA")).andExpect(status().isNotFound());
+        assertThat(mvc.perform(get("/api/seo/page/video")).andReturn().getResponse().getContentAsString())
+                .contains("/video/set/kpI5YGczquw");
+        assertThat(mvc.perform(get("/api/seo/page/tracklist")).andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString()).contains("index, follow");
+        assertThat(mvc.perform(get("/api/seo/page/playlist/all/Jacek")).andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString()).contains("noindex");
+        assertThat(mvc.perform(get("/api/seo/sitemap.xml")).andReturn().getResponse().getContentAsString())
+                .contains("https://oskarro.com/video/set/kpI5YGczquw").contains("https://oskarro.com/tracklist<");
+
+        org.mockito.Mockito.when(channel.videos()).thenThrow(new RuntimeException("YouTube down"));
+        mvc.perform(get("/api/seo/page/video/set/kpI5YGczquw")).andExpect(status().isOk());
+        mvc.perform(get("/api/seo/sitemap.xml")).andExpect(status().isOk());
     }
 
     private User user(RoleName role) {
