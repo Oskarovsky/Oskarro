@@ -2,6 +2,7 @@ package com.oskarro.oskarito.security;
 
 import com.oskarro.oskarito.security.jwt.JwtTokenProvider;
 import com.oskarro.oskarito.security.jwt.JwtResponse;
+import com.oskarro.oskarito.track.DownloadAllowanceService;
 import com.oskarro.oskarito.user.*;
 import java.util.HashSet;
 import java.util.List;
@@ -59,6 +60,9 @@ public class AuthController {
 
     @Autowired
     PresenceService presenceService;
+
+    @Autowired
+    DownloadAllowanceService downloads;
 
     @Autowired
     ObjectProvider<ClientRegistrationRepository> ssoProviders;
@@ -183,6 +187,7 @@ public class AuthController {
         Set<Role> roles = new HashSet<>(Set.of(userRole));
         user.setRoles(roles);
         userRepository.save(user);
+        downloads.grant(user, DownloadAllowanceService.Activity.WELCOME, "welcome");
         if (!emailActivation) {
             // No mail step: sign the new user in straight away.
             UserPrincipal principal = UserPrincipal.build(user);

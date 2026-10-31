@@ -53,6 +53,15 @@ public class User {
      */
     private Boolean emailVerified;
 
+    /** Mails about comments and likes on own tracks; null counts as on (users can switch it off). */
+    private Boolean notifyActivity;
+
+    /** Weekly "new in your genres" mail; null counts as off — it needs an explicit yes. */
+    private Boolean digestOptIn;
+
+    /** Last like notification, so likes send at most one mail per 12 hours. */
+    private Instant lastLikeMailAt;
+
     /** Downloads left before the next activity; see DownloadAllowanceService. Null counts as 0. */
     private Integer downloadCredits;
 

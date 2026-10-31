@@ -2,6 +2,7 @@ package com.oskarro.oskarito.track;
 
 import com.oskarro.oskarito.playlist.PlaylistEntryRepository;
 import com.oskarro.oskarito.storage.ImageRepository;
+import com.oskarro.oskarito.notify.NotificationService;
 import com.oskarro.oskarito.user.ProfileService;
 import com.oskarro.oskarito.user.User;
 import com.oskarro.oskarito.user.UserRepository;
@@ -58,6 +59,7 @@ public class TrackSocialService {
     private final TrackFileRepository fileRepository;
     private final DownloadAllowanceService downloads;
     private final ImageRepository imageRepository;
+    private final NotificationService notifications;
     private static final ZoneId WARSAW = ZoneId.of("Europe/Warsaw");
 
     public TrackSocialService(TrackRepository trackRepository,
@@ -70,7 +72,8 @@ public class TrackSocialService {
                               PlaylistEntryRepository entryRepository,
                               TrackFileRepository fileRepository,
                               DownloadAllowanceService downloads,
-                              ImageRepository imageRepository) {
+                              ImageRepository imageRepository,
+                              NotificationService notifications) {
         this.trackRepository = trackRepository;
         this.commentRepository = commentRepository;
         this.likeRepository = likeRepository;
@@ -82,6 +85,7 @@ public class TrackSocialService {
         this.fileRepository = fileRepository;
         this.downloads = downloads;
         this.imageRepository = imageRepository;
+        this.notifications = notifications;
     }
 
     public List<Track> listByGenre(String genre, String sort) {
@@ -336,6 +340,7 @@ public class TrackSocialService {
         if (track.getAuthor() == null || !track.getAuthor().getId().equals(saved.getAuthor().getId())) {
             downloads.grant(saved.getAuthor(), DownloadAllowanceService.Activity.COMMENT, "track:" + trackId);
         }
+        notifications.commented(track, saved.getAuthor(), saved.getText());
         return new CommentView(saved.getId(), saved.getText(), saved.getAuthor().getUsername(), saved.getCreatedAt().toString(),
                 hasAvatar(saved.getAuthor()));
     }
@@ -383,6 +388,9 @@ public class TrackSocialService {
             // Rating your own track gives nothing, or anyone could unlock downloads alone.
             if (track.getAuthor() == null || !track.getAuthor().getId().equals(user.getId())) {
                 downloads.grant(user, DownloadAllowanceService.Activity.LIKE, "track:" + trackId);
+            }
+            if (value == 1) {
+                notifications.liked(track, user);
             }
         }
         LikeState state = likes(trackId);

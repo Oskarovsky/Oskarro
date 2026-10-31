@@ -40,8 +40,8 @@
       <app-deck *ngIf="showDeck"></app-deck>
       <p class="meta" *ngIf="besideRadio && radioPinned">{{ 'Radio jest na dolnym pasku. Ten utwór zostaje na stronie.' | t:'The radio is on the bottom bar. This track stays on the page.' }}</p>
       <button class="btn-accent" type="button" *ngIf="besideRadio && !radioPinned" (click)="playHere()">{{ 'Odtwórz' | t:'Play' }}</button>
-      <p class="gate" *ngIf="playable && !ownsPlayback && !isLoggedIn && !besideRadio"><a routerLink="/login">{{ 'Zaloguj się' | t:'Sign in' }}</a>{{ lang.en ? ' to play the next track.' : ', żeby puścić kolejny utwór.' }}</p>
-      <p class="meta" *ngIf="ownsPlayback && playback.holdNext"><a routerLink="/login">{{ 'Zaloguj się' | t:'Sign in' }}</a>{{ lang.en ? ' to play the next one.' : ', żeby puścić kolejny.' }}</p>
+      <app-join-invite *ngIf="playable && !ownsPlayback && !isLoggedIn && !besideRadio"></app-join-invite>
+      <app-join-invite *ngIf="ownsPlayback && playback.holdNext && !isLoggedIn"></app-join-invite>
 
       <section class="download-box" *ngIf="track.downloadable && playable" [class.empty]="isLoggedIn && !canDownload">
         <div class="download-row">
@@ -67,7 +67,6 @@
         </details>
       </section>
       <div class="track-actions">
-        <button class="btn-ghost" type="button" (click)="share()">{{ shared ? ('Link skopiowany' | t:'Link copied') : ('Udostępnij' | t:'Share') }}</button>
         <span class="save-wrap" *ngIf="isLoggedIn" #saveWrap>
           <button class="btn-ghost" type="button" (click)="toggleSave()">{{ 'Zapisz do składanki' | t:'Save to a playlist' }}</button>
           <span class="save-pop" *ngIf="saveOpen">
@@ -84,7 +83,7 @@
         <a class="report-link" routerLink="/zglos-naruszenie" [queryParams]="{utwor: track.id}">{{ 'Zgłoś' | t:'Report' }}</a>
       </div>
       <p class="meta track-note" *ngIf="saved">{{ lang.en ? 'Saved in “' + saved + '”.' : 'Zapisane w „' + saved + '”.' }}</p>
-      <p class="meta track-note" *ngIf="shareUrl">{{ lang.en ? 'Copy the link: ' + shareUrl : 'Skopiuj link: ' + shareUrl }}</p>
+      <app-share-buttons *ngIf="track.id" [url]="'https://oskarro.com/track/' + track.id" [title]="track.artist + ' – ' + track.title"></app-share-buttons>
 
       <app-ad-slot slot="utwor" format="banner"></app-ad-slot>
     </div>

@@ -1,5 +1,6 @@
 package com.oskarro.oskarito.security.sso;
 
+import com.oskarro.oskarito.track.DownloadAllowanceService;
 import com.oskarro.oskarito.user.Role;
 import com.oskarro.oskarito.user.RoleName;
 import com.oskarro.oskarito.user.RoleRepository;
@@ -43,11 +44,14 @@ public class SsoAccountService {
     private final UserRepository users;
     private final RoleRepository roles;
     private final PasswordEncoder encoder;
+    private final DownloadAllowanceService downloads;
 
-    public SsoAccountService(UserRepository users, RoleRepository roles, PasswordEncoder encoder) {
+    public SsoAccountService(UserRepository users, RoleRepository roles, PasswordEncoder encoder,
+                             DownloadAllowanceService downloads) {
         this.users = users;
         this.roles = roles;
         this.encoder = encoder;
+        this.downloads = downloads;
     }
 
     @Transactional
@@ -99,7 +103,9 @@ public class SsoAccountService {
                 .authProvider(provider)
                 .roles(new HashSet<>(Set.of(userRole)))
                 .build();
-        return users.save(created);
+        User saved = users.save(created);
+        downloads.grant(saved, DownloadAllowanceService.Activity.WELCOME, "welcome");
+        return saved;
     }
 
     /** Builds a username matching the signup rules ([letters digits _ . -], 3–32) and not taken yet. */

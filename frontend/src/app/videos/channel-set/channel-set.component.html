@@ -12,4 +12,5 @@
     <app-like-button *ngIf="videoId" kind="video" [key]="videoId"></app-like-button>
     <a class="btn-ghost" [href]="watch" target="_blank" rel="noopener">{{ 'Otwórz na YouTube' | t:'Open on YouTube' }}</a>
   </p>
+  <app-share-buttons *ngIf="videoId" [url]="'https://oskarro.com/video/set/' + videoId" [title]="title"></app-share-buttons>
 </div>

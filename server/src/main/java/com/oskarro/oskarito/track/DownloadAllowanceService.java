@@ -13,14 +13,14 @@ import java.util.Set;
 
 /**
  * Download credits. Each activity sets the balance to its own amount when that is more than what is left:
- * a like gives 3, a comment 5, a new track 7. Balances never add up, and each activity counts once per item.
+ * a like gives 3, a comment 5, a new track 7, and a new account starts with 3. Balances never add up, and each activity counts once per item.
  * Downloading a track for the first time spends one credit; downloading it again is free.
  */
 @Service
 public class DownloadAllowanceService {
 
     public enum Activity {
-        LIKE(3), COMMENT(5), TRACK(7);
+        LIKE(3), COMMENT(5), TRACK(7), WELCOME(3);
 
         public final int credits;
 
