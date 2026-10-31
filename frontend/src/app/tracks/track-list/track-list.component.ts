@@ -33,6 +33,8 @@ export class TrackListComponent implements OnInit, OnDestroy {
   genre = '';
 
   genreLabel = 'Utwory';
+  /** Genre enum id for the header artwork (empty for unknown genres). */
+  genreId = '';
 
   private aboutPl = 'Utwory dodane przez społeczność VIXA.';
 
@@ -67,6 +69,7 @@ export class TrackListComponent implements OnInit, OnDestroy {
       this.genre = genre;
       const option = genreBySlug(genre);
       this.genreLabel = option?.label || (genre ? genre : 'Utwory');
+      this.genreId = option?.id || '';
       this.aboutPl = option?.about || 'Utwory dodane przez społeczność VIXA.';
       this.aboutEn = option?.aboutEn || 'Tracks shared by the VIXA community.';
       if (!genre) {

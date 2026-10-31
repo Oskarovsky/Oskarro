@@ -1,0 +1,68 @@
+
+/* Genre header: the genre's own artwork (same motifs as the home tiles) behind the name. */
+.genre-hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+  min-height: 260px;
+  padding: 28px 30px;
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+}
+
+.genre-hero .hero-art {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  animation: hero-drift 18s ease-in-out infinite alternate;
+}
+
+.genre-hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(90deg, rgba(10, 9, 7, 0.88) 0%, rgba(10, 9, 7, 0.62) 42%, rgba(10, 9, 7, 0.08) 100%),
+    linear-gradient(0deg, rgba(10, 9, 7, 0.55) 0%, rgba(10, 9, 7, 0) 55%);
+}
+
+.genre-hero .hero-text {
+  max-width: 560px;
+}
+
+.genre-hero .kicker {
+  color: #fff;
+  opacity: 0.85;
+}
+
+.genre-hero h1 {
+  color: #fff;
+  font-size: clamp(2.6rem, 6vw, 4.4rem);
+  line-height: 1;
+  margin: 0 0 12px;
+  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.45);
+}
+
+.genre-hero .lede {
+  color: rgba(255, 255, 255, 0.88);
+}
+
+@keyframes hero-drift {
+  from { transform: scale(1.02) translate(0, 0); }
+  to { transform: scale(1.1) translate(-2%, -2%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .genre-hero .hero-art { animation: none; }
+}
+
+@media (max-width: 640px) {
+  .genre-hero {
+    min-height: 210px;
+    padding: 20px;
+  }
+}
