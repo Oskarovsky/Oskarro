@@ -80,6 +80,7 @@
 }
 
 .chart-points small {
+  margin-left: 3px;
   color: var(--muted);
 }
 
