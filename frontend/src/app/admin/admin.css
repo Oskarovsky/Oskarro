@@ -531,3 +531,44 @@ a.adm-kpi:hover {
 .adm-toolbar select {
   flex: 0 0 auto;
 }
+
+.adm-tools {
+  display: grid;
+  gap: 2px;
+  margin: 18px 0 14px;
+  padding: 12px 0 0;
+  border-top: 1px solid var(--line);
+}
+
+.adm-tools-title {
+  margin: 0 12px 4px;
+  color: var(--muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.adm-tools a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 12px;
+  border-radius: 10px;
+  color: var(--text);
+  font-size: 0.9rem;
+}
+
+.adm-tools a:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.adm-tools a span {
+  width: 18px;
+  text-align: center;
+}
+
+.adm-tools a em {
+  margin-left: auto;
+  color: var(--muted);
+  font-style: normal;
+}
