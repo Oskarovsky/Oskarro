@@ -207,6 +207,11 @@ export class TrackComponent implements OnInit, OnDestroy {
       }
       const community = ((all || []) as PlayableTrack[]).filter(item => item?.id && item.url && item.genre);
       this.similar = this.pickSimilar(track, community);
+      if (this.hostujeId) {
+        // Played in hostuje's own embed on the page; the radio or anything else keeps going.
+        this.besideRadio = false;
+        return;
+      }
       if (radioWasPinned || (this.playback.pinned && this.playback.fromRadio)) {
         this.besideRadio = true;
         return;
@@ -236,6 +241,12 @@ export class TrackComponent implements OnInit, OnDestroy {
     const used = new Set(sameArtist.map(item => item.id));
     const sameGenre = community.filter(item => item.id !== track.id && item.genre === track.genre && !used.has(item.id));
     return [...sameArtist, ...sameGenre].slice(0, 4);
+  }
+
+  /** hostuje.net id when the track lives there (shown in their embed player). */
+  get hostujeId(): string {
+    const ref = audioRef(this.track?.url || '');
+    return ref?.host === 'hostuje' ? ref.id : '';
   }
 
   get playable() {

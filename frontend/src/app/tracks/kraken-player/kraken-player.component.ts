@@ -60,8 +60,13 @@ export class TrackPlayerComponent implements AfterViewChecked, OnDestroy {
     queueMicrotask(() => this.sight?.observe(host.nativeElement));
   }
 
+  /** hostuje.net file shown in its official embed (our audio cannot play it). */
+  embedId = '';
+  @Input() trackId: number | null = null;
+
   @Input()
   set url(value: string) {
+    this.embedId = '';
     this.reset();
     this.pendingUrl = value;
     if (this.visible) {
@@ -73,6 +78,11 @@ export class TrackPlayerComponent implements AfterViewChecked, OnDestroy {
   private start(value: string) {
     const ref = this.tokenStorage.getToken() ? audioRef(value) : null;
     if (!ref) {
+      return;
+    }
+    if (ref.host === 'hostuje') {
+      this.embedId = ref.id;
+      this.view.markForCheck();
       return;
     }
     const path = ref.host + '/' + encodeURIComponent(ref.id);

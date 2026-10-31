@@ -9,7 +9,7 @@ import {Track} from "../../tracks/track/model/track";
 import {audioRef} from "../../services/audio-hosts";
 import {TokenStorageService} from "../../services/auth/token-storage.service";
 import {SeoService} from "../../seo.service";
-import {PlaybackService} from "../../tracks/playback.service";
+import {PlaybackService, controllable} from "../../tracks/playback.service";
 
 @Component({
   selector: 'app-playlist-details',
@@ -40,7 +40,7 @@ export class PlaylistDetailsComponent implements OnInit, OnDestroy {
   private playbackSub: Subscription;
 
   get playable(): Track[] {
-    return (this.tracks || []).filter(track => !!audioRef(track?.url));
+    return (this.tracks || []).filter(track => !!audioRef(track?.url) && controllable(track));
   }
 
   get nowPlayingHere() {
@@ -48,7 +48,7 @@ export class PlaylistDetailsComponent implements OnInit, OnDestroy {
   }
 
   canPlay(track: Track) {
-    return !!audioRef(track?.url);
+    return !!audioRef(track?.url) && controllable(track);
   }
 
   isCurrent(track: Track) {

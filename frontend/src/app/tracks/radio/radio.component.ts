@@ -6,7 +6,7 @@ import {audioRef} from '../../services/audio-hosts';
 import {RefreshAfterHttpDirective} from '../../services/ui-refresh';
 import {environment} from '../../../environments/environment';
 import {GENRES} from '../genres';
-import {PlaybackService, PlayableTrack} from '../playback.service';
+import {PlaybackService, PlayableTrack, controllable} from '../playback.service';
 import {Track} from '../track/model/track';
 import {LangService} from '../../lang.service';
 import {PlaylistService} from '../../services/playlist/playlist.service';
@@ -100,7 +100,7 @@ export class RadioComponent implements OnInit, OnDestroy {
     this.playlistService.getAllTracksFromPlaylist(String(chosen.id)).subscribe({
       next: tracks => {
         // Unlike the genre radio, a chosen playlist plays whatever it contains, sets included.
-        const queue = (tracks || []).filter(item => item?.id && item.url && !!audioRef(item.url)) as PlayableTrack[];
+        const queue = (tracks || []).filter(item => item?.id && item.url && !!audioRef(item.url) && controllable(item)) as PlayableTrack[];
         if (!queue.length) {
           this.playlistNote = this.lang.t('W tej składance nie ma utworów do odtworzenia.', 'This playlist has no playable tracks.');
           return;
@@ -216,6 +216,6 @@ export class RadioComponent implements OnInit, OnDestroy {
 
   private catalog(all: Track[]): PlayableTrack[] {
     // Hour-long sets would swamp the radio rotation, so it plays single tracks only.
-    return all.filter(item => item?.id && item.url && item.genre && item.kind !== 'set' && !!audioRef(item.url));
+    return all.filter(item => item?.id && item.url && item.genre && item.kind !== 'set' && !!audioRef(item.url) && controllable(item));
   }
 }
