@@ -81,7 +81,7 @@
     <p class="meta auth-links" *ngIf="!isSuccessful">{{ 'Masz już konto?' | t:'Already have an account?' }} <a routerLink="/login">{{ 'Zaloguj się' | t:'Sign in' }}</a></p>
 
     <div class="alert alert-success auth-done" role="status" *ngIf="isSuccessful && signedIn">
-      {{ 'Witaj w Oskarro! Konto jest gotowe, zaraz przeniesiemy Cię na stronę główną.' | t:'Welcome to Oskarro! Your account is ready, taking you to the home page.' }}
+      {{ 'Witaj w VIXA! Konto jest gotowe, zaraz przeniesiemy Cię na stronę główną.' | t:'Welcome to VIXA! Your account is ready, taking you to the home page.' }}
     </div>
     <div class="alert alert-success auth-done" role="status" *ngIf="isSuccessful && !signedIn && delivered">
       {{ 'Konto jest zapisane. Sprawdź skrzynkę i otwórz link aktywacyjny. Dopiero wtedy można się zalogować.' | t:'The account is saved. Check your inbox and open the activation link. You can sign in only after that.' }}

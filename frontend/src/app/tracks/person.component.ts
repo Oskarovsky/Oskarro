@@ -16,7 +16,7 @@ export function isHouseName(name: string): boolean {
     </span>
     <ng-template #mark>
       {{ name }}
-      <img *ngIf="house" class="house-mark" src="assets/logo-mark.png" alt="" title="Oskarro">
+      <img *ngIf="house" class="house-mark" src="assets/logo-mark.png" alt="" title="VIXA">
       <span *ngIf="!house && rank" class="rank-mark" [title]="rank">{{ rank | rankMark }}</span>
     </ng-template>
   `

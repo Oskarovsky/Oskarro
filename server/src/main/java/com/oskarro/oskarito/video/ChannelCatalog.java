@@ -48,7 +48,7 @@ public class ChannelCatalog {
                 until = Instant.now().plus(FRESH);
             } catch (RuntimeException ex) {
                 if (cached.isEmpty()) {
-                    throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Kanał Oskarro jest chwilowo niedostępny");
+                    throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Kanał VIXA jest chwilowo niedostępny");
                 }
             }
             return cached;
@@ -66,22 +66,22 @@ public class ChannelCatalog {
         try {
             response = http.send(request, HttpResponse.BodyHandlers.ofString());
         } catch (Exception ex) {
-            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Kanał Oskarro jest chwilowo niedostępny");
+            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Kanał VIXA jest chwilowo niedostępny");
         }
         if (response.statusCode() != 200) {
-            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Kanał Oskarro jest chwilowo niedostępny");
+            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Kanał VIXA jest chwilowo niedostępny");
         }
         String html = response.body();
         int marker = html.indexOf("ytInitialData");
         if (marker < 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Kanał Oskarro jest chwilowo niedostępny");
+            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Kanał VIXA jest chwilowo niedostępny");
         }
         int start = html.indexOf('{', marker);
         JSONObject data = new JSONObject(html.substring(start, matchingBrace(html, start)));
         Map<String, ChannelVideo> found = new LinkedHashMap<>();
         collect(data, found);
         if (found.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Kanał Oskarro jest chwilowo niedostępny");
+            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Kanał VIXA jest chwilowo niedostępny");
         }
         return List.copyOf(found.values());
     }
@@ -113,7 +113,7 @@ public class ChannelCatalog {
                 }
             }
         }
-        throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Kanał Oskarro jest chwilowo niedostępny");
+        throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Kanał VIXA jest chwilowo niedostępny");
     }
 
     private void collect(Object node, Map<String, ChannelVideo> out) {

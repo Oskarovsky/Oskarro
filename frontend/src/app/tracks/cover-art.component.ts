@@ -37,7 +37,7 @@ let nextCover = 0;
       <rect width="480" height="480" [attr.fill]="'url(#' + grad + ')'"/>
       <rect x="18" y="18" width="444" height="444" fill="none" stroke="rgba(246,241,230,0.18)" stroke-width="2"/>
       <image href="assets/logo-mark.png" x="36" y="34" width="72" height="72"/>
-      <text x="124" y="78" fill="#f6f1e6" font-family="Outfit, sans-serif" font-size="28" font-weight="650">oskarro.com</text>
+      <text x="124" y="78" fill="#f6f1e6" font-family="Outfit, sans-serif" font-size="28" font-weight="650">VIXA</text>
       <text x="36" y="210" [attr.fill]="wash" font-family="Fraunces, Georgia, serif" [attr.font-size]="titleSize">{{ label }}</text>
       <rect *ngFor="let bar of bars; let i = index" [attr.x]="36 + i * 54" [attr.y]="400 - bar" width="28" [attr.height]="bar" [attr.fill]="wash" opacity="0.9" rx="4"/>
     </svg>
@@ -57,7 +57,7 @@ export class CoverArtComponent {
   }
 
   get coverLabel() {
-    return this.lang.t('Domyślna okładka Oskarro, ', 'Default Oskarro cover, ') + this.label;
+    return this.lang.t('Domyślna okładka VIXA, ', 'Default VIXA cover, ') + this.label;
   }
 
   get label() {

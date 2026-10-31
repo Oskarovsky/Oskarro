@@ -6,9 +6,9 @@ import {LangService} from './lang.service';
 
 const ORIGIN = 'https://oskarro.com';
 const LOGO = ORIGIN + '/assets/logo.jpg';
-const HOME_TITLE = 'Muzyka klubowa, vixa i disco polo za darmo — słuchaj z nami | Oskarro';
-const HOME_DESCRIPTION = 'Oskarro.com — słuchaj z nami muzyki klubowej za darmo: club, vixa, trance, hands up i disco polo. Oceniaj, komentuj i dodawaj swoje numery.';
-const HOME_DESCRIPTION_EN = 'Oskarro.com — listen with us to club music for free: club, vixa, trance, hands up and disco polo. Vote, comment and share your own tracks.';
+const HOME_TITLE = 'Muzyka klubowa, vixa i disco polo za darmo — słuchaj z nami | VIXA';
+const HOME_DESCRIPTION = 'VIXA — słuchaj z nami muzyki klubowej za darmo: club, vixa, trance, hands up i disco polo. Oceniaj, komentuj i dodawaj swoje numery.';
+const HOME_DESCRIPTION_EN = 'VIXA — listen with us to club music for free: club, vixa, trance, hands up and disco polo. Vote, comment and share your own tracks.';
 
 @Injectable({providedIn: 'root'})
 export class SeoService {
@@ -24,11 +24,11 @@ export class SeoService {
 
     if (path === '/') {
       const description = this.lang.t(HOME_DESCRIPTION, HOME_DESCRIPTION_EN);
-      this.set(this.lang.t(HOME_TITLE, 'Listen with us | Oskarro'), description, '/');
+      this.set(this.lang.t(HOME_TITLE, 'Listen with us | VIXA'), description, '/');
       this.jsonLd({
         '@context': 'https://schema.org',
         '@type': 'WebSite',
-        name: 'Oskarro',
+        name: 'VIXA',
         url: ORIGIN + '/',
         description: description,
         inLanguage: this.lang.code,
@@ -45,13 +45,13 @@ export class SeoService {
     if (genreSlug) {
       const genre = genreBySlug(genreSlug[1]);
       if (!genre) {
-        this.set(this.lang.t('Utwory | Oskarro', 'Tracks | Oskarro'), this.lang.t(HOME_DESCRIPTION, HOME_DESCRIPTION_EN), path, false);
+        this.set(this.lang.t('Utwory | VIXA', 'Tracks | VIXA'), this.lang.t(HOME_DESCRIPTION, HOME_DESCRIPTION_EN), path, false);
         return;
       }
       const about = this.lang.en ? genre.aboutEn : genre.about;
       const heading = genre.id === 'CLUB'
-        ? this.lang.t('Muzyka klubowa — Club | Oskarro', 'Club music — Club | Oskarro')
-        : genre.label + this.lang.t(' na imprezę | Oskarro', ' for a party | Oskarro');
+        ? this.lang.t('Muzyka klubowa — Club | VIXA', 'Club music — Club | VIXA')
+        : genre.label + this.lang.t(' na imprezę | VIXA', ' for a party | VIXA');
       this.set(heading, about, path);
       this.jsonLd({
         '@context': 'https://schema.org',
@@ -60,50 +60,50 @@ export class SeoService {
         description: about,
         url: ORIGIN + path,
         inLanguage: this.lang.code,
-        isPartOf: {'@type': 'WebSite', name: 'Oskarro', url: ORIGIN + '/'}
+        isPartOf: {'@type': 'WebSite', name: 'VIXA', url: ORIGIN + '/'}
       });
       return;
     }
 
     if (/^\/track\/\d+$/.test(path)) {
-      this.set(this.lang.t('Utwór | Oskarro', 'Track | Oskarro'), this.lang.t('Numer z Oskarro. Muzyka klubowa i muzyka na imprezę.', 'A track from Oskarro. Club music and party music.'), path);
+      this.set(this.lang.t('Utwór | VIXA', 'Track | VIXA'), this.lang.t('Numer z VIXA. Muzyka klubowa i muzyka na imprezę.', 'A track from VIXA. Club music and party music.'), path);
       return;
     }
 
     if (path === '/video') {
-      this.set(this.lang.t('Sety na imprezę | Oskarro', 'Party sets | Oskarro'), this.lang.t('Sety Oskarro na imprezę, do auta i na parkiet. Mixy klubowe z kanału.', 'Oskarro sets for a party, the car and the dance floor. Club mixes from the channel.'), path);
+      this.set(this.lang.t('Sety na imprezę | VIXA', 'Party sets | VIXA'), this.lang.t('Sety VIXA na imprezę, do auta i na parkiet. Mixy klubowe z kanału.', 'VIXA sets for a party, the car and the dance floor. Club mixes from the channel.'), path);
       return;
     }
 
     if (/^\/video\/set\/[A-Za-z0-9_-]{11}$/.test(path)) {
-      this.set(this.lang.t('Set na imprezę | Oskarro', 'Party set | Oskarro'), this.lang.t('Set Oskarro. Muzyka klubowa na imprezę, do auta i na parkiet.', 'An Oskarro set. Club music for a party, the car and the dance floor.'), path);
+      this.set(this.lang.t('Set na imprezę | VIXA', 'Party set | VIXA'), this.lang.t('Set VIXA. Muzyka klubowa na imprezę, do auta i na parkiet.', 'A VIXA set. Club music for a party, the car and the dance floor.'), path);
       return;
     }
 
     if (path === '/playlist/all') {
-      this.set(this.lang.t('Playlisty na imprezę | Oskarro', 'Party playlists | Oskarro'), this.lang.t('Składanki na imprezę ułożone przez ludzi z Oskarro.', 'Party playlists put together by people on Oskarro.'), path);
+      this.set(this.lang.t('Playlisty na imprezę | VIXA', 'Party playlists | VIXA'), this.lang.t('Składanki na imprezę ułożone przez ludzi z VIXA.', 'Party playlists put together by people on VIXA.'), path);
       return;
     }
 
     if (/^\/playlist\/\d+\/details$/.test(path)) {
-      this.set(this.lang.t('Składanka na imprezę | Oskarro', 'Party playlist | Oskarro'), this.lang.t('Składanka z Oskarro. Muzyka na imprezę i na parkiet.', 'A playlist from Oskarro. Music for a party and the dance floor.'), path);
+      this.set(this.lang.t('Składanka na imprezę | VIXA', 'Party playlist | VIXA'), this.lang.t('Składanka z VIXA. Muzyka na imprezę i na parkiet.', 'A playlist from VIXA. Music for a party and the dance floor.'), path);
       return;
     }
 
     if (path === '/ranking') {
-      this.set('Ranking | Oskarro', this.lang.t('Kto dodaje muzykę klubową i numery na imprezę na Oskarro.', 'Who adds club music and party tracks on Oskarro.'), path);
+      this.set('Ranking | VIXA', this.lang.t('Kto dodaje muzykę klubową i numery na imprezę na VIXA.', 'Who adds club music and party tracks on VIXA.'), path);
       return;
     }
 
     if (path === '/radio') {
-      this.set('Radio | Oskarro', this.lang.t('Włącz radio Oskarro i słuchaj muzyki klubowej na imprezę. Kolejny utwór startuje sam.', 'Start Oskarro radio and listen to club music for a party. The next track starts on its own.'), path);
+      this.set('Radio | VIXA', this.lang.t('Włącz radio VIXA i słuchaj muzyki klubowej na imprezę. Kolejny utwór startuje sam.', 'Start VIXA radio and listen to club music for a party. The next track starts on its own.'), path);
       return;
     }
 
     if (path === '/szukaj') {
       const q = (query.get('q') || '').trim();
       this.set(
-        q ? this.lang.t('Szukaj: ', 'Search: ') + q + ' | Oskarro' : this.lang.t('Szukaj utworu | Oskarro', 'Search for a track | Oskarro'),
+        q ? this.lang.t('Szukaj: ', 'Search: ') + q + ' | VIXA' : this.lang.t('Szukaj utworu | VIXA', 'Search for a track | VIXA'),
         this.lang.t('Szukaj muzyki klubowej i numerów na imprezę.', 'Search club music and party tracks.'),
         q ? '/szukaj?q=' + encodeURIComponent(q) : '/szukaj',
         false
@@ -111,7 +111,7 @@ export class SeoService {
       return;
     }
 
-    this.set('Oskarro', this.lang.t(HOME_DESCRIPTION, HOME_DESCRIPTION_EN), path, !this.privatePath(path));
+    this.set('VIXA', this.lang.t(HOME_DESCRIPTION, HOME_DESCRIPTION_EN), path, !this.privatePath(path));
   }
 
   /** Same title and description as the server-rendered page (SeoPageController). */
@@ -124,10 +124,10 @@ export class SeoService {
     const full = artist + ' – ' + name + version;
     const set = (track.kind || '').toLowerCase() === 'set';
     const description = this.lang.en
-      ? 'Listen for free: ' + full + '. ' + genre + ' on Oskarro. Vote, comment and save it to your playlist.'
-      : (set ? 'Posłuchaj seta za darmo: ' : 'Posłuchaj za darmo: ') + full + '. ' + genre + ' na Oskarro. Oceniaj, komentuj i zapisz do swojej składanki.';
+      ? 'Listen for free: ' + full + '. ' + genre + ' on VIXA. Vote, comment and save it to your playlist.'
+      : (set ? 'Posłuchaj seta za darmo: ' : 'Posłuchaj za darmo: ') + full + '. ' + genre + ' na VIXA. Oceniaj, komentuj i zapisz do swojej składanki.';
     const image = track.hasCover ? ORIGIN + '/api/tracks/' + track.id + '/cover' : LOGO;
-    this.set(full + ' | Oskarro', description, path, true, image);
+    this.set(full + ' | VIXA', description, path, true, image);
     this.jsonLd({
       '@context': 'https://schema.org',
       '@type': 'MusicRecording',
@@ -142,8 +142,8 @@ export class SeoService {
 
   playlist(playlist: {id: number; name: string; description?: string}) {
     const name = (playlist.name || this.lang.t('Składanka', 'Playlist')).trim();
-    const description = (playlist.description || '').trim() || name + this.lang.t('. Składanka na imprezę z Oskarro.', '. A party playlist from Oskarro.');
-    this.set(name + ' | Oskarro', description, '/playlist/' + playlist.id + '/details');
+    const description = (playlist.description || '').trim() || name + this.lang.t('. Składanka na imprezę z VIXA.', '. A party playlist from VIXA.');
+    this.set(name + ' | VIXA', description, '/playlist/' + playlist.id + '/details');
   }
 
   setTitle(title: string, description: string, path: string) {

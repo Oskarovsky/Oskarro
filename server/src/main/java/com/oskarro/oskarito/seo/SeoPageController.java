@@ -39,8 +39,8 @@ public class SeoPageController {
     static final String SITE = "https://oskarro.com";
     private static final String LOGO = SITE + "/assets/logo.jpg";
     private static final DateTimeFormatter DAY = DateTimeFormatter.ofPattern("dd.MM.yyyy").withZone(ZoneId.of("Europe/Warsaw"));
-    private static final String HOME_TITLE = "Muzyka klubowa, vixa i disco polo za darmo — słuchaj z nami | Oskarro";
-    private static final String HOME_DESCRIPTION = "Oskarro.com — słuchaj z nami muzyki klubowej za darmo: club, vixa, trance, hands up i disco polo. "
+    private static final String HOME_TITLE = "Muzyka klubowa, vixa i disco polo za darmo — słuchaj z nami | VIXA";
+    private static final String HOME_DESCRIPTION = "VIXA — słuchaj z nami muzyki klubowej za darmo: club, vixa, trance, hands up i disco polo. "
             + "Oceniaj, komentuj i dodawaj swoje numery.";
 
     /** Public genres in site order: enum name, URL slug, label, one-line description. */
@@ -74,13 +74,13 @@ public class SeoPageController {
     private static final Pattern PLAYLIST = Pattern.compile("^/playlist/(\\d{1,9})/details$");
 
     private static final Map<String, String[]> STATIC_PAGES = Map.of(
-            "/ranking", new String[]{"Ranking użytkowników i najlepsze numery | Oskarro", "Kto dodaje najwięcej muzyki klubowej na Oskarro i które numery biorą najwięcej głosów.", "Ranking"},
-            "/radio", new String[]{"Radio z muzyką klubową, vixą i disco polo | Oskarro", "Włącz radio Oskarro i słuchaj z nami muzyki klubowej na imprezę — wybierz gatunki albo swoją składankę. Kolejny numer startuje sam.", "Radio Oskarro"},
-            "/video", new String[]{"Sety wideo na imprezę | Oskarro", "Sety Oskarro na imprezę, do auta i na parkiet. Mixy klubowe z kanału.", "Sety wideo"},
-            "/playlist/all", new String[]{"Playlisty i składanki na imprezę | Oskarro", "Składanki na imprezę, do auta i na siłownię, ułożone przez ludzi z Oskarro.", "Playlisty"},
-            "/regulamin", new String[]{"Regulamin | Oskarro", "Regulamin serwisu Oskarro.com.", "Regulamin"},
-            "/polityka-prywatnosci", new String[]{"Polityka prywatności | Oskarro", "Jak Oskarro.com przetwarza dane osobowe.", "Polityka prywatności"},
-            "/cookies", new String[]{"Pliki cookies | Oskarro", "Jakich plików cookies używa Oskarro.com.", "Pliki cookies"});
+            "/ranking", new String[]{"Ranking użytkowników i najlepsze numery | VIXA", "Kto dodaje najwięcej muzyki klubowej na VIXA i które numery biorą najwięcej głosów.", "Ranking"},
+            "/radio", new String[]{"Radio z muzyką klubową, vixą i disco polo | VIXA", "Włącz radio VIXA i słuchaj z nami muzyki klubowej na imprezę — wybierz gatunki albo swoją składankę. Kolejny numer startuje sam.", "Radio VIXA"},
+            "/video", new String[]{"Sety wideo na imprezę | VIXA", "Sety VIXA na imprezę, do auta i na parkiet. Mixy klubowe z kanału.", "Sety wideo"},
+            "/playlist/all", new String[]{"Playlisty i składanki na imprezę | VIXA", "Składanki na imprezę, do auta i na siłownię, ułożone przez ludzi z VIXA.", "Playlisty"},
+            "/regulamin", new String[]{"Regulamin | VIXA", "Regulamin serwisu VIXA.", "Regulamin"},
+            "/polityka-prywatnosci", new String[]{"Polityka prywatności | VIXA", "Jak VIXA przetwarza dane osobowe.", "Polityka prywatności"},
+            "/cookies", new String[]{"Pliki cookies | VIXA", "Jakich plików cookies używa VIXA.", "Pliki cookies"});
 
     @PersistenceContext
     private EntityManager em;
@@ -142,7 +142,7 @@ public class SeoPageController {
                     "<h1>" + esc(known[2]) + "</h1><p>" + esc(known[1]) + "</p>" + genreLinks());
         }
         if (PRIVATE.matcher(path).matches()) {
-            return new Page(200, "Oskarro", HOME_DESCRIPTION, path, false, LOGO, "website", null, "");
+            return new Page(200, "VIXA", HOME_DESCRIPTION, path, false, LOGO, "website", null, "");
         }
         return notFound(path, "Nie ma takiej strony");
     }
@@ -156,7 +156,7 @@ public class SeoPageController {
         Map<String, Object> ld = new LinkedHashMap<>();
         ld.put("@context", "https://schema.org");
         ld.put("@type", "WebSite");
-        ld.put("name", "Oskarro");
+        ld.put("name", "VIXA");
         ld.put("url", SITE + "/");
         ld.put("description", HOME_DESCRIPTION);
         ld.put("inLanguage", "pl");
@@ -180,12 +180,12 @@ public class SeoPageController {
         String added = track.getCreatedAt() == null ? "" : DAY.format(track.getCreatedAt());
         String section = set ? setLabel(track.getSetCategory()) : genre[2];
         String description = cut((set ? "Posłuchaj seta za darmo: " : "Posłuchaj za darmo: ") + full + ". "
-                + section + " na Oskarro" + (added.isEmpty() ? "" : ", dodane " + added)
+                + section + " na VIXA" + (added.isEmpty() ? "" : ", dodane " + added)
                 + ". Oceniaj, komentuj i zapisz do swojej składanki.", 158);
         String image = covers.exists(id) ? SITE + "/api/tracks/" + id + "/cover" : LOGO;
         String author = track.getAuthor() == null ? null : track.getAuthor().getUsername();
 
-        StringBuilder body = new StringBuilder("<nav aria-label=\"Okruszki\"><a href=\"/\">Oskarro</a> › ");
+        StringBuilder body = new StringBuilder("<nav aria-label=\"Okruszki\"><a href=\"/\">VIXA</a> › ");
         if (set) {
             body.append("<a href=\"/sety\">Sety</a>");
         } else {
@@ -234,7 +234,7 @@ public class SeoPageController {
         }
         Map<String, Object> crumbs = breadcrumbs(set ? new String[][]{{"Sety", "/sety"}, {full, path}}
                 : new String[][]{{genre[2], "/tracklist/" + genre[1]}, {full, path}});
-        return new Page(200, full + " | Oskarro", description, path, true, image, "music.song",
+        return new Page(200, full + " | VIXA", description, path, true, image, "music.song",
                 List.of(recording, crumbs), body.toString());
     }
 
@@ -245,9 +245,9 @@ public class SeoPageController {
         }
         String path = "/tracklist/" + slug;
         String heading = genre[0].equals("CLUB") ? "Muzyka klubowa — Club" : genre[2] + " na imprezę";
-        String title = genre[0].equals("CLUB") ? "Muzyka klubowa (Club) — słuchaj za darmo | Oskarro"
-                : genre[2] + " na imprezę — słuchaj za darmo | Oskarro";
-        String body = "<nav aria-label=\"Okruszki\"><a href=\"/\">Oskarro</a> › " + esc(genre[2]) + "</nav><h1>" + esc(heading) + "</h1><p>"
+        String title = genre[0].equals("CLUB") ? "Muzyka klubowa (Club) — słuchaj za darmo | VIXA"
+                : genre[2] + " na imprezę — słuchaj za darmo | VIXA";
+        String body = "<nav aria-label=\"Okruszki\"><a href=\"/\">VIXA</a> › " + esc(genre[2]) + "</nav><h1>" + esc(heading) + "</h1><p>"
                 + esc(genre[3]) + "</p><h2>Najnowsze: " + esc(genre[2]) + "</h2>" + trackList(latest(genre[0], false, 40))
                 + "<h2>Inne gatunki</h2>" + genreLinks();
         Map<String, Object> page = new LinkedHashMap<>();
@@ -257,7 +257,7 @@ public class SeoPageController {
         page.put("description", genre[3]);
         page.put("url", SITE + path);
         page.put("inLanguage", "pl");
-        page.put("isPartOf", Map.of("@type", "WebSite", "name", "Oskarro", "url", SITE + "/"));
+        page.put("isPartOf", Map.of("@type", "WebSite", "name", "VIXA", "url", SITE + "/"));
         return new Page(200, title, genre[3], path, true, LOGO, "website",
                 List.of(page, breadcrumbs(new String[][]{{genre[2], path}})), body);
     }
@@ -274,21 +274,21 @@ public class SeoPageController {
         String heading = category == null ? "Sety i mixy" : SET_LABELS.get(category)[0];
         String description = category == null
                 ? "Sety DJ-skie i mixy z klubową muzyką, vixą i disco polo: sety użytkowników, z klubów, z festiwali i audycje radiowe. Słuchaj z nami za darmo."
-                : SET_LABELS.get(category)[1] + " Słuchaj z nami za darmo na Oskarro.";
+                : SET_LABELS.get(category)[1] + " Słuchaj z nami za darmo na VIXA.";
         String query = "select t.id, t.artist, t.title, t.version from Track t where t.kind = 'set' and t.url is not null and t.url <> ''"
                 + (category == null ? "" : " and t.setCategory = :category") + " order by t.id desc";
         var q = em.createQuery(query, Object[].class).setMaxResults(40);
         if (category != null) {
             q.setParameter("category", category.name());
         }
-        StringBuilder body = new StringBuilder("<nav aria-label=\"Okruszki\"><a href=\"/\">Oskarro</a> › ")
+        StringBuilder body = new StringBuilder("<nav aria-label=\"Okruszki\"><a href=\"/\">VIXA</a> › ")
                 .append(category == null ? "Sety" : "<a href=\"/sety\">Sety</a> › " + esc(heading))
                 .append("</nav><h1>").append(esc(heading)).append("</h1><p>").append(esc(description)).append("</p><ul>");
         for (SetCategory c : SetCategory.values()) {
             body.append("<li><a href=\"/sety/").append(c.slug()).append("\">").append(esc(SET_LABELS.get(c)[0])).append("</a></li>");
         }
         body.append("</ul>").append(trackList(q.getResultList()));
-        return new Page(200, heading + " — słuchaj za darmo | Oskarro", description, path, true, LOGO, "website", null, body.toString());
+        return new Page(200, heading + " — słuchaj za darmo | VIXA", description, path, true, LOGO, "website", null, body.toString());
     }
 
     private Page playlist(Integer id) {
@@ -298,13 +298,13 @@ public class SeoPageController {
         }
         String path = "/playlist/" + id + "/details";
         String name = blank(playlist.getName()) ? "Składanka" : playlist.getName().trim();
-        String owner = playlist.getUser() == null ? "Oskarro" : playlist.getUser().getUsername();
+        String owner = playlist.getUser() == null ? "VIXA" : playlist.getUser().getUsername();
         List<Object[]> tracks = em.createQuery("select t.id, t.artist, t.title, t.version from PlaylistEntry e join e.track t"
                 + " where e.playlist.id = :id order by e.id", Object[].class).setParameter("id", id).setMaxResults(100).getResultList();
         String description = cut(blank(playlist.getDescription())
-                ? "Składanka „" + name + "” od " + owner + " na Oskarro — " + tracks.size() + " numerów do posłuchania za darmo."
-                : playlist.getDescription().trim() + " — składanka od " + owner + " na Oskarro.", 158);
-        String body = "<nav aria-label=\"Okruszki\"><a href=\"/\">Oskarro</a> › <a href=\"/playlist/all\">Playlisty</a></nav><h1>" + esc(name)
+                ? "Składanka „" + name + "” od " + owner + " na VIXA — " + tracks.size() + " numerów do posłuchania za darmo."
+                : playlist.getDescription().trim() + " — składanka od " + owner + " na VIXA.", 158);
+        String body = "<nav aria-label=\"Okruszki\"><a href=\"/\">VIXA</a> › <a href=\"/playlist/all\">Playlisty</a></nav><h1>" + esc(name)
                 + "</h1><p>" + esc(description) + "</p>" + trackList(tracks);
         Map<String, Object> ld = new LinkedHashMap<>();
         ld.put("@context", "https://schema.org");
@@ -316,12 +316,12 @@ public class SeoPageController {
                 "name", str(row[2]) + (blank(str(row[3])) ? "" : " (" + str(row[3]) + ")"),
                 "byArtist", Map.of("@type", "MusicGroup", "name", str(row[1])),
                 "url", SITE + "/track/" + row[0])).toList());
-        return new Page(200, name + " — składanka od " + owner + " | Oskarro", description, path, true, LOGO, "music.playlist", ld, body);
+        return new Page(200, name + " — składanka od " + owner + " | VIXA", description, path, true, LOGO, "music.playlist", ld, body);
     }
 
     private Page notFound(String path, String message) {
-        return new Page(404, message + " | Oskarro", message + ".", path, false, LOGO, "website", null,
-                "<h1>" + esc(message) + "</h1><p><a href=\"/\">Wróć na stronę główną Oskarro</a></p>" + genreLinks());
+        return new Page(404, message + " | VIXA", message + ".", path, false, LOGO, "website", null,
+                "<h1>" + esc(message) + "</h1><p><a href=\"/\">Wróć na stronę główną VIXA</a></p>" + genreLinks());
     }
 
     // --- rendering -------------------------------------------------------------------------
@@ -337,7 +337,7 @@ public class SeoPageController {
         }
         head.append("  <meta property=\"og:type\" content=\"").append(page.type()).append("\">\n")
                 .append("  <meta property=\"og:locale\" content=\"pl_PL\">\n")
-                .append("  <meta property=\"og:site_name\" content=\"Oskarro\">\n")
+                .append("  <meta property=\"og:site_name\" content=\"VIXA\">\n")
                 .append("  <meta property=\"og:title\" content=\"").append(esc(page.title())).append("\">\n")
                 .append("  <meta property=\"og:description\" content=\"").append(esc(page.description())).append("\">\n")
                 .append("  <meta property=\"og:url\" content=\"").append(esc(canonical)).append("\">\n")
@@ -420,7 +420,7 @@ public class SeoPageController {
 
     private static Map<String, Object> breadcrumbs(String[][] trail) {
         List<Map<String, Object>> items = new ArrayList<>();
-        items.add(Map.of("@type", "ListItem", "position", 1, "name", "Oskarro", "item", SITE + "/"));
+        items.add(Map.of("@type", "ListItem", "position", 1, "name", "VIXA", "item", SITE + "/"));
         for (int i = 0; i < trail.length; i++) {
             items.add(Map.of("@type", "ListItem", "position", i + 2, "name", trail[i][0], "item", SITE + trail[i][1]));
         }

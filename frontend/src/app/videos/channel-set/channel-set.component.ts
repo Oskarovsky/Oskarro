@@ -41,7 +41,7 @@ export class ChannelSetComponent implements OnInit {
           this.title = match.title;
           this.published = match.published;
           this.views = match.views;
-          this.seo.setTitle(match.title + ' — set na imprezę | Oskarro', match.title + '. Set Oskarro na imprezę i na parkiet.', '/video/set/' + id);
+          this.seo.setTitle(match.title + ' — set na imprezę | VIXA', match.title + '. Set VIXA na imprezę i na parkiet.', '/video/set/' + id);
         }
       });
     });

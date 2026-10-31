@@ -34,9 +34,9 @@ export class TrackListComponent implements OnInit, OnDestroy {
 
   genreLabel = 'Utwory';
 
-  private aboutPl = 'Utwory dodane przez społeczność Oskarro.';
+  private aboutPl = 'Utwory dodane przez społeczność VIXA.';
 
-  private aboutEn = 'Tracks shared by the Oskarro community.';
+  private aboutEn = 'Tracks shared by the VIXA community.';
 
   sort: 'new' | 'score' | 'views-month' | 'views-year' | 'views-all' = 'new';
 
@@ -67,8 +67,8 @@ export class TrackListComponent implements OnInit, OnDestroy {
       this.genre = genre;
       const option = genreBySlug(genre);
       this.genreLabel = option?.label || (genre ? genre : 'Utwory');
-      this.aboutPl = option?.about || 'Utwory dodane przez społeczność Oskarro.';
-      this.aboutEn = option?.aboutEn || 'Tracks shared by the Oskarro community.';
+      this.aboutPl = option?.about || 'Utwory dodane przez społeczność VIXA.';
+      this.aboutEn = option?.aboutEn || 'Tracks shared by the VIXA community.';
       if (!genre) {
         return;
       }
