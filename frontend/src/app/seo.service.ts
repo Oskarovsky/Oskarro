@@ -6,7 +6,8 @@ import {LangService} from './lang.service';
 
 const ORIGIN = 'https://oskarro.com';
 const LOGO = ORIGIN + '/assets/logo.jpg';
-const HOME_TITLE = 'Muzyka klubowa, vixa i disco polo za darmo — słuchaj z nami | VIXA';
+const YEAR = new Date().getFullYear();
+const HOME_TITLE = 'Muzyka klubowa, vixa i disco polo ' + YEAR + ' – mp3 za darmo | VIXA';
 const HOME_DESCRIPTION = 'VIXA — słuchaj z nami muzyki klubowej za darmo: club, vixa, trance, hands up i disco polo. Oceniaj, komentuj i dodawaj swoje numery.';
 const HOME_DESCRIPTION_EN = 'VIXA — listen with us to club music for free: club, vixa, trance, hands up and disco polo. Vote, comment and share your own tracks.';
 
@@ -50,8 +51,10 @@ export class SeoService {
       }
       const about = this.lang.en ? genre.aboutEn : genre.about;
       const heading = genre.id === 'CLUB'
-        ? this.lang.t('Muzyka klubowa — Club | VIXA', 'Club music — Club | VIXA')
-        : genre.label + this.lang.t(' na imprezę | VIXA', ' for a party | VIXA');
+        ? this.lang.t('Muzyka klubowa ' + YEAR + ' – nowości club mp3 na imprezę | VIXA', 'Club music ' + YEAR + ' – new club tracks | VIXA')
+        : genre.id === 'VIXA' ? this.lang.t('Vixa ' + YEAR + ' – pompa do auta i na imprezę, mp3 | VIXA', 'Vixa ' + YEAR + ' – party and car music | VIXA')
+        : genre.id === 'DISCO_POLO' ? this.lang.t('Disco polo ' + YEAR + ' – nowości mp3 na wesele i imprezę | VIXA', 'Disco polo ' + YEAR + ' – new tracks for weddings and parties | VIXA')
+        : genre.label + ' ' + YEAR + this.lang.t(' – nowości mp3 na imprezę i do auta | VIXA', ' – new tracks for a party and the car | VIXA');
       this.set(heading, about, path);
       this.jsonLd({
         '@context': 'https://schema.org',
@@ -125,7 +128,7 @@ export class SeoService {
     const set = (track.kind || '').toLowerCase() === 'set';
     const description = this.lang.en
       ? 'Listen for free: ' + full + '. ' + genre + ' on VIXA. Vote, comment and save it to your playlist.'
-      : (set ? 'Posłuchaj seta za darmo: ' : 'Posłuchaj za darmo: ') + full + '. ' + genre + ' na VIXA. Oceniaj, komentuj i zapisz do swojej składanki.';
+      : (set ? 'Posłuchaj seta za darmo: ' : 'Posłuchaj i pobierz mp3: ') + full + '. ' + genre + ' na VIXA. Oceniaj, komentuj i zapisz do swojej składanki.';
     const image = track.hasCover ? ORIGIN + '/api/tracks/' + track.id + '/cover' : LOGO;
     this.set(full + ' | VIXA', description, path, true, image);
     this.jsonLd({
