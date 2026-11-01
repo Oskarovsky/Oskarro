@@ -32,6 +32,8 @@ export class RankingComponent implements OnInit {
   /** One chart per genre, plus sets — different worlds are never ranked together. */
   readonly categories = [...GENRES.map(g => ({slug: g.slug, label: g.label})), {slug: 'sety', label: 'Sety / Mixy'}];
   private request = 0;
+  /** Opened as /ranking/:kategoria — the hit chart is the page's subject. */
+  focused = false;
 
   constructor(private http: HttpClient,
               private trackService: TrackService,
@@ -53,6 +55,7 @@ export class RankingComponent implements OnInit {
       const category = params.get('kategoria');
       this.period = period === 'miesiac' ? 'month' : period === 'ogolny' ? 'all' : 'week';
       this.category = this.categories.some(c => c.slug === category) ? category : 'club';
+      this.focused = !!category;
       if (category) {
         const label = this.categories.find(c => c.slug === this.category)?.label || '';
         const who = this.category === 'sety' ? 'setów' : label;
@@ -88,6 +91,14 @@ export class RankingComponent implements OnInit {
         }
       }
     });
+  }
+
+  focusTitle() {
+    const label = this.categories.find(c => c.slug === this.category)?.label || '';
+    const who = this.category === 'sety' ? this.lang.t('setów', 'sets') : label;
+    const when = this.period === 'week' ? this.lang.t('tygodnia', 'of the week')
+      : this.period === 'month' ? this.lang.t('miesiąca', 'of the month') : this.lang.t('wszech czasów', 'of all time');
+    return 'Top 10 ' + who + ' ' + when;
   }
 
   chartTitle() {

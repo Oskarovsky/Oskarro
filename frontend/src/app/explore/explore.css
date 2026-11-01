@@ -35,7 +35,6 @@
   flex-wrap: wrap;
   gap: 8px 18px;
   margin: 10px 0 22px;
-  text-transform: capitalize;
 }
 
 .mini-chart {

@@ -1,6 +1,7 @@
 import {Component, Input} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {environment} from '../../environments/environment';
+import {RefreshAfterHttpDirective} from '../services/ui-refresh';
 
 /** Long-form genre text, FAQ and links to the monthly and chart pages, under the genre's track list. */
 @Component({
@@ -35,7 +36,8 @@ import {environment} from '../../environments/environment';
     .faq summary { cursor: pointer; font-weight: 650; }
     .faq p { margin: 8px 0 0; }
   `],
-  standalone: false
+  standalone: false,
+  hostDirectives: [RefreshAfterHttpDirective]
 })
 export class GenreAboutComponent {
   info: any = null;
