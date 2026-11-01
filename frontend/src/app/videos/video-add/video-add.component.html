@@ -1,30 +1,18 @@
-<div class="example-container">
-  <form name="form" #form="ngForm" (ngSubmit)="createVideo(videoName.value, videoCategory.value, videoUrl.value)">
-    <mat-form-field appearance="fill">
-      <mat-label>Nazwa</mat-label>
-      <input #videoName matInput [(ngModel)]="modelVideo.name" name="name" />
-    </mat-form-field>
-    <br>
-    <mat-form-field appearance="fill">
-      <mat-label>Kategoria</mat-label>
-      <mat-select #videoCategory [(ngModel)]="modelVideo.category">
-        <mat-option *ngFor="let category of categories" [value]="category">{{category}}</mat-option>
-      </mat-select>
-    </mat-form-field>
-    <br>
-    <mat-form-field appearance="fill">
-      <mat-label>URL</mat-label>
-      <input #videoUrl matInput [(ngModel)]="modelVideo.url" name="name" />
-    </mat-form-field>
-
-    <button mat-raised-button
-            type="button"
+<div class="page">
+  <form name="form" #form="ngForm" class="stack" (ngSubmit)="createVideo(videoName.value, videoCategory.value, videoUrl.value)">
+    <label>Nazwa
+      <input #videoName type="text" [(ngModel)]="modelVideo.name" name="name">
+    </label>
+    <label>Kategoria
+      <select #videoCategory [(ngModel)]="modelVideo.category" name="category">
+        <option *ngFor="let category of categories" [value]="category">{{ category }}</option>
+      </select>
+    </label>
+    <label>URL
+      <input #videoUrl type="text" [(ngModel)]="modelVideo.url" name="url">
+    </label>
+    <button class="btn-accent" type="button"
             (click)="createVideo(videoName.value, videoCategory.value, videoUrl.value)"
-            color="primary"
-            routerLink="/video/category/{{videoCategory.value}}"
-            style="margin-left: 10px;">Dodaj video
-    </button>
-
-
+            routerLink="/video">Dodaj video</button>
   </form>
 </div>
