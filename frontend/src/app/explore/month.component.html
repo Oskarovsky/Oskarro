@@ -1,0 +1,47 @@
+<div class="page explore">
+  <p class="alert" *ngIf="missing" role="alert">{{ 'Nie ma takiej strony z nowościami.' | t:'There is no such page.' }} <a routerLink="/">{{ 'Strona główna' | t:'Home' }}</a></p>
+
+  <ng-container *ngIf="info">
+    <a class="back" [routerLink]="['/tracklist', genre]">← {{ info.label }}</a>
+    <p class="kicker">{{ 'Nowości' | t:'New tracks' }}</p>
+    <h1 class="display">{{ 'Nowości' | t:'New' }} {{ info.label }}</h1>
+    <p class="lede">{{ 'Nowe numery z każdego miesiąca — kliknij miesiąc, żeby zobaczyć listę i top 10.' | t:'New tracks from every month — pick a month to see the list and the top 10.' }}</p>
+    <div class="month-grid" *ngIf="info.months.length; else none">
+      <a class="month-card" *ngFor="let m of info.months" [routerLink]="['/nowosci', genre, m.month]">
+        <strong>{{ m.label }}</strong>
+        <span>{{ m.tracks }} {{ trackWord(m.tracks) }}</span>
+      </a>
+    </div>
+    <ng-template #none><p class="meta">{{ 'W tym gatunku nie ma jeszcze utworów.' | t:'No tracks in this genre yet.' }}</p></ng-template>
+  </ng-container>
+
+  <ng-container *ngIf="page">
+    <a class="back" [routerLink]="['/nowosci', genre]">← {{ 'Nowości' | t:'New tracks' }} {{ page.genreLabel }}</a>
+    <p class="kicker">{{ page.genreLabel }}</p>
+    <h1 class="display">{{ 'Nowości' | t:'New' }} — {{ page.label }}</h1>
+    <p class="lede">{{ page.seo.description }}</p>
+
+    <nav class="month-nav">
+      <a *ngIf="page.previous" [routerLink]="['/nowosci', genre, page.previous.month]">← {{ page.previous.label }}</a>
+      <a [routerLink]="['/ranking', genre]">{{ 'Top 10 tygodnia' | t:'Top 10 of the week' }}</a>
+      <a *ngIf="page.next" [routerLink]="['/nowosci', genre, page.next.month]">{{ page.next.label }} →</a>
+    </nav>
+
+    <section *ngIf="page.top.length">
+      <h2>{{ 'Top 10 miesiąca' | t:'Top 10 of the month' }}</h2>
+      <ol class="mini-chart">
+        <li *ngFor="let row of page.top">
+          <span class="place">{{ row.place }}</span>
+          <a [routerLink]="['/track', row.track.id]"><strong>{{ row.track.artist }}</strong> – {{ row.track.title }}<span class="version" *ngIf="row.track | versionLabel as version"> ({{ version }})</span></a>
+          <span class="meta">{{ row.points }} {{ 'pkt' | t:'pts' }}</span>
+        </li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>{{ 'Wszystkie nowości' | t:'All new tracks' }} ({{ page.tracks.length }})</h2>
+      <app-explore-tracks [tracks]="page.tracks"></app-explore-tracks>
+      <p class="meta" *ngIf="!page.tracks.length">{{ 'W tym miesiącu jeszcze nic nie doszło — dodaj pierwszy numer!' | t:'Nothing new this month yet — add the first track!' }} <a routerLink="/track/add">{{ 'Dodaj utwór' | t:'Add a track' }}</a></p>
+    </section>
+  </ng-container>
+</div>

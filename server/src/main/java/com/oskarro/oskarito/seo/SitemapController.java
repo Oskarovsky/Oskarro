@@ -2,6 +2,7 @@ package com.oskarro.oskarito.seo;
 
 import com.oskarro.oskarito.track.Genre;
 import com.oskarro.oskarito.track.SetCategory;
+import com.oskarro.oskarito.explore.ExploreService;
 import com.oskarro.oskarito.video.ChannelCatalog;
 import com.oskarro.oskarito.video.ChannelVideo;
 import jakarta.persistence.EntityManager;
@@ -32,9 +33,11 @@ public class SitemapController {
     private EntityManager em;
 
     private final ChannelCatalog channel;
+    private final ExploreService explore;
 
-    public SitemapController(ChannelCatalog channel) {
+    public SitemapController(ChannelCatalog channel, ExploreService explore) {
         this.channel = channel;
+        this.explore = explore;
     }
 
     @GetMapping(value = "/api/seo/sitemap.xml", produces = MediaType.APPLICATION_XML_VALUE)
@@ -48,6 +51,24 @@ public class SitemapController {
         }
         for (Genre genre : PUBLIC) {
             url(xml, "/tracklist/" + genre.name().toLowerCase(Locale.ROOT).replace('_', '-'), today, "daily", "0.8");
+        }
+        // Monthly "Nowości" pages, genre charts and artist pages: the landing pages people search for.
+        for (Genre genre : PUBLIC) {
+            String slug = genre.name().toLowerCase(Locale.ROOT).replace('_', '-');
+            List<ExploreService.MonthLink> months = explore.months(slug);
+            if (!months.isEmpty()) {
+                url(xml, "/nowosci/" + slug, today, "weekly", "0.7");
+                for (int i = 0; i < months.size(); i++) {
+                    url(xml, "/nowosci/" + slug + "/" + months.get(i).month(), i == 0 ? today : null, i == 0 ? "daily" : "monthly", i == 0 ? "0.8" : "0.5");
+                }
+            }
+            url(xml, "/ranking/" + slug, today, "daily", "0.7");
+            url(xml, "/ranking/" + slug + "/miesiac", today, "daily", "0.6");
+            url(xml, "/ranking/" + slug + "/ogolny", today, "weekly", "0.5");
+        }
+        url(xml, "/ranking/sety", today, "daily", "0.6");
+        for (ExploreService.ArtistLink artist : explore.artists()) {
+            url(xml, "/wykonawca/" + artist.slug(), null, "weekly", "0.5");
         }
         for (SetCategory category : SetCategory.values()) {
             url(xml, "/sety/" + category.slug(), today, "daily", "0.7");

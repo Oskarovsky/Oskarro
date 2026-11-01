@@ -1,6 +1,7 @@
-<div class="page" *ngIf="board">
+<div class="page ranking-page" *ngIf="board" [class.focused]="focused">
   <p class="kicker">Ranking</p>
-  <h1 class="display">{{ 'Kto niesie parkiet.' | t:'Who carries the dance floor.' }}</h1>
+  <h1 class="display" *ngIf="!focused">{{ 'Kto niesie parkiet.' | t:'Who carries the dance floor.' }}</h1>
+  <h1 class="display" *ngIf="focused">{{ focusTitle() }}</h1>
   <p class="lede">{{ board.formula | t }}</p>
 
   <p class="rank-status" *ngIf="board.me">{{ statusLine() }}</p>

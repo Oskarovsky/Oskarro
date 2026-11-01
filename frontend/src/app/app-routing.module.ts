@@ -40,6 +40,8 @@ import {SearchComponent} from './search/search.component';
 import {RadioComponent} from './tracks/radio/radio.component';
 import {PasswordResetComponent} from './auth/password-reset.component';
 import {ActivateAccountComponent} from './auth/activate.component';
+import { MonthComponent } from './explore/month.component';
+import { ArtistComponent } from './explore/artist.component';
 
 
 const routes: Routes = [
@@ -69,6 +71,11 @@ const routes: Routes = [
   { path: 'haslo', component: PasswordResetComponent, data: {mode: 'reset'} },
   { path: 'aktywuj', component: ActivateAccountComponent },
   { path: 'ranking', component: RankingComponent },
+  { path: 'ranking/:kategoria', component: RankingComponent },
+  { path: 'ranking/:kategoria/:okres', component: RankingComponent },
+  { path: 'nowosci/:genre', component: MonthComponent },
+  { path: 'nowosci/:genre/:month', component: MonthComponent },
+  { path: 'wykonawca/:slug', component: ArtistComponent },
   { path: 'radio', component: RadioComponent },
   { path: 'szukaj', component: SearchComponent },
   { path: 'profile', component: ProfileComponent },

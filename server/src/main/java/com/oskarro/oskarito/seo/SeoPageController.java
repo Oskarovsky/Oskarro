@@ -1,6 +1,9 @@
 package com.oskarro.oskarito.seo;
 
+import com.oskarro.oskarito.explore.ExploreService;
+import com.oskarro.oskarito.explore.GenreContent;
 import com.oskarro.oskarito.playlist.Playlist;
+import com.oskarro.oskarito.track.ChartService;
 import com.oskarro.oskarito.track.CoverStorage;
 import com.oskarro.oskarito.track.SetCategory;
 import com.oskarro.oskarito.track.Track;
@@ -19,6 +22,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
@@ -57,7 +61,7 @@ public class SeoPageController {
             + "Oceniaj, komentuj i dodawaj swoje numery.";
 
     /** Public genres in site order: enum name, URL slug, label, one-line description. */
-    static final List<String[]> GENRES = List.of(
+    public static final List<String[]> GENRES = List.of(
             new String[]{"CLUB", "club", "Club", "Club na imprezę z nami — sety i numery, które niosą parkiet od pierwszego bitu."},
             new String[]{"DANCE", "dance", "Dance", "Dance, przy którym śpiewasz z nami w aucie, w kuchni i na parkiecie."},
             new String[]{"RETRO", "retro", "Retro", "Retro, które wraca z nami na parkiet — hity, przy których bawili się wszyscy."},
@@ -86,6 +90,10 @@ public class SeoPageController {
     private static final Pattern SETS = Pattern.compile("^/sety(?:/([a-z0-9-]{1,30}))?$");
     private static final Pattern PLAYLIST = Pattern.compile("^/playlist/(\\d{1,9})/details$");
     private static final Pattern VIDEO_SET = Pattern.compile("^/video/set/([A-Za-z0-9_-]{11})$");
+    private static final Pattern MONTH_PAGE = Pattern.compile("^/nowosci/([a-z0-9-]{1,30})/(\\d{4}-\\d{2})$");
+    private static final Pattern MONTH_HUB = Pattern.compile("^/nowosci/([a-z0-9-]{1,30})$");
+    private static final Pattern ARTIST = Pattern.compile("^/wykonawca/([a-z0-9-]{1,80})$");
+    private static final Pattern RANKING = Pattern.compile("^/ranking/([a-z0-9-]{1,30})(?:/(miesiac|ogolny))?$");
     private static final Pattern VIDEO = Pattern.compile("^/video/(\\d{1,9})/details$");
     private static final Pattern ANY_GENRE = Pattern.compile("^/tracklist/([A-Za-z0-9_-]{1,30})$");
     /** Old genre slugs Google still knows, mapped to today's ones. */
@@ -108,15 +116,19 @@ public class SeoPageController {
 
     private final CoverStorage covers;
     private final ChannelCatalog channel;
+    private final ExploreService explore;
+    private final ChartService charts;
     private final ObjectMapper json;
     private final Path indexFile;
     private volatile String cachedIndex;
     private volatile FileTime cachedAt;
 
-    public SeoPageController(CoverStorage covers, ChannelCatalog channel, ObjectMapper json,
+    public SeoPageController(CoverStorage covers, ChannelCatalog channel, ExploreService explore, ChartService charts, ObjectMapper json,
                              @Value("${oskarro.web.index:/var/www/oskarro/index.html}") String indexFile) {
         this.covers = covers;
         this.channel = channel;
+        this.explore = explore;
+        this.charts = charts;
         this.json = json;
         this.indexFile = Path.of(indexFile);
     }
@@ -193,6 +205,18 @@ public class SeoPageController {
         if ((m = VIDEO_SET.matcher(path)).matches()) {
             return videoSet(m.group(1));
         }
+        if ((m = MONTH_PAGE.matcher(path)).matches()) {
+            return monthPage(m.group(1), m.group(2));
+        }
+        if ((m = MONTH_HUB.matcher(path)).matches()) {
+            return monthHub(m.group(1));
+        }
+        if ((m = ARTIST.matcher(path)).matches()) {
+            return artistPage(m.group(1));
+        }
+        if ((m = RANKING.matcher(path)).matches()) {
+            return rankingPage(m.group(1), m.group(2));
+        }
         if ((m = VIDEO.matcher(path)).matches()) {
             return video(Integer.parseInt(m.group(1)));
         }
@@ -201,6 +225,7 @@ public class SeoPageController {
             String extra = switch (path) {
                 case "/video" -> videoLinks(null, 60);
                 case "/tracklist" -> trackList(latest(null, false, 60));
+                case "/ranking" -> "<h2>Top 10 tygodnia w każdym gatunku</h2>" + rankingLinks();
                 default -> "";
             };
             return new Page(200, known[0], known[1], path, true, LOGO, "website", null,
@@ -217,6 +242,8 @@ public class SeoPageController {
                 .append(esc(HOME_DESCRIPTION)).append("</p><h2>Gatunki</h2>").append(genreLinks())
                 .append("<h2>Ostatnio dodane</h2>").append(trackList(latest(null, false, 30)))
                 .append("<h2>Sety i mixy</h2>").append(trackList(latest(null, true, 10)))
+                .append("<h2>Nowości miesiąca</h2>").append(newsLinks())
+                .append("<h2>Top 10 tygodnia</h2>").append(rankingLinks())
                 .append("<p><a href=\"/sety\">Wszystkie sety</a> · <a href=\"/radio\">Radio</a> · <a href=\"/ranking\">Ranking</a> · <a href=\"/playlist/all\">Playlisty</a></p>");
         Map<String, Object> ld = new LinkedHashMap<>();
         ld.put("@context", "https://schema.org");
@@ -256,7 +283,7 @@ public class SeoPageController {
         } else {
             body.append("<a href=\"/tracklist/").append(genre[1]).append("\">").append(esc(genre[2])).append("</a>");
         }
-        body.append("</nav><h1>").append(esc(title)).append(esc(version)).append("</h1><p><strong>").append(esc(artist)).append("</strong></p><p>")
+        body.append("</nav><h1>").append(esc(title)).append(esc(version)).append("</h1><p><strong>").append(artistLinks(artist)).append("</strong></p><p>")
                 .append(esc(section));
         if (!added.isEmpty()) {
             body.append(" · dodano ").append(added);
@@ -311,9 +338,13 @@ public class SeoPageController {
         String path = "/tracklist/" + slug;
         String heading = genre[0].equals("CLUB") ? "Muzyka klubowa — Club" : genre[2] + " na imprezę";
         String title = genreTitle(genre[0], genre[2]);
-        String body = "<nav aria-label=\"Okruszki\"><a href=\"/\">VIXA</a> › " + esc(genre[2]) + "</nav><h1>" + esc(heading) + "</h1><p>"
-                + esc(genre[3]) + "</p><h2>Najnowsze: " + esc(genre[2]) + "</h2>" + trackList(latest(genre[0], false, 40))
-                + "<h2>Inne gatunki</h2>" + genreLinks();
+        GenreContent.Content content = GenreContent.of(slug);
+        StringBuilder body = new StringBuilder("<nav aria-label=\"Okruszki\"><a href=\"/\">VIXA</a> › ").append(esc(genre[2]))
+                .append("</nav><h1>").append(esc(heading)).append("</h1><p>").append(esc(genre[3])).append("</p>")
+                .append("<p><a href=\"/nowosci/").append(slug).append("\">Nowości ").append(esc(genre[2])).append(" miesiąc po miesiącu</a> · ")
+                .append("<a href=\"/ranking/").append(slug).append("\">Top 10 ").append(esc(genre[2])).append(" tygodnia</a></p>")
+                .append("<h2>Najnowsze: ").append(esc(genre[2])).append("</h2>").append(trackList(latest(genre[0], false, 40)));
+        List<Object> ld = new ArrayList<>();
         Map<String, Object> page = new LinkedHashMap<>();
         page.put("@context", "https://schema.org");
         page.put("@type", "CollectionPage");
@@ -322,9 +353,19 @@ public class SeoPageController {
         page.put("url", SITE + path);
         page.put("inLanguage", "pl");
         page.put("isPartOf", Map.of("@type", "WebSite", "name", "VIXA", "url", SITE + "/"));
-        return new Page(200, title, genre[3], path, true, LOGO, "website",
-                List.of(page, breadcrumbs(new String[][]{{genre[2], path}})), body);
+        ld.add(page);
+        ld.add(breadcrumbs(new String[][]{{genre[2], path}}));
+        if (content != null) {
+            body.append("<h2>").append(esc(genre[2])).append(" — o gatunku</h2>");
+            content.intro().forEach(p -> body.append("<p>").append(esc(p)).append("</p>"));
+            body.append("<h2>Najczęstsze pytania</h2>");
+            content.faq().forEach(f -> body.append("<h3>").append(esc(f.q())).append("</h3><p>").append(esc(f.a())).append("</p>"));
+            ld.add(faq(content.faq()));
+        }
+        body.append("<h2>Inne gatunki</h2>").append(genreLinks());
+        return new Page(200, title, genre[3], path, true, LOGO, "website", ld, body.toString());
     }
+
 
     /** Genre titles carry the year and the words people type: mp3, na imprezę, do auta. */
     static String genreTitle(String id, String label) {
@@ -453,6 +494,169 @@ public class SeoPageController {
         all.stream().filter(v -> !v.id().equals(skip)).limit(limit).forEach(v -> out.append("<li><a href=\"/video/set/")
                 .append(v.id()).append("\">").append(esc(blank(v.title()) ? "Set wideo" : v.title().trim())).append("</a></li>"));
         return out.append("</ul>").toString();
+    }
+
+    private Page monthPage(String slug, String month) {
+        ExploreService.MonthPage page;
+        try {
+            page = explore.month(slug, month);
+        } catch (ResponseStatusException missing) {
+            return notFound("/nowosci/" + slug + "/" + month, "Nie ma takiej strony z nowościami");
+        }
+        StringBuilder body = new StringBuilder("<nav aria-label=\"Okruszki\"><a href=\"/\">VIXA</a> › <a href=\"/tracklist/")
+                .append(slug).append("\">").append(esc(page.genreLabel())).append("</a> › <a href=\"/nowosci/").append(slug)
+                .append("\">Nowości</a></nav><h1>").append(esc(page.genreLabel())).append(" — nowości ").append(esc(page.label()))
+                .append("</h1><p>").append(esc(page.seo().description())).append("</p>");
+        if (!page.top().isEmpty()) {
+            body.append("<h2>Top 10 — ").append(esc(page.label())).append("</h2><ol>");
+            page.top().forEach(row -> body.append("<li><a href=\"/track/").append(row.track().getId()).append("\">")
+                    .append(esc(trackName(row.track()))).append("</a> — ").append(row.points()).append(" pkt</li>"));
+            body.append("</ol>");
+        }
+        body.append("<h2>Wszystkie nowości</h2>").append(trackList(page.tracks().stream()
+                .map(t -> new Object[]{t.getId(), t.getArtist(), t.getTitle(), t.getVersion()}).toList()));
+        body.append("<p>");
+        if (page.previous() != null) {
+            body.append("<a href=\"/nowosci/").append(slug).append("/").append(page.previous().month()).append("\">← ")
+                    .append(esc(page.previous().label())).append("</a> ");
+        }
+        if (page.next() != null) {
+            body.append("<a href=\"/nowosci/").append(slug).append("/").append(page.next().month()).append("\">")
+                    .append(esc(page.next().label())).append(" →</a>");
+        }
+        body.append("</p>");
+        Map<String, Object> list = new LinkedHashMap<>();
+        list.put("@context", "https://schema.org");
+        list.put("@type", "ItemList");
+        list.put("name", page.seo().title());
+        list.put("itemListElement", page.tracks().stream().limit(50).map(t -> Map.of("@type", "ListItem",
+                "position", page.tracks().indexOf(t) + 1, "url", SITE + "/track/" + t.getId(), "name", trackName(t))).toList());
+        return new Page(200, page.seo().title(), page.seo().description(), page.seo().path(), page.seo().index(), LOGO, "website",
+                List.of(list, breadcrumbs(new String[][]{{page.genreLabel(), "/tracklist/" + slug},
+                        {"Nowości " + page.label(), page.seo().path()}})), body.toString());
+    }
+
+    private Page monthHub(String slug) {
+        ExploreService.GenreInfo info;
+        try {
+            info = explore.genreInfo(slug);
+        } catch (ResponseStatusException missing) {
+            return notFound("/nowosci/" + slug, "Nie ma takiego gatunku");
+        }
+        String path = "/nowosci/" + slug;
+        String title = "Nowości " + info.label() + " " + year() + " – miesiąc po miesiącu, mp3 | VIXA";
+        String description = "Nowe numery " + info.label() + " z każdego miesiąca: listy nowości, top 10 miesiąca i ranking. Słuchaj za darmo i pobieraj mp3 na VIXA.";
+        StringBuilder body = new StringBuilder("<nav aria-label=\"Okruszki\"><a href=\"/\">VIXA</a> › <a href=\"/tracklist/")
+                .append(slug).append("\">").append(esc(info.label())).append("</a></nav><h1>Nowości ").append(esc(info.label()))
+                .append("</h1><p>").append(esc(description)).append("</p><ul>");
+        info.months().forEach(mo -> body.append("<li><a href=\"/nowosci/").append(slug).append("/").append(mo.month()).append("\">")
+                .append(esc(info.label())).append(" ").append(esc(mo.label())).append("</a> (").append(mo.tracks()).append(")</li>"));
+        body.append("</ul>");
+        return new Page(200, title, description, path, !info.months().isEmpty(), LOGO, "website",
+                breadcrumbs(new String[][]{{info.label(), "/tracklist/" + slug}, {"Nowości", path}}), body.toString());
+    }
+
+    private Page artistPage(String slug) {
+        ExploreService.ArtistPage page;
+        try {
+            page = explore.artist(slug);
+        } catch (ResponseStatusException missing) {
+            return notFound("/wykonawca/" + slug, "Nie ma takiego wykonawcy");
+        }
+        String body = "<nav aria-label=\"Okruszki\"><a href=\"/\">VIXA</a> › Wykonawcy</nav><h1>" + esc(page.name())
+                + "</h1><p>" + esc(page.seo().description()) + "</p>" + trackList(page.tracks().stream()
+                .map(t -> new Object[]{t.getId(), t.getArtist(), t.getTitle(), t.getVersion()}).toList()) + genreLinks();
+        Map<String, Object> ld = new LinkedHashMap<>();
+        ld.put("@context", "https://schema.org");
+        ld.put("@type", "MusicGroup");
+        ld.put("name", page.name());
+        ld.put("url", SITE + page.seo().path());
+        ld.put("track", page.tracks().stream().limit(30).map(t -> Map.of("@type", "MusicRecording",
+                "name", trackName(t), "url", SITE + "/track/" + t.getId())).toList());
+        return new Page(200, page.seo().title(), page.seo().description(), page.seo().path(), true, LOGO, "profile",
+                List.of(ld, breadcrumbs(new String[][]{{page.name(), page.seo().path()}})), body);
+    }
+
+    private Page rankingPage(String category, String okres) {
+        boolean sets = "sety".equals(category);
+        String[] genre = sets ? null : GENRES.stream().filter(g -> g[1].equals(category)).findFirst().orElse(null);
+        String path = "/ranking/" + category + (okres == null ? "" : "/" + okres);
+        if (!sets && genre == null) {
+            return notFound(path, "Nie ma takiego rankingu");
+        }
+        String label = sets ? "setów" : genre[2];
+        String when = okres == null ? "tygodnia" : okres.equals("miesiac") ? "miesiąca" : "wszech czasów";
+        String period = okres == null ? "week" : okres.equals("miesiac") ? "month" : "all";
+        ChartService.Chart chart = charts.chart(period, category);
+        String title = "Top 10 " + label + " " + when + " – ranking hitów " + year() + " | VIXA";
+        String description = "Ranking " + label + " " + when + " na VIXA: 10 numerów z największą liczbą głosów i odsłuchów. Słuchaj za darmo i pobieraj mp3.";
+        StringBuilder body = new StringBuilder("<nav aria-label=\"Okruszki\"><a href=\"/\">VIXA</a> › <a href=\"/ranking\">Ranking</a></nav><h1>Top 10 ")
+                .append(esc(label)).append(" ").append(when).append("</h1><p>").append(esc(description)).append("</p><ol>");
+        chart.rows().forEach(row -> body.append("<li><a href=\"/track/").append(row.track().getId()).append("\">")
+                .append(esc(trackName(row.track()))).append("</a> — ").append(row.points()).append(" pkt</li>"));
+        body.append("</ol><p><a href=\"/ranking/").append(category).append("\">Tydzień</a> · <a href=\"/ranking/").append(category)
+                .append("/miesiac\">Miesiąc</a> · <a href=\"/ranking/").append(category).append("/ogolny\">Ogólny</a></p>")
+                .append("<h2>Rankingi innych gatunków</h2>").append(rankingLinks());
+        Map<String, Object> list = new LinkedHashMap<>();
+        list.put("@context", "https://schema.org");
+        list.put("@type", "ItemList");
+        list.put("name", title);
+        list.put("itemListOrder", "https://schema.org/ItemListOrderDescending");
+        list.put("itemListElement", chart.rows().stream().map(row -> Map.of("@type", "ListItem", "position", row.place(),
+                "url", SITE + "/track/" + row.track().getId(), "name", trackName(row.track()))).toList());
+        return new Page(200, title, description, path, true, LOGO, "website",
+                List.of(list, breadcrumbs(new String[][]{{"Ranking", "/ranking"}, {"Top 10 " + label + " " + when, path}})), body.toString());
+    }
+
+    private static String trackName(Track t) {
+        String artist = blank(t.getArtist()) ? "Nieznany wykonawca" : t.getArtist().trim();
+        String title = blank(t.getTitle()) ? "Bez tytułu" : t.getTitle().trim();
+        return artist + " – " + title + (blank(t.getVersion()) ? "" : " (" + t.getVersion().trim() + ")");
+    }
+
+    private static String artistLinks(String artist) {
+        List<String> names = ExploreService.splitArtists(artist);
+        if (names.size() < 1) {
+            return esc(artist);
+        }
+        // Link each artist, keep the original separators readable.
+        String out = esc(artist);
+        for (String name : names) {
+            String slug = ExploreService.slug(name);
+            if (slug.length() >= 2) {
+                out = out.replaceFirst(Pattern.quote(esc(name)), Matcher.quoteReplacement(
+                        "<a href=\"/wykonawca/" + slug + "\">" + esc(name) + "</a>"));
+            }
+        }
+        return out;
+    }
+
+    private static String newsLinks() {
+        String month = java.time.YearMonth.now(ExploreService.WARSAW).toString();
+        StringBuilder out = new StringBuilder("<ul>");
+        for (String[] g : GENRES) {
+            out.append("<li><a href=\"/nowosci/").append(g[1]).append("\">Nowości ").append(esc(g[2])).append(" ")
+                    .append(esc(ExploreService.monthLabel(java.time.YearMonth.parse(month)))).append("</a></li>");
+        }
+        return out.append("</ul>").toString();
+    }
+
+    private static String rankingLinks() {
+        StringBuilder out = new StringBuilder("<ul>");
+        for (String[] g : GENRES) {
+            out.append("<li><a href=\"/ranking/").append(g[1]).append("\">Top 10 ").append(esc(g[2])).append(" tygodnia</a></li>");
+        }
+        out.append("<li><a href=\"/ranking/sety\">Top 10 setów tygodnia</a></li>");
+        return out.append("</ul>").toString();
+    }
+
+    private static Map<String, Object> faq(List<GenreContent.Faq> items) {
+        Map<String, Object> ld = new LinkedHashMap<>();
+        ld.put("@context", "https://schema.org");
+        ld.put("@type", "FAQPage");
+        ld.put("mainEntity", items.stream().map(f -> Map.of("@type", "Question", "name", f.q(),
+                "acceptedAnswer", Map.of("@type", "Answer", "text", f.a()))).toList());
+        return ld;
     }
 
     private Page notFound(String path, String message) {

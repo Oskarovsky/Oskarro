@@ -48,6 +48,10 @@ import { ActivityChartComponent } from './home/activity-chart.component';
 import { GrowthBoardComponent } from './home/growth-board.component';
 import { GenreArtComponent } from './home/genre-art.component';
 import { HostujeEmbedComponent } from './tracks/hostuje-embed.component';
+import { MonthComponent } from './explore/month.component';
+import { ArtistComponent } from './explore/artist.component';
+import { ExploreTracksComponent } from './explore/explore-tracks.component';
+import { GenreAboutComponent } from './explore/genre-about.component';
 import { LegalComponent } from './legal/legal.component';
 import { ReportComponent } from './legal/report.component';
 import { CookieNoticeComponent } from './legal/cookie-notice.component';
@@ -122,6 +126,10 @@ import { ActivateAccountComponent } from './auth/activate.component';
     GrowthBoardComponent,
     GenreArtComponent,
     HostujeEmbedComponent,
+    MonthComponent,
+    ArtistComponent,
+    ExploreTracksComponent,
+    GenreAboutComponent,
     LegalComponent,
     ReportComponent,
     CookieNoticeComponent,

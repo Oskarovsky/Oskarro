@@ -6,6 +6,7 @@ import { TrackService } from '../services/track/track.service';
 import { LangService } from '../lang.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { GENRES } from '../tracks/genres';
+import { SeoService } from '../seo.service';
 
 type Period = 'week' | 'month' | 'all';
 
@@ -31,20 +32,38 @@ export class RankingComponent implements OnInit {
   /** One chart per genre, plus sets — different worlds are never ranked together. */
   readonly categories = [...GENRES.map(g => ({slug: g.slug, label: g.label})), {slug: 'sety', label: 'Sety / Mixy'}];
   private request = 0;
+  /** Opened as /ranking/:kategoria — the hit chart is the page's subject. */
+  focused = false;
 
   constructor(private http: HttpClient,
               private trackService: TrackService,
               private route: ActivatedRoute,
               private router: Router,
+              private seo: SeoService,
               readonly lang: LangService) {}
 
   ngOnInit() {
     this.http.get(environment.serverUrl + '/profile/ranking').subscribe(board => this.board = board);
-    this.route.queryParamMap.subscribe(params => {
+    // Old links (?okres=…&kategoria=…) move to the indexable address /ranking/:kategoria/:okres.
+    const legacy = this.route.snapshot.queryParamMap;
+    if (legacy.get('okres') || legacy.get('kategoria')) {
+      const okres = legacy.get('okres');
+      this.choose(okres === 'miesiac' ? 'month' : okres === 'ogolny' ? 'all' : 'week', legacy.get('kategoria') || 'club');
+    }
+    this.route.paramMap.subscribe(params => {
       const period = params.get('okres');
       const category = params.get('kategoria');
       this.period = period === 'miesiac' ? 'month' : period === 'ogolny' ? 'all' : 'week';
       this.category = this.categories.some(c => c.slug === category) ? category : 'club';
+      this.focused = !!category;
+      if (category) {
+        const label = this.categories.find(c => c.slug === this.category)?.label || '';
+        const who = this.category === 'sety' ? 'setów' : label;
+        const when = this.period === 'week' ? 'tygodnia' : this.period === 'month' ? 'miesiąca' : 'wszech czasów';
+        this.seo.setTitle('Top 10 ' + who + ' ' + when + ' – ranking hitów ' + new Date().getFullYear() + ' | VIXA',
+          'Ranking ' + who + ' ' + when + ' na VIXA: 10 numerów z największą liczbą głosów i odsłuchów. Słuchaj za darmo i pobieraj mp3.',
+          '/ranking/' + this.category + (period ? '/' + period : ''));
+      }
       this.load();
     });
   }
@@ -52,11 +71,7 @@ export class RankingComponent implements OnInit {
   /** The choice goes into the address, so a chart can be shared or bookmarked. */
   choose(period: Period, category: string) {
     const okres = period === 'month' ? 'miesiac' : period === 'all' ? 'ogolny' : null;
-    this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams: {okres, kategoria: category === 'club' ? null : category},
-      replaceUrl: true
-    });
+    this.router.navigate(okres ? ['/ranking', category, okres] : ['/ranking', category], {replaceUrl: true});
   }
 
   private load() {
@@ -76,6 +91,14 @@ export class RankingComponent implements OnInit {
         }
       }
     });
+  }
+
+  focusTitle() {
+    const label = this.categories.find(c => c.slug === this.category)?.label || '';
+    const who = this.category === 'sety' ? this.lang.t('setów', 'sets') : label;
+    const when = this.period === 'week' ? this.lang.t('tygodnia', 'of the week')
+      : this.period === 'month' ? this.lang.t('miesiąca', 'of the month') : this.lang.t('wszech czasów', 'of all time');
+    return 'Top 10 ' + who + ' ' + when;
   }
 
   chartTitle() {

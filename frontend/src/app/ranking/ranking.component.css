@@ -112,3 +112,26 @@
     display: inline;
   }
 }
+
+/* /ranking/:kategoria: chart first, user boards and ranks after it. */
+.ranking-page.focused {
+  display: flex;
+  flex-direction: column;
+}
+
+.ranking-page.focused > * {
+  order: 0;
+}
+
+.ranking-page.focused .chart {
+  order: 1;
+  margin-top: 8px;
+}
+
+.ranking-page.focused .boards {
+  order: 2;
+}
+
+.ranking-page.focused > section:not(.chart) {
+  order: 3;
+}
