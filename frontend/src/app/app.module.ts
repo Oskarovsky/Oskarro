@@ -2,29 +2,16 @@ import { BrowserModule } from '@angular/platform-browser';
 import { NgModule, provideZoneChangeDetection } from '@angular/core';
 import { provideHttpClient, withInterceptors, withInterceptorsFromDi } from '@angular/common/http';
 import { provideAnimations } from '@angular/platform-browser/animations';
-import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
-import { MatExpansionModule } from '@angular/material/expansion';
-import { MatInputModule } from '@angular/material/input';
-import { MatListModule } from '@angular/material/list';
-import { MatToolbarModule } from '@angular/material/toolbar';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { TrackComponent } from './tracks/track/track.component';
 import { TrackListComponent } from './tracks/track-list/track-list.component';
-import { MatGridListModule } from '@angular/material/grid-list';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NavigationComponent } from './navigation/navigation.component';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatIconModule } from '@angular/material/icon';
 import { NotFoundComponent } from './not-found/not-found.component';
 import { ToplistComponent } from './playlists/toplist/toplist.component';
-import { MatSelectModule } from '@angular/material/select';
 import { ToplistEditComponent } from './playlists/toplist-edit/toplist-edit.component';
-import { MatTableModule } from '@angular/material/table';
-import { MatTabsModule } from '@angular/material/tabs';
-import { MatSortModule } from '@angular/material/sort';
 import { authInterceptorProviders, zoneHttpInterceptor } from './services/auth/auth.interceptor';
 import { PlaylistComponent } from './playlists/playlist/playlist.component';
 import { PlaylistAddComponent } from './playlists/playlist-add/playlist-add.component';
@@ -172,21 +159,8 @@ import { ActivateAccountComponent } from './auth/activate.component';
   imports: [
     BrowserModule,
     AppRoutingModule,
-    MatButtonModule,
-    MatCardModule,
-    MatInputModule,
-    MatListModule,
-    MatToolbarModule,
-    MatGridListModule,
     FormsModule,
-    MatMenuModule,
-    MatIconModule,
-    MatSelectModule,
     ReactiveFormsModule,
-    MatTableModule,
-    MatTabsModule,
-    MatSortModule,
-    MatExpansionModule,
   ],
   providers: [
     provideZoneChangeDetection(),

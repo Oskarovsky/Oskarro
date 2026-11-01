@@ -1,30 +1,20 @@
-<div class="example-container">
-  <form name="form" #form="ngForm" (ngSubmit)="addTrackToRanking()">
-    <mat-form-field appearance="fill">
-      <mat-label>Title</mat-label>
-      <input matInput [(ngModel)]="model.title" name="title">
-    </mat-form-field>
-    <br>
-    <mat-form-field appearance="fill">
-      <mat-label>Artist</mat-label>
-      <input matInput [(ngModel)]="model.artist" name="artist">
-    </mat-form-field>
-    <br>
-    <mat-form-field appearance="fill">
-      <mat-label>Version</mat-label>
-      <input matInput [(ngModel)]="model.version" name="version">
-    </mat-form-field>
-    <br>
-    <mat-form-field appearance="fill">
-      <mat-label>Link hostuje.net</mat-label>
-      <input matInput [(ngModel)]="model.url" name="url">
-    </mat-form-field>
-    <br>
-    <mat-form-field appearance="fill">
-      <mat-label>Points</mat-label>
-      <input matInput [(ngModel)]="model.points" name="points">
-    </mat-form-field>
-    <br>
-    <button mat-button >Dodaj utwór</button>
+<div class="page">
+  <form name="form" #form="ngForm" (ngSubmit)="addTrackToRanking()" class="stack">
+    <label>Tytuł
+      <input type="text" [(ngModel)]="model.title" name="title">
+    </label>
+    <label>Wykonawca
+      <input type="text" [(ngModel)]="model.artist" name="artist">
+    </label>
+    <label>Wersja
+      <input type="text" [(ngModel)]="model.version" name="version">
+    </label>
+    <label>Link do pliku
+      <input type="text" [(ngModel)]="model.url" name="url">
+    </label>
+    <label>Punkty
+      <input type="number" [(ngModel)]="model.points" name="points">
+    </label>
+    <button class="btn-accent" type="submit">Dodaj utwór</button>
   </form>
 </div>
