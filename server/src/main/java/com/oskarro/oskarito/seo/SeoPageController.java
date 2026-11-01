@@ -41,10 +41,18 @@ import java.util.regex.Pattern;
 @RestController
 public class SeoPageController {
 
+    /** Public origin. When the domain moves (vixa.com.pl), change it here, in SitemapController and in notify/NotificationService. */
     static final String SITE = "https://oskarro.com";
     private static final String LOGO = SITE + "/assets/logo.jpg";
     private static final DateTimeFormatter DAY = DateTimeFormatter.ofPattern("dd.MM.yyyy").withZone(ZoneId.of("Europe/Warsaw"));
-    private static final String HOME_TITLE = "Muzyka klubowa, vixa i disco polo za darmo — słuchaj z nami | VIXA";
+    /** Year in titles: people search "vixa 2026", "muzyka klubowa 2026". */
+    private static String year() {
+        return String.valueOf(java.time.Year.now(ZoneId.of("Europe/Warsaw")).getValue());
+    }
+
+    private static String homeTitle() {
+        return "Muzyka klubowa, vixa i disco polo " + year() + " – mp3 za darmo | VIXA";
+    }
     private static final String HOME_DESCRIPTION = "VIXA — słuchaj z nami muzyki klubowej za darmo: club, vixa, trance, hands up i disco polo. "
             + "Oceniaj, komentuj i dodawaj swoje numery.";
 
@@ -219,7 +227,7 @@ public class SeoPageController {
         ld.put("inLanguage", "pl");
         ld.put("potentialAction", Map.of("@type", "SearchAction",
                 "target", SITE + "/szukaj?q={search_term_string}", "query-input", "required name=search_term_string"));
-        return new Page(200, HOME_TITLE, HOME_DESCRIPTION, "/", true, LOGO, "website", ld, body.toString());
+        return new Page(200, homeTitle(), HOME_DESCRIPTION, "/", true, LOGO, "website", ld, body.toString());
     }
 
     private Page track(Integer id) {
@@ -236,7 +244,7 @@ public class SeoPageController {
         String path = "/track/" + id;
         String added = track.getCreatedAt() == null ? "" : DAY.format(track.getCreatedAt());
         String section = set ? setLabel(track.getSetCategory()) : genre[2];
-        String description = cut((set ? "Posłuchaj seta za darmo: " : "Posłuchaj za darmo: ") + full + ". "
+        String description = cut((set ? "Posłuchaj seta za darmo: " : "Posłuchaj i pobierz mp3: ") + full + ". "
                 + section + " na VIXA" + (added.isEmpty() ? "" : ", dodane " + added)
                 + ". Oceniaj, komentuj i zapisz do swojej składanki.", 158);
         String image = covers.exists(id) ? SITE + "/api/tracks/" + id + "/cover" : LOGO;
@@ -302,8 +310,7 @@ public class SeoPageController {
         }
         String path = "/tracklist/" + slug;
         String heading = genre[0].equals("CLUB") ? "Muzyka klubowa — Club" : genre[2] + " na imprezę";
-        String title = genre[0].equals("CLUB") ? "Muzyka klubowa (Club) — słuchaj za darmo | VIXA"
-                : genre[2] + " na imprezę — słuchaj za darmo | VIXA";
+        String title = genreTitle(genre[0], genre[2]);
         String body = "<nav aria-label=\"Okruszki\"><a href=\"/\">VIXA</a> › " + esc(genre[2]) + "</nav><h1>" + esc(heading) + "</h1><p>"
                 + esc(genre[3]) + "</p><h2>Najnowsze: " + esc(genre[2]) + "</h2>" + trackList(latest(genre[0], false, 40))
                 + "<h2>Inne gatunki</h2>" + genreLinks();
@@ -317,6 +324,16 @@ public class SeoPageController {
         page.put("isPartOf", Map.of("@type", "WebSite", "name", "VIXA", "url", SITE + "/"));
         return new Page(200, title, genre[3], path, true, LOGO, "website",
                 List.of(page, breadcrumbs(new String[][]{{genre[2], path}})), body);
+    }
+
+    /** Genre titles carry the year and the words people type: mp3, na imprezę, do auta. */
+    static String genreTitle(String id, String label) {
+        return switch (id) {
+            case "CLUB" -> "Muzyka klubowa " + year() + " – nowości club mp3 na imprezę | VIXA";
+            case "VIXA" -> "Vixa " + year() + " – pompa do auta i na imprezę, mp3 | VIXA";
+            case "DISCO_POLO" -> "Disco polo " + year() + " – nowości mp3 na wesele i imprezę | VIXA";
+            default -> label + " " + year() + " – nowości mp3 na imprezę i do auta | VIXA";
+        };
     }
 
     private Page sets(String slug) {
