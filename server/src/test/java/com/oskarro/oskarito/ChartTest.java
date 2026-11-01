@@ -45,6 +45,9 @@ class ChartTest {
     @MockitoBean
     DataSeeder dataSeeder;
 
+    @MockitoBean
+    com.oskarro.oskarito.video.ChannelCatalog channel;
+
     @Autowired MockMvc mvc;
     @Autowired ObjectMapper json;
     @Autowired UserRepository users;
@@ -110,6 +113,50 @@ class ChartTest {
 
         mvc.perform(get("/api/charts").param("period", "year").param("category", "retro")).andExpect(status().isBadRequest());
         mvc.perform(get("/api/charts").param("period", "week").param("category", "nope")).andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void landingPagesForMonthsArtistsAndCharts() throws Exception {
+        Track a = track("TRANCE", null, "Landing Artist & Second One");
+        play(a, Instant.now());
+        String month = java.time.YearMonth.now(java.time.ZoneId.of("Europe/Warsaw")).toString();
+
+        JsonNode page = json.readTree(mvc.perform(get("/api/explore/month/trance/" + month)).andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString());
+        assertThat(page.get("seo").get("title").asText()).startsWith("Trance ").contains("nowości mp3");
+        List<String> monthArtists = new ArrayList<>();
+        page.get("tracks").forEach(t -> monthArtists.add(t.get("artist").asText()));
+        assertThat(monthArtists).contains("Landing Artist & Second One");
+        assertThat(page.get("top").get(0).get("place").asInt()).isEqualTo(1);
+        mvc.perform(get("/api/explore/month/trance/1999-01")).andExpect(status().isNotFound());
+        mvc.perform(get("/api/explore/month/trance/zle")).andExpect(status().isNotFound());
+        mvc.perform(get("/api/explore/month/nope/" + month)).andExpect(status().isNotFound());
+
+        JsonNode genre = json.readTree(mvc.perform(get("/api/explore/genre/vixa")).andReturn().getResponse().getContentAsString());
+        assertThat(genre.get("faq").size()).isGreaterThanOrEqualTo(3);
+        assertThat(genre.get("intro").size()).isGreaterThanOrEqualTo(2);
+
+        // collaborations are split into separate artists
+        mvc.perform(get("/api/explore/artist/second-one")).andExpect(status().isOk());
+        JsonNode artist = json.readTree(mvc.perform(get("/api/explore/artist/landing-artist")).andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString());
+        assertThat(artist.get("name").asText()).isEqualTo("Landing Artist");
+        mvc.perform(get("/api/explore/artist/nobody-here")).andExpect(status().isNotFound());
+
+        String monthHtml = mvc.perform(get("/api/seo/page/nowosci/trance/" + month)).andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        assertThat(monthHtml).contains("<title>Trance ").contains("\"@type\":\"ItemList\"").contains("/track/" + a.getId());
+        assertThat(mvc.perform(get("/api/seo/page/tracklist/vixa")).andReturn().getResponse().getContentAsString())
+                .contains("\"@type\":\"FAQPage\"").contains("Co to jest vixa?").contains("href=\"/ranking/vixa\"");
+        assertThat(mvc.perform(get("/api/seo/page/ranking/trance/miesiac")).andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString()).contains("Top 10 Trance miesiąca");
+        mvc.perform(get("/api/seo/page/ranking/nope")).andExpect(status().isNotFound());
+        assertThat(mvc.perform(get("/api/seo/page/wykonawca/landing-artist")).andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString()).contains("<h1>Landing Artist</h1>");
+        assertThat(mvc.perform(get("/api/seo/page/track/" + a.getId())).andReturn().getResponse().getContentAsString())
+                .contains("href=\"/wykonawca/landing-artist\"").contains("href=\"/wykonawca/second-one\"");
+        assertThat(mvc.perform(get("/api/seo/sitemap.xml")).andReturn().getResponse().getContentAsString())
+                .contains("/nowosci/trance/" + month).contains("/ranking/vixa/miesiac").contains("/wykonawca/landing-artist");
     }
 
     private JsonNode chart(String period, String category) throws Exception {

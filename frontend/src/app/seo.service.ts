@@ -21,6 +21,10 @@ export class SeoService {
 
   applyRoute(url: string) {
     const path = this.pathOf(url);
+    // These pages set their own title and description (the same text the server renders).
+    if (/^\/(ranking\/[a-z0-9-]+(\/(miesiac|ogolny))?|nowosci\/[a-z0-9-]+(\/\d{4}-\d{2})?|wykonawca\/[a-z0-9-]+)$/.test(path)) {
+      return;
+    }
     const query = new URLSearchParams(url.includes('?') ? url.slice(url.indexOf('?') + 1) : '');
 
     if (path === '/') {

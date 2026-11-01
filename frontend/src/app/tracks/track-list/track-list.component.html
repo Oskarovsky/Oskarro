@@ -63,6 +63,8 @@
 
   <app-pager *ngIf="tracks.length" [page]="currentPage" [count]="pageCount" (pageChange)="showPage($event)"></app-pager>
 
+  <app-genre-about [slug]="genre"></app-genre-about>
+
 </div>
 
 <div class="page" *ngIf="!community">

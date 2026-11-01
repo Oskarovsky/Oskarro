@@ -21,7 +21,12 @@
       <p class="kicker" *ngIf="!isSet">{{ genreLabel }}</p>
       <p class="kicker" *ngIf="isSet">{{ 'Set' | t }} · {{ setLabel }} · {{ genreLabel }}</p>
       <h1>{{ track.title }}<span class="version" *ngIf="track | versionLabel as version"> ({{ version }})</span></h1>
-      <p class="artist">{{ track.artist }}</p>
+      <p class="artist">
+        <ng-container *ngFor="let part of artistParts; let last = last">
+          <a *ngIf="part.slug; else plainPart" class="artist-link" [routerLink]="['/wykonawca', part.slug]">{{ part.text }}</a>
+          <ng-template #plainPart>{{ part.text }}</ng-template>
+        </ng-container>
+      </p>
       <p class="meta set-event" *ngIf="isSet && track.eventName">📍 {{ track.eventName }}</p>
       <p class="meta">
         <span *ngIf="track.sharedBy">

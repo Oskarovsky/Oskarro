@@ -1,0 +1,12 @@
+
+/* Artist names link to their pages (/wykonawca/...). */
+.artist-link {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: rgba(228, 255, 74, 0.45);
+  text-underline-offset: 4px;
+}
+
+.artist-link:hover {
+  color: var(--accent);
+}

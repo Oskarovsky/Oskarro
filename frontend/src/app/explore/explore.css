@@ -1,0 +1,71 @@
+.month-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.month-card {
+  display: grid;
+  gap: 4px;
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--text);
+}
+
+.month-card strong {
+  font-size: 1.1rem;
+  text-transform: capitalize;
+}
+
+.month-card span {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.month-card:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.month-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  margin: 10px 0 22px;
+  text-transform: capitalize;
+}
+
+.mini-chart {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 26px;
+  display: grid;
+  gap: 6px;
+}
+
+.mini-chart li {
+  display: grid;
+  grid-template-columns: 2.4rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.mini-chart .place {
+  font: 700 1.3rem/1 var(--display, serif);
+  text-align: center;
+  color: var(--accent);
+}
+
+.mini-chart a {
+  color: var(--text);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}

@@ -47,6 +47,16 @@ public class ChartService {
             case "all" -> null;
             default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Okres: week, month albo all");
         };
+        return rank(period, category, since, null);
+    }
+
+    /** Chart for a closed time window, e.g. one calendar month on the "Nowości" pages. */
+    @Transactional(readOnly = true)
+    public Chart between(String category, Instant from, Instant until) {
+        return rank("range", category, from, until);
+    }
+
+    private Chart rank(String period, String category, Instant since, Instant until) {
         boolean sets = "sety".equalsIgnoreCase(category) || "sets".equalsIgnoreCase(category);
         String genre = sets ? null : genreOf(category);
 
@@ -62,9 +72,11 @@ public class ChartService {
         }
 
         Map<Integer, Long> votes = grouped("select l.track.id, sum(l.vote) from TrackLike l where l.track.id in :ids"
-                + (since == null ? "" : " and l.createdAt >= :since") + " group by l.track.id", ids, since);
+                + (since == null ? "" : " and l.createdAt >= :since") + (until == null ? "" : " and l.createdAt < :until")
+                + " group by l.track.id", ids, since, until);
         Map<Integer, Long> plays = grouped("select v.trackId, count(v) from TrackView v where v.trackId in :ids"
-                + (since == null ? "" : " and v.playedAt >= :since") + " group by v.trackId", ids, since);
+                + (since == null ? "" : " and v.playedAt >= :since") + (until == null ? "" : " and v.playedAt < :until")
+                + " group by v.trackId", ids, since, until);
 
         record Entry(Integer id, long votes, long plays, long points) {
         }
@@ -110,10 +122,13 @@ public class ChartService {
         return new Chart(period, sets ? "sety" : category.toLowerCase(Locale.ROOT), rows);
     }
 
-    private Map<Integer, Long> grouped(String query, Set<Integer> ids, Instant since) {
+    private Map<Integer, Long> grouped(String query, Set<Integer> ids, Instant since, Instant until) {
         var q = em.createQuery(query, Object[].class).setParameter("ids", ids);
         if (since != null) {
             q.setParameter("since", since);
+        }
+        if (until != null) {
+            q.setParameter("until", until);
         }
         Map<Integer, Long> out = new HashMap<>();
         for (Object[] row : q.getResultList()) {

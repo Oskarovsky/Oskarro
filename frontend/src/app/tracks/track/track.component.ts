@@ -243,6 +243,31 @@ export class TrackComponent implements OnInit, OnDestroy {
     return [...sameArtist, ...sameGenre].slice(0, 4);
   }
 
+  /** The artist line split into linkable names and the separators between them (",", "&", "feat."…). */
+  get artistParts(): {text: string, slug: string}[] {
+    const raw = this.track?.artist || '';
+    if (raw === this.artistPartsFor) {
+      return this.artistPartsCache;
+    }
+    const parts: {text: string, slug: string}[] = [];
+    const separator = /(\s*(?:,|&|\+|\s(?:x|feat\.?|ft\.?|featuring|vs\.?|pres\.?|with)\s)\s*)/i;
+    for (const piece of raw.split(separator)) {
+      if (!piece) {
+        continue;
+      }
+      const name = piece.trim();
+      const isSeparator = separator.test(piece) && piece.replace(separator, '') === '';
+      const slug = isSeparator ? '' : artistSlug(name);
+      parts.push({text: piece, slug: slug.length >= 2 ? slug : ''});
+    }
+    this.artistPartsFor = raw;
+    this.artistPartsCache = parts;
+    return parts;
+  }
+
+  private artistPartsFor = '';
+  private artistPartsCache: {text: string, slug: string}[] = [];
+
   /** hostuje.net id when the track lives there (shown in their embed player). */
   get hostujeId(): string {
     const ref = audioRef(this.track?.url || '');
@@ -432,4 +457,10 @@ export class TrackComponent implements OnInit, OnDestroy {
     this.mine = state.mine;
   }
 
+}
+
+/** Same slug rules as the server (ExploreService.slug): no accents, lower case, dashes. */
+export function artistSlug(name: string): string {
+  return (name || '').replace(/ł/g, 'l').replace(/Ł/g, 'L').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-+|-+$)/g, '');
 }
