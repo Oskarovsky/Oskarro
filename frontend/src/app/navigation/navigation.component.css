@@ -1,0 +1,25 @@
+
+/* Account links never break inside ("Zaloguj / się" at ~1100 px). */
+.account > a,
+.account > button {
+  white-space: nowrap;
+}
+
+/* Between the collapsed menu (≤860 px) and wide screens the three equal columns are too tight:
+   let the side columns take their natural width and the links sit closer together. */
+@media (min-width: 861px) and (max-width: 1240px) {
+  .topbar {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 12px 12px;
+  }
+
+  .topnav {
+    gap: 0;
+  }
+
+  .topnav a,
+  .topnav summary {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+}
